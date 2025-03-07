@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="90" fill="#E8F5E9"/>
+  
+  <!-- Calendar background -->
+  <rect x="50" y="50" width="100" height="100" rx="10" fill="#4CAF50"/>
+  <rect x="60" y="40" width="80" height="20" rx="5" fill="#388E3C"/>
+  
+  <!-- Calendar details -->
+  <rect x="60" y="70" width="80" height="70" fill="white"/>
+  
+  <!-- Calendar lines -->
+  <line x1="60" y1="90" x2="140" y2="90" stroke="#BDBDBD" stroke-width="2"/>
+  <line x1="60" y1="110" x2="140" y2="110" stroke="#BDBDBD" stroke-width="2"/>
+  
+  <!-- Checkmark -->
+  <path d="M80 100 L90 110 L110 90" stroke="#4CAF50" stroke-width="4" fill="none"/>
+  
+  <!-- Clock icon -->
+  <circle cx="100" cy="140" r="10" fill="none" stroke="#4CAF50" stroke-width="2"/>
+  <line x1="100" y1="140" x2="105" y2="135" stroke="#4CAF50" stroke-width="2"/>
+  <line x1="100" y1="140" x2="100" y2="133" stroke="#4CAF50" stroke-width="2"/>
+</svg>

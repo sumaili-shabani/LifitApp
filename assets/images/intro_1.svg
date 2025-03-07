@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="90" fill="#E3F2FD"/>
+  
+  <!-- Car body -->
+  <path d="M40 120 L160 120 L150 90 L50 90 Z" fill="#1976D2"/>
+  <rect x="45" y="100" width="110" height="30" fill="#1976D2"/>
+  
+  <!-- Windows -->
+  <path d="M60 95 L85 70 L115 70 L140 95" fill="#BBDEFB"/>
+  
+  <!-- Wheels -->
+  <circle cx="70" cy="130" r="15" fill="#424242"/>
+  <circle cx="130" cy="130" r="15" fill="#424242"/>
+  <circle cx="70" cy="130" r="8" fill="#BDBDBD"/>
+  <circle cx="130" cy="130" r="8" fill="#BDBDBD"/>
+  
+  <!-- Location pin -->
+  <path d="M100 40 L110 50 L100 70 L90 50 Z" fill="#F44336"/>
+</svg>

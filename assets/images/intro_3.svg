@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="200" height="200" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="100" cy="100" r="90" fill="#FFF3E0"/>
+  
+  <!-- Map background -->
+  <rect x="40" y="40" width="120" height="120" rx="10" fill="white"/>
+  
+  <!-- Map roads -->
+  <path d="M50 70 H150 M50 100 H150 M50 130 H150" stroke="#E0E0E0" stroke-width="4"/>
+  <path d="M70 50 V150 M100 50 V150 M130 50 V150" stroke="#E0E0E0" stroke-width="4"/>
+  
+  <!-- Car route -->
+  <path d="M60 140 Q100 60 140 100" stroke="#FF9800" stroke-width="4" fill="none" stroke-dasharray="8"/>
+  
+  <!-- Start point -->
+  <circle cx="60" cy="140" r="8" fill="#4CAF50"/>
+  
+  <!-- End point -->
+  <circle cx="140" cy="100" r="8" fill="#F44336"/>
+  
+  <!-- Moving car -->
+  <circle cx="100" cy="100" r="6" fill="#2196F3"/>
+  
+  <!-- Shield icon -->
+  <path d="M90 30 L110 30 L110 45 L100 50 L90 45 Z" fill="#FF9800"/>
+</svg>
