@@ -89,8 +89,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               if (value == "logout") {
                 print("Déconnexion...");
                 logout();
-              } else if (value == "notification") {
-                print("Voir les notifications...");
+              } else if (value == "message") {
+                print("Voir les messages...");
               } else if (value == "calendar") {
                 // print("Voir le calendrier...");
                 Navigator.of(context).push(
@@ -103,7 +103,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             itemBuilder:
                 (BuildContext context) => [
                   PopupMenuItem(
-                    value: "notification",
+                    value: "message",
                     child: Row(
                       children: [
                         Icon(Icons.chat),

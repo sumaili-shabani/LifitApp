@@ -10,6 +10,9 @@
         android:label="lifti_app"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <meta-data
+        android:name="com.google.android.geo.API_KEY"
+        android:value="AIzaSyCCF6II62n7-ZB-ooj5M4PCr1v50SKxK-s"/>
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -38,9 +41,9 @@
             android:name="flutterEmbedding"
             android:value="2" />
         <!-- mes ajouts -->
-        <meta-data
+        <!-- <meta-data
         android:name="com.google.android.geo.API_KEY"
-        android:value="AIzaSyBgSz7TPCEIkEHw9CbO93tZQqFSa2pz1ZE"/>
+        android:value="AIzaSyCCF6II62n7-ZB-ooj5M4PCr1v50SKxK-s"/> -->
 
     </application>
     <!-- Required to query activities that can process text, see:

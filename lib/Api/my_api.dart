@@ -10,7 +10,7 @@ class CallApi {
   final String _imgUrl = 'https://www.swiftride.tech/';
   static String apiUrl = "https://www.swiftride.tech/api/";
 
-  static String apiKey = "AIzaSyBgSz7TPCEIkEHw9CbO93tZQqFSa2pz1ZE";
+  static String apiKey = "AIzaSyCCF6II62n7-ZB-ooj5M4PCr1v50SKxK-s";
   static String apikeyOpenrouteservice =
       "5b3ce3597851110001cf62484e660c3aa019470d8ac388d12b974480";
 
