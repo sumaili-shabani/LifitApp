@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Model/ChauffeurDashBoardModel.dart';
 import 'package:lifti_app/Model/CourseModel.dart';
@@ -81,13 +82,15 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        leading: Icon(Icons.car_crash),
-        title: Text("Courses en cours"),
-        backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: CustomAppBar(
+        title: Text(
+          "Courses en cours",
+          style: TextStyle(color: Colors.white),
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
+            color: Colors.white,
             onPressed: () {
               fetchNotifications();
             },
@@ -101,6 +104,7 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
               ) // Affiche un loader en attendant l'API
               : Column(
                 children: [
+                  SizedBox(height: 10,),
                   // 📊 STATISTIQUES GLOBALES
                   Padding(
                     padding: EdgeInsets.all(5),
@@ -157,8 +161,11 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
                         var course = notifications[index];
 
                         if (!course.namePassager!.toLowerCase().contains(
-                          searchQuery,
-                        )) {
+                              searchQuery,
+                            ) &&
+                            !course.dateCourse!.toLowerCase().contains(
+                              searchQuery,
+                            )) {
                           return Container();
                         }
 
@@ -276,13 +283,42 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
                                                   color: Colors.red,
                                                 ),
                                                 SizedBox(width: 5),
-                                               
+
                                                 SizedBox(
                                                   width: 200,
                                                   child: Text(
                                                     "Arrivée : ${course.nameDestination ?? ''}",
                                                     maxLines: 2,
                                                   ),
+                                                ),
+                                              ],
+                                            ),
+
+                                            SizedBox(height: 5),
+                                            Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              children: [
+                                                Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.calendar_today,
+                                                      color: Colors.grey,
+                                                      size: 18,
+                                                    ),
+                                                    SizedBox(width: 5),
+                                                    Text(
+                                                      CallApi.getFormatedDate(
+                                                        course.dateCourse
+                                                            .toString(),
+                                                      ),
+                                                      style: TextStyle(
+                                                        color: Colors.grey,
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ],
                                             ),
@@ -326,7 +362,7 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
                                                         ),
                                                       ),
                                                   child: Text(
-                                                    "Accepter",
+                                                    "Terminer",
                                                     style: TextStyle(
                                                       fontSize: 12,
                                                     ),

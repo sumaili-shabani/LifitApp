@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/ResponsivePadding.dart';
 import 'package:lifti_app/View/Components/DynamicBarChart.dart';
 import 'package:lifti_app/View/Components/DynamicColumnChart.dart';
 import 'package:lifti_app/View/Components/DynamicPieChart.dart';
 import 'package:lifti_app/View/Components/StatJurnaliere.dart';
 import 'package:lifti_app/View/Pages/MenusPage/AvisClientScreem.dart';
+import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
 import 'package:lifti_app/View/Pages/MenusPage/CommandeTaxi.dart';
 import 'package:lifti_app/View/Pages/MenusPage/InfoDashBoardPage.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/PaiementCommission.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Statistique/PaieCommissionChart.dart';
 import 'package:lifti_app/View/Pages/MenusPage/PetitCourseEnCourse.dart';
 import 'package:lifti_app/core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
@@ -69,9 +73,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.surface,
-        title: Text("Tableau de Bord"),
+      appBar: CustomAppBar(
+        title: Text("Tableau de Bord", style: TextStyle(color: Colors.white)),
         actions: [
           // ✅ Ajout de l'avatar du chauffeur
           Padding(
@@ -84,13 +87,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           // ✅ Menu déroulant avec bouton Déconnexion
           PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert,),
+            icon: Icon(Icons.more_vert, color: Colors.white,),
             onSelected: (String value) {
               if (value == "logout") {
                 print("Déconnexion...");
                 logout();
               } else if (value == "message") {
-                print("Voir les messages...");
+                // print("Voir les messages...");
+                Navigator.of(context).push(
+                  MaterialPageRoute(builder: (_) => const CorrespondentsPage()),
+                );
               } else if (value == "calendar") {
                 // print("Voir le calendrier...");
                 Navigator.of(context).push(
@@ -105,10 +111,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   PopupMenuItem(
                     value: "message",
                     child: Row(
-                      children: [
-                        Icon(Icons.chat),
-                        Text(" Messagerie"),
-                      ],
+                      children: [Icon(Icons.chat), Text(" Messagerie")],
                     ),
                   ),
                   PopupMenuItem(
@@ -134,13 +137,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(8.0),
         child: ResponsivePadding(
           percentage: 0.02,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-             
               InfoDashBoardPage(),
               SizedBox(height: 20),
               Text(
@@ -163,8 +165,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
               // SizedBox(height: 20),
               PetitCourseEnCourse(),
               SizedBox(height: 20),
-              // _buildEvaluations(),
 
+              // _buildEvaluations(),
               AvisClientScreem(),
               SizedBox(height: 20),
               Text(
@@ -172,6 +174,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               DynamicBarChart(),
+
+              // mes ajouts commission
+              SizedBox(height: 10),
+              // liste de paiement de la personne
+              SizedBox(height: 300, child: PaiementCommission()),
+
+              PaieCommissionChart(),
+
+              //fin ajouts commissions
             ],
           ),
         ),
@@ -257,6 +268,4 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ],
     );
   }
-
-  
 }

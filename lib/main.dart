@@ -38,7 +38,7 @@ class HomePage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             const Text(
-              'Welcome to Rydex',
+              'Bienvenu au SwiftRide',
               style: TextStyle(fontSize: 24),
             ),
             const SizedBox(height: 20),

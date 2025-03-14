@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Controller/ApiService.dart';
 import 'package:lifti_app/Model/DemandeTaxiModel.dart';
@@ -82,16 +83,11 @@ class _CommandeTaxiScreemState extends State<CommandeTaxiScreem> {
       "lonUser": position.longitude,
     };
 
-    await CallApi.postData(
-      "chauffeur_mobilechangePosition",
-      svData,
-    );
-   
+    await CallApi.postData("chauffeur_mobilechangePosition", svData);
   }
 
   Future reponseDemande(int id, int statut, int refPassager) async {
     try {
-     
       setState(() {
         loading = true;
       });
@@ -163,18 +159,19 @@ class _CommandeTaxiScreemState extends State<CommandeTaxiScreem> {
     final theme = Theme.of(context);
     return Scaffold(
       backgroundColor: theme.scaffoldBackgroundColor,
-      appBar: AppBar(
-        title: Text('Commandes de Taxi'),
-        backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: CustomAppBar(
+        showBackButton: true,
+        title: Text('Commandes de Taxi', style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, color: Colors.white),
             onPressed: () {
               getIdConnected();
             },
           ),
         ],
       ),
+
       body:
           loading == true
               ? Center(child: CircularProgressIndicator())
@@ -210,7 +207,9 @@ class _CommandeTaxiScreemState extends State<CommandeTaxiScreem> {
                           child: ListTile(
                             leading: CircleAvatar(
                               backgroundColor: CallApi.getRandomColor(),
-                              child: Text(CallApi.limitText(order.namePassager, 1)),
+                              child: Text(
+                                CallApi.limitText(order.namePassager, 1),
+                              ),
                               // backgroundImage: NetworkImage(
                               //   "${CallApi.fileUrl}/images/${order.avatarPassager}",
                               // ),
@@ -219,7 +218,6 @@ class _CommandeTaxiScreemState extends State<CommandeTaxiScreem> {
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                
                                 Row(
                                   children: [
                                     Icon(Icons.location_on_outlined),

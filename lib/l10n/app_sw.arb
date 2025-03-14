@@ -1,7 +1,7 @@
 {
     "@@locale": "sw",
     
-    "appName": "Rydex",
+    "appName": "SwiftRide",
     "welcome": "Karibu",
     "login": "Ingia",
     "signup": "Jisajili",
@@ -25,7 +25,7 @@
     "loginSuccess": "Umeingia kwa mafanikio!",
     "loginError": "Imeshindwa kuingia. Tafadhali jaribu tena.",
 
-    "introWelcomeTitle": "Karibu kwenye Rydex",
+    "introWelcomeTitle": "Karibu kwenye SwiftRide",
     "introWelcomeDesc": "Mwenza wako wa kuaminika wa usafiri",
     
     "introBookingTitle": "Kuhifadhi Rahisi",

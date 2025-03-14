@@ -21,7 +21,7 @@ class App extends ConsumerWidget {
         ...BlocProviders.providers,
       ],
       child: MaterialApp(
-        title: 'Rydex',
+        title: 'SwiftRide',
         themeMode: themeMode,
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,

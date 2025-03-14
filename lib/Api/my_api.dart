@@ -19,9 +19,9 @@ class CallApi {
   // static const String baseUrl ="https://www.swiftride.tech/api"; // Remplace par ton URL
 
   //par defaut en locale
-  static const String fileUrl = "http://10.52.50.127:8000"; // Pour le fichier
+  static const String fileUrl = "http://10.21.246.127:8000"; // Pour le fichier
   static const String baseUrl =
-      "http://10.52.50.127:8000/api"; // Remplace par ton URL
+      "http://10.21.246.127:8000/api"; // Remplace par ton URL
 
   /*
   *
@@ -32,11 +32,13 @@ class CallApi {
   */
   /// 🔹 **Méthode GET**
   static Future<Map<String, dynamic>> fetchData(String endpoint) async {
+    String? token = await getToken();
     final response = await http.get(
       Uri.parse("$baseUrl/$endpoint"),
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
       },
     );
 
@@ -48,11 +50,13 @@ class CallApi {
   }
 
   static Future<List<dynamic>> fetchListData(String endpoint) async {
+    String? token = await getToken();
     final response = await http.get(
       Uri.parse("$baseUrl/$endpoint"),
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
       },
     );
 
@@ -63,18 +67,18 @@ class CallApi {
     }
   }
 
- 
-
   /// 🔹 **Méthode POST**
   static Future<Map<String, dynamic>> postData(
     String endpoint,
     Map<String, dynamic> data,
   ) async {
+    String? token = await getToken();
     final response = await http.post(
       Uri.parse("$baseUrl/$endpoint"),
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
       },
       body: json.encode(data),
     );
@@ -87,11 +91,13 @@ class CallApi {
   }
 
   static Future<Map<String, dynamic>> deleteData(String endpoint) async {
+    String? token = await getToken();
     final response = await http.get(
       Uri.parse("$baseUrl/$endpoint"),
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
       },
     );
 
@@ -107,11 +113,13 @@ class CallApi {
     String endpoint,
     Map<String, dynamic> data,
   ) async {
+    String? token = await getToken();
     final response = await http.put(
       Uri.parse("$baseUrl/$endpoint"),
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
       },
       body: json.encode(data),
     );
@@ -125,11 +133,13 @@ class CallApi {
 
   /// 🔹 **Méthode DELETE**
   // static Future<void> deleteData(String endpoint) async {
+  //  String? token = await getToken();
   //   final response = await http.delete(
   //     Uri.parse("$baseUrl/$endpoint"),
   //     headers: {
   //       "Content-Type": "application/json; charset=UTF-8",
   //       'Accept': 'application/json',
+  //        if (token != null) 'Authorization': 'Bearer $token',
   //     },
   //   );
 
@@ -193,19 +203,9 @@ class CallApi {
     );
   }
 
-  // postData(data, apiUrl) async {
-  //   // var fullUrl = _url + apiUrl + await getToken();
-  //   var fullUrl = _url + apiUrl;
-  //   return await http.post(
-  //     Uri.parse(fullUrl),
-  //     body: jsonEncode(data),
-  //     headers: _setHeaders(),
-  //   );
-  // }
-
-  getData(apiUrl) async {
-    // var fullUrl = _url + apiUrl + await getToken();
-    var fullUrl = _url + apiUrl;
+  getData(baseUrl) async {
+    // var fullUrl = _url + baseUrl + await getToken();
+    var fullUrl = _url + baseUrl;
     return await http.get(Uri.parse(fullUrl), headers: _setHeaders());
   }
 
@@ -214,16 +214,22 @@ class CallApi {
     'Accept': 'application/json',
   };
 
-  getToken() async {
+  static Future<String?> getToken() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
-    var token = localStorage.getString('token');
-    return token;
+    return localStorage.getString('token');
   }
 
   static Future<int?> getUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getInt(
       'idConnected',
+    ); // Supposons que l'ID est stocké sous 'user_id'
+  }
+
+  static Future<int?> getUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(
+      'idRoleConnected',
     ); // Supposons que l'ID est stocké sous 'user_id'
   }
 
@@ -249,9 +255,6 @@ class CallApi {
     }
   }
 
-  // getArticles(apiUrl) async {}
-  // getPublicData(apiUrl) async {}
-
   /*
   *
   * =======================
@@ -260,119 +263,42 @@ class CallApi {
   *
   */
 
-  static showMsg(String text) {
-    // Fluttertoast.showToast(
-    //   msg: text,
-    //   toastLength: Toast.LENGTH_SHORT,
-    //   gravity: ToastGravity.BOTTOM, // Position at bottom
-    //   backgroundColor: Colors.green,
-    //   textColor: Colors.white,
-    // );
-  }
-
-  static showErrorMsg(String text) {
-    // Fluttertoast.showToast(
-    //   msg: text,
-    //   toastLength: Toast.LENGTH_SHORT,
-    //   gravity: ToastGravity.BOTTOM, // Position at bottom
-    //   backgroundColor: Colors.red,
-    //   textColor: Colors.white,
-    // );
-  }
-
   static insertOrUpdateData(url, Map pdata) async {
     try {
-      final res = await http.post(
-        Uri.parse("${apiUrl.toString()}${url.toString()}"),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
+      String? token = await getToken();
+      var  res = await http.post(
+        Uri.parse("${baseUrl.toString()}/${url.toString()}"),
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
         body: jsonEncode(pdata),
       );
 
-      if (res.statusCode == 200) {
-        var data = jsonDecode(res.body)['data'];
-        showMsg(data.toString());
-      } else {
-        showErrorMsg("Erreur de modification des données!!!");
-        return res;
-      }
+      return res;
+
+      // if (res.statusCode == 200) {
+      //   // var data = json.decode(res.body)['data'];
+      //   var data = json.decode(res.body);
+      //   return data;
+      // } else {
+      //   // var data = json.decode(res.body)['data'];
+      //   var data = json.decode(res.body);
+      //   return data;
+      // }
     } catch (e) {
-      showErrorMsg(e.toString());
+      throw Exception("Erreur lors de l'opération insert or update data: $e ");
     }
   }
 
-  // static deleteData(url, int id) async {
-  //   try {
-  //     final res = await http.get(
-  //       Uri.parse("${apiUrl.toString()}${url.toString()}/${id.toInt()}"),
-  //       headers: <String, String>{
-  //         'Content-Type': 'application/json; charset=UTF-8',
-  //       },
-  //     );
-
-  //     if (res.statusCode == 200) {
-  //       var data = jsonDecode(res.body)['data'];
-  //       showMsg(data.toString());
-  //     } else {
-  //       showErrorMsg("Erreur de supprimer les données!!!");
-  //     }
-  //   } catch (e) {
-  //     showErrorMsg(e.toString());
-  //   }
-  // }
-
-  static postArticle(Map pdata) async {
-    try {
-      final res = await http.post(
-        Uri.parse("${apiUrl}insert_article"),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: pdata,
-      );
-
-      if (res.statusCode == 200) {
-        var data = jsonDecode(res.body)['data'];
-        showMsg(data.toString());
-        // print(data);
-      } else {
-        showErrorMsg("Erreur de charger les données!!!");
-      }
-    } catch (e) {
-      showErrorMsg(e.toString());
-    }
+  static getHeaders() async {
+    String? token = await getToken();
+    var headers = {
+      'Content-type': 'application/json',
+      'Accept': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+    return headers;
   }
-
-  // static getArticle() async {
-  //   List<Article> article = [];
-  //   try {
-  //     final res = await http.get(
-  //       Uri.parse("${apiUrl}fetch_article_mobile"),
-  //       headers: <String, String>{
-  //         'Content-Type': 'application/json; charset=UTF-8',
-  //       },
-  //     );
-
-  //     if (res.statusCode == 200) {
-  //       var data = jsonDecode(res.body);
-
-  //       data['data'].forEach((value) => {
-  //             article.add(
-  //               Article(
-  //                 value['id'],
-  //                 value['title'],
-  //                 value['description'],
-  //                 value['created_at'],
-  //               ),
-  //             )
-  //           });
-  //       return article;
-  //     } else {
-  //       return [];
-  //     }
-  //   } catch (e) {
-  //     showErrorMsg(e.toString());
-  //   }
-  // }
 }
