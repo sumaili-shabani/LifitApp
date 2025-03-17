@@ -213,7 +213,7 @@ class _WalletPageState extends State<WalletPage> {
           
               SizedBox(height: 10),
               // liste de paiement de la personne
-              SizedBox(height: 300, child: PaiementCommission()),
+              PaiementCommission(),
 
               PaieCommissionChart(),
 

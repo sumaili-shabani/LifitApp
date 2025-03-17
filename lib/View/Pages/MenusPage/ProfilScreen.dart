@@ -26,10 +26,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
   //voir l'id de la personne connecté
   getIdentifiant() async {
     int? idConnected =
-        await CallApi.getUserId(); // Récupérer l'ID de l'utilisateur connecté
-    if (userId == null) {
-      throw Exception('Utilisateur non connecté');
-    }
+        await CallApi.getUserId();
     setState(() {
       userId = idConnected!;
     });

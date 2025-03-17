@@ -66,17 +66,17 @@ class _PassagerHistoriqueCourseState extends State<PassagerHistoriqueCourse> {
       child: Column(
         children: [
           // Barre d'en-tête
-          Center(
-            child: Container(
-              width: 50,
-              height: 5,
-              decoration: BoxDecoration(
-                color: Colors.grey[400],
-                borderRadius: BorderRadius.circular(10),
-              ),
-            ),
-          ),
-          SizedBox(height: 15),
+          // Center(
+          //   child: Container(
+          //     width: 50,
+          //     height: 5,
+          //     decoration: BoxDecoration(
+          //       color: Colors.grey[400],
+          //       borderRadius: BorderRadius.circular(10),
+          //     ),
+          //   ),
+          // ),
+          // SizedBox(height: 15),
           TextField(
             decoration: InputDecoration(
               labelText: "Rechercher une course",

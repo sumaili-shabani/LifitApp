@@ -19,9 +19,9 @@ class CallApi {
   // static const String baseUrl ="https://www.swiftride.tech/api"; // Remplace par ton URL
 
   //par defaut en locale
-  static const String fileUrl = "http://10.21.246.127:8000"; // Pour le fichier
+  static const String fileUrl = "http://10.35.202.127:8000"; // Pour le fichier
   static const String baseUrl =
-      "http://10.21.246.127:8000/api"; // Remplace par ton URL
+      "http://10.35.202.127:8000/api"; // Remplace par ton URL
 
   /*
   *

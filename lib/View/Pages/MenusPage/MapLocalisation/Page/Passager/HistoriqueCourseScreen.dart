@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Model/ChauffeurDashBoardModel.dart';
@@ -7,6 +8,7 @@ import 'package:lifti_app/Model/HistoriqueCourseModel.dart';
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/InformationMenu.dart';
 
 class HistoriqueCourseScreen extends StatefulWidget {
   const HistoriqueCourseScreen({super.key});
@@ -302,9 +304,21 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
+            tooltip: "Recharger la liste",
             color: Colors.white,
             onPressed: () {
               fetchNotifications();
+            },
+          ),
+
+          IconButton(
+            icon: Icon(Icons.newspaper_outlined),
+            tooltip: "Voir plus d'informations",
+            color: Colors.white,
+            onPressed: () {
+               Navigator.of(
+                context,
+              ).push(AnimatedPageRoute(page: InformationMenuScreem()));
             },
           ),
         ],

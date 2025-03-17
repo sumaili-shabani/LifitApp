@@ -13,7 +13,10 @@ import 'dart:typed_data';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
+import 'package:lifti_app/Components/button.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/TaxiCommandeScreen.dart';
 
 class PassagerMapHomeScreem extends StatefulWidget {
   const PassagerMapHomeScreem({super.key});
@@ -27,7 +30,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
       "5b3ce3597851110001cf62484e660c3aa019470d8ac388d12b974480";
   bool isBottomSheetOpen = false;
   late GoogleMapController mapController;
-  late LatLng chauffeurPosition; // Position actuelle du chauffeur
+  late LatLng passagerConnectedPosition; // Position actuelle du chauffeur
   Set<Marker> markers = {}; // Marqueurs de la carte
   Set<Polyline> polylines =
       {}; // Pour afficher la route entre chauffeur et passager
@@ -45,14 +48,14 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
       desiredAccuracy: LocationAccuracy.high,
     );
     setState(() {
-      chauffeurPosition = LatLng(
+      passagerConnectedPosition = LatLng(
         position.latitude,
         position.longitude,
       ); // Met à jour la position du chauffeur
       markers.add(
         Marker(
           markerId: MarkerId('Passager'),
-          position: chauffeurPosition,
+          position: passagerConnectedPosition,
           infoWindow: InfoWindow(title: 'Vous etes ici !!!'),
           icon:
               customPassagerIcon ??
@@ -71,7 +74,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
       circles.add(
         Circle(
           circleId: CircleId("chauffeur-placeName"),
-          center: chauffeurPosition,
+          center: passagerConnectedPosition,
           radius: 1000, // 1 km en mètres
           strokeWidth: 2,
           strokeColor: Colors.blue,
@@ -99,7 +102,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
             ), // Marqueur vert pour le passager
         onTap: () {
           _getRoute(
-            chauffeurPosition,
+            passagerConnectedPosition,
             LatLng(passager['latitude'], passager['longitude']),
             passager, // Passer les informations du passager à la fonction
           );
@@ -237,6 +240,9 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                 width: 5,
               ),
             );
+
+            distance = distance;
+            duration = duration;
           });
 
           // Afficher le BottomSheet avec les informations du passager
@@ -466,6 +472,13 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                       ],
                     ),
                     SizedBox(height: 20),
+                    Divider(),
+                    Button(
+                      label: "Commander une course",
+                      press: () {
+                        showTypeCourseBottomSheet(context, typeCourses);
+                      },
+                    ),
                   ],
                 ),
               ],
@@ -544,7 +557,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
             ), // Marqueur bleu pour le passager
         onTap: () {
           // _getRoute(
-          //   chauffeurPosition,
+          //   passagerConnectedPosition,
           //   LatLng(place['latitude'], place['longitude']),
           //   place, // Passer les informations du passager à la fonction
           // );
@@ -577,7 +590,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
   Future<void> _loadIcons() async {
     customChauffeurIcon = await getCustomIcon("assets/images/taxi_icon.png");
     customPassagerIcon = await getCustomIcon("assets/images/person_icon.png");
-    customPlaceIcon = await getCustomIcon("assets/images/center-pin.png");
+    customPlaceIcon = await getCustomIcon("assets/images/ic_pick_48.png");
     setState(() {}); // Rafraîchir l'affichage après le chargement
   }
 
@@ -695,18 +708,25 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
   ) {
     mapController.animateCamera(CameraUpdate.newLatLngZoom(location, 15));
 
+    _getRoutePlace(
+      passagerConnectedPosition,
+      LatLng(place['latitude'], place['longitude']),
+      place, // Passer les informations de la places la fonction
+    );
+
     setState(() {
       circles.clear(); // Efface les anciens cercles
+      markers.removeWhere((marker) => marker.markerId.value == 'placeName');
       markers.add(
         Marker(
           onTap: () {
             _getRoutePlace(
-              chauffeurPosition,
+              passagerConnectedPosition,
               LatLng(place['latitude'], place['longitude']),
               place, // Passer les informations de la places la fonction
             );
           },
-          markerId: MarkerId(placeName),
+          markerId: MarkerId('placeName'),
           position: location,
           infoWindow: InfoWindow(title: placeName),
           icon:
@@ -715,17 +735,6 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                 BitmapDescriptor
                     .hueRed, // Icône par défaut si le chargement échoue
               ),
-        ),
-      );
-      // Ajout du cercle de 1 km
-      circles.add(
-        Circle(
-          circleId: CircleId(placeName),
-          center: location,
-          radius: 1000, // 1 km en mètres
-          strokeWidth: 2,
-          strokeColor: Colors.blue,
-          fillColor: Colors.blue.withOpacity(0.2),
         ),
       );
     });
@@ -834,7 +843,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                     child: TextField(
                       controller: searchController,
                       decoration: InputDecoration(
-                        label: Text("Où voulez-vous partir?"),
+                        label: Text("Où allez-vous?"),
                         hintText: "Entrez un lieu...",
                         prefixIcon: Icon(Icons.search),
                         filled: true,
@@ -1003,6 +1012,430 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
   *
   */
 
+  /*
+  *
+  *=========================================
+  * Commande de taxi
+  *=========================================
+  *
+  */
+  // declaration de variable des courses
+  int calculate = 1;
+  double distance = 0;
+  double duration = 0;
+  double latDepart = 0;
+  double lonDepart = 0;
+  double latDestination = 0;
+  double lonDestination = 0;
+  String nameDepart = "";
+  String nameDestination = "";
+  String timeEst = "";
+  String prixCourse = "";
+  String author = "";
+  String refUser = "";
+  double montantCourse = 0;
+  int refConduite = 0;
+  int refTypeCourse = 0;
+  int refPassager = 0;
+
+  // Variables simulant une API
+  List<Map<String, dynamic>> typeCourses = [
+    {"id": 1, "name": "Express", "image": "assets/images/1.png", "price": 1000},
+    {
+      "id": 2,
+      "name": "Longue Distance",
+      "image": "assets/images/2.png",
+      "price": 5000,
+    },
+    {"id": 3, "name": "VIP", "image": "assets/images/3.png", "price": 10000},
+  ];
+
+  List<Map<String, dynamic>> tarifications = [
+    {
+      "id": 1,
+      "category": "Économique",
+      "image": "assets/images/4.png",
+      "price": 1500,
+    },
+    {
+      "id": 2,
+      "category": "Confort",
+      "image": "assets/images/5.png",
+      "price": 3000,
+    },
+    {
+      "id": 3,
+      "category": "Luxueux",
+      "image": "assets/images/6.png",
+      "price": 6000,
+    },
+  ];
+
+  List<Map<String, dynamic>> vehicules = [
+    {
+      "id": 1,
+      "name": "Toyota Prius",
+      "image": "assets/images/hiace.png",
+      "plate": "AA-123-BB",
+      "driver": "Jean Dupont",
+      "phone": "+243900000000",
+    },
+    {
+      "id": 2,
+      "name": "BMW Série 3",
+      "image": "assets/images/car.png",
+      "plate": "CC-456-DD",
+      "driver": "Paul Kagame",
+      "phone": "+243910000000",
+    },
+  ];
+
+  void showTypeCourseBottomSheet(
+    BuildContext context,
+    List<Map<String, dynamic>> typeCourses,
+  ) {
+    final theme = Theme.of(context);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: theme.cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          height: 260,
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Barre d'en-tête
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Rapide, Sécurisé",
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    "À Vous de Choisir !",
+                    style: GoogleFonts.poppins(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              Expanded(
+                child: PageView.builder(
+                  controller: PageController(
+                    viewportFraction: 0.65,
+                  ), // Gère la largeur des cartes
+                  scrollDirection: Axis.horizontal,
+                  itemCount: typeCourses.length,
+                  itemBuilder: (context, index) {
+                    var course = typeCourses[index];
+                    return typeCourseCard(context, course);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget typeCourseCard(BuildContext context, Map<String, dynamic> course) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: () {
+        showTarificationBottomSheet(context, course["name"]);
+      },
+      child: Container(
+        margin: EdgeInsets.only(
+          right: 10,
+        ), // Chevauchement pour la carte suivante
+        width: 200, // Ajuste la largeur
+        decoration: BoxDecoration(
+          color: theme.cardColor,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              spreadRadius: 2,
+              offset: Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+              child: Image.asset(
+                course["image"],
+                width: double.infinity,
+                height: 120,
+                fit: BoxFit.cover, // Remplit bien la carte
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.all(10),
+              child: Column(
+                children: [
+                  Text(
+                    course["name"],
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /*
+  *
+  *==========================
+  * Tarification
+  *==========================
+  *
+  */
+
+  // 2. TarificationBottomSheet
+  void showTarificationBottomSheet(BuildContext context, String typeCourse) {
+    final theme = Theme.of(context);
+    // Navigator.pop(context);
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: theme.cardColor,
+
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return Container(
+          height:
+              MediaQuery.of(context).size.height *
+              0.60, // 60% de la hauteur de l'écran
+          padding: EdgeInsets.all(10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Barre d'en-tête
+              Center(
+                child: Container(
+                  width: 50,
+                  height: 5,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[400],
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
+              ),
+              SizedBox(height: 15),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    "Tarifications - $typeCourse",
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      Icons.close,
+                      color: ConfigurationApp.dangerColor,
+                    ),
+                    onPressed: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              // publicité card
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _buildCourseCard(
+                    "Confort, Sécurité et Récompenses à chaque trajet !",
+                    Icons.shield, // 🛡️
+                    Icons.directions_car, // 🚗
+                    Icons.attach_money, // 💰
+                  ),
+                  SizedBox(width: 10), // Espacement entre les deux cards
+                  _buildCourseCard(
+                    "Votre destination en toute confiance, avec un plus !",
+                    Icons.flag, // 🏁
+                    Icons.card_giftcard, // 🎁
+                  ),
+                ],
+              ),
+              // publicité card
+              SizedBox(height: 10),
+
+              Expanded(
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: tarifications.length,
+                  itemBuilder: (context, index) {
+                    var tarification = tarifications[index];
+                    return tarificationCard(context, tarification);
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget tarificationCard(
+    BuildContext context,
+    Map<String, dynamic> tarification,
+  ) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.of(context).push(
+          AnimatedPageRoute(
+            page: TaxiCommandeScreen(categorieVehiculeInfo: tarification),
+          ),
+        );
+      },
+      child: Card(
+        elevation: 6,
+        margin: EdgeInsets.all(8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Container(
+          width: 150,
+          padding: EdgeInsets.all(10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
+                child: Image.asset(
+                  tarification["image"],
+                  width: double.infinity,
+                  height: 80,
+                  fit: BoxFit.cover, // Remplit bien la carte
+                ),
+              ),
+
+              SizedBox(height: 8),
+              Text(
+                tarification["category"],
+                style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                "${tarification["price"]} CDF",
+                style: GoogleFonts.poppins(
+                  color: Colors.green,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCourseCard(
+    String text,
+    IconData icon1,
+    IconData icon2, [
+    IconData? icon3,
+  ]) {
+    return Expanded(
+      child: Container(
+        padding: EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(15),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 6,
+              spreadRadius: 2,
+              offset: Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon1, color: Colors.blue, size: 22),
+                SizedBox(width: 5),
+                Icon(icon2, color: Colors.green, size: 22),
+                if (icon3 != null) ...[
+                  SizedBox(width: 5),
+                  Icon(icon3, color: Colors.orange, size: 22),
+                ],
+              ],
+            ),
+            SizedBox(height: 8),
+            Text(
+              text,
+              textAlign: TextAlign.center,
+              style: GoogleFonts.poppins(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /*
+  *
+  *=========================================
+  * Fin Commande de taxi
+  *=========================================
+  *
+  */
+
+  int userId = 0;
+  //voir l'id de la personne connecté
+  getIdentifiant() async {
+    int? idConnected = await CallApi.getUserId();
+    setState(() {
+      userId = idConnected!;
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -1010,7 +1443,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
     changeMyPosition();
     fetchNotifications();
 
-    chauffeurPosition = LatLng(
+    passagerConnectedPosition = LatLng(
       -1.6708,
       29.2218,
     ); // Position par défaut du chauffeur (ex: Goma)
@@ -1019,13 +1452,14 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
     //ajout des places
     // loadPlaces();
 
+    getIdentifiant();
+
     _loadIcons();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       appBar: CustomAppBar(
         title: Text('Map-Passager', style: TextStyle(color: Colors.white)),
         actions: [
@@ -1057,7 +1491,6 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
 
       body: Stack(
         children: [
-          
           //la carte ici
           SizedBox(
             height:
@@ -1065,7 +1498,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
             child: GoogleMap(
               initialCameraPosition: CameraPosition(
                 target:
-                    chauffeurPosition, // Position initiale de la caméra (chauffeur)
+                    passagerConnectedPosition, // Position initiale de la caméra (chauffeur)
                 zoom: 14,
               ),
               onMapCreated: (GoogleMapController controller) {
