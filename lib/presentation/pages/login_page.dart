@@ -79,7 +79,7 @@ class _LoginPageState extends State<LoginPage> {
           SharedPreferences localStorage =
               await SharedPreferences.getInstance();
           localStorage.setInt('idConnected', data['user']['id']);
-          localStorage.setString('nameConnected', data['user']['email']);
+          localStorage.setString('nameConnected', data['user']['name']);
           localStorage.setInt('idRoleConnected', data['user']['id_role']);
           localStorage.setString('emailConnected', data['user']['email']);
           localStorage.setString('avatarConnected', data['user']['avatar']);

@@ -16,7 +16,9 @@ import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/button.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/TaxiCommandeScreen.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/CategoryVehicleScreen.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/CourseSelectionBottomSheet.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/TaxiCommandeScreen.dart';
 
 class PassagerMapHomeScreem extends StatefulWidget {
   const PassagerMapHomeScreem({super.key});
@@ -41,6 +43,10 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
   BitmapDescriptor? customPassagerIcon;
   BitmapDescriptor? customChauffeurIcon;
   BitmapDescriptor? customPlaceIcon;
+
+  Map<String, dynamic> trajectoire = {};
+  Map<String, dynamic> datainfotarification = {};
+  Map<String, dynamic> datainfoCategoyVehicule = {};
 
   // Fonction pour obtenir la position actuelle du chauffeur
   Future<void> _getCurrentPosition() async {
@@ -175,6 +181,9 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
           // ignore: unnecessary_null_comparison
           if (distance != null || distance != "") {
             _showPassengerInfo(passager, distance, duration);
+            setState(() {
+              isSearchingBottom = false;
+            });
           } else {}
         } else {
           print("Aucun itinéraire trouvé.");
@@ -224,9 +233,11 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
           double distance =
               data['features'][0]['properties']['segments'][0]['distance'] /
               1000; // en kilomètres
-          double duration =
+          double durationEstimation =
               data['features'][0]['properties']['segments'][0]['duration'] /
               60; // en minutes
+
+          double duration = durationEstimation;
 
           // Ajout de la polyline à la carte pour afficher l'itinéraire
           setState(() {
@@ -362,7 +373,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
   ) {
     showModalBottomSheet(
       context: context,
-      isScrollControlled: true,
+      // isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -445,7 +456,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                         ),
                         SizedBox(width: 5),
                         Text(
-                          "Lat-Lon: ${place['latitude'].toStringAsFixed(4)} - ${place['longitude'].toStringAsFixed(4)} km",
+                          "Lat-Lon: ${place['latitude'].toStringAsFixed(4)} - ${place['longitude'].toStringAsFixed(4)} ",
                         ),
                       ],
                     ),
@@ -467,7 +478,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                         Icon(Icons.timer, color: Colors.purple),
                         SizedBox(width: 5),
                         Text(
-                          "Temps estimé: ${duration.toStringAsFixed(2)} min",
+                          "Moyenne de temps estimé: ${duration.toStringAsFixed(2)} min",
                         ),
                       ],
                     ),
@@ -476,7 +487,24 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                     Button(
                       label: "Commander une course",
                       press: () {
-                        showTypeCourseBottomSheet(context, typeCourses);
+                        Map<String, dynamic> myTrajectoire = {
+                          'distance': distance.toStringAsFixed(2),
+                          'durationMormale': duration.toStringAsFixed(2),
+                          'duration': duration.toStringAsFixed(2),
+                          'placeLat': place['latitude'].toStringAsFixed(7),
+                          'placeLon': place['longitude'].toStringAsFixed(7),
+                          'placeName': place["name"].toString(),
+                          'placeDescription': place["description"].toString(),
+                        };
+                        setState(() {
+                          trajectoire = myTrajectoire;
+                        });
+
+                        showCourseSelectionBottomSheet(
+                          context,
+                          typeCourses,
+                          trajectoire,
+                        );
                       },
                     ),
                   ],
@@ -608,11 +636,16 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
         'chauffeur_mobile_map_city',
       );
 
-      print(cities);
+      List<dynamic> typeCourse = await CallApi.fetchListData(
+        'fetch_tarification_to_mobile_app',
+      );
+
+      print(typeCourse);
 
       setState(() {
         passagers = clients;
         placesJson = cities;
+        typeCourses = typeCourse;
         isLoading = false;
       });
 
@@ -1039,15 +1072,29 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
   int refPassager = 0;
 
   // Variables simulant une API
-  List<Map<String, dynamic>> typeCourses = [
-    {"id": 1, "name": "Express", "image": "assets/images/1.png", "price": 1000},
+  List<dynamic> typeCourses = [
     {
       "id": 2,
-      "name": "Longue Distance",
-      "image": "assets/images/2.png",
-      "price": 5000,
+      "idTarif": 2,
+      "time": "15:42",
+      "refTypeCourse": 1,
+      "montant": 5000,
+      "montant2": 10000,
+      "montant3": 7000,
+      "taxeAmbouteillage": 3000,
+      "temps1Debut": "10:01",
+      "temps1Fin": "19:00",
+      "temps2Debut": "19:01",
+      "temps2Fin": "06:59",
+      "temps3Debut": "07:00",
+      "temps3Fin": "10:00",
+      "prix": 5000,
+      "devise": "CDF",
+      "unite": "Par Km",
+      "remise": 0,
+      "nomTypeCourse": "Course  VIP et VTC",
+      "imageTypeCourse": "1741860047.png",
     },
-    {"id": 3, "name": "VIP", "image": "assets/images/3.png", "price": 10000},
   ];
 
   List<Map<String, dynamic>> tarifications = [
@@ -1090,128 +1137,99 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
     },
   ];
 
-  void showTypeCourseBottomSheet(
+  void showCourseSelectionBottomSheet(
     BuildContext context,
-    List<Map<String, dynamic>> typeCourses,
+    List<dynamic> typeCourses,
+    Map<String, dynamic> trajectoire,
   ) {
-    final theme = Theme.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: theme.cardColor,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) {
-        return Container(
-          height: 260,
-          padding: EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Barre d'en-tête
-              Center(
-                child: Container(
-                  width: 50,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[400],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Rapide, Sécurisé",
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  Text(
-                    "À Vous de Choisir !",
-                    style: GoogleFonts.poppins(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-              Expanded(
-                child: PageView.builder(
-                  controller: PageController(
-                    viewportFraction: 0.65,
-                  ), // Gère la largeur des cartes
-                  scrollDirection: Axis.horizontal,
-                  itemCount: typeCourses.length,
-                  itemBuilder: (context, index) {
-                    var course = typeCourses[index];
-                    return typeCourseCard(context, course);
-                  },
-                ),
-              ),
-            ],
+      builder:
+          (context) => CourseSelectionBottomSheet(
+            typeCourses: typeCourses, // Liste des types de courses
+            onCourseSelected: (Map<String, dynamic> selectedCourse) {
+              Map<String, dynamic> datainfotarif = {
+                'refTypeCourse': selectedCourse['refTypeCourse'],
+                'prix': selectedCourse['prix'],
+                'taxeAmbouteillage': selectedCourse['taxeAmbouteillage'],
+                'devise': selectedCourse['devise'],
+                'unite': selectedCourse['unite'],
+                'remise': selectedCourse['remise'],
+                'durationPlus': selectedCourse['durationPlus'],
+              };
+
+              // Gérer la sélection ici (ex: mise à jour de l'état)
+              setState(() {
+                datainfotarification = datainfotarif;
+              });
+              int idTypeCourse = selectedCourse['refTypeCourse'];
+              showCategoryVehiculeBottomSheet(
+                context,
+                typeCourses,
+                trajectoire,
+                datainfotarification,
+                idTypeCourse,
+              );
+
+              // print("Course sélectionnée : $datainfotarification");
+              // print("trajectoire: $trajectoire");
+            },
           ),
-        );
-      },
     );
   }
 
-  Widget typeCourseCard(BuildContext context, Map<String, dynamic> course) {
-    final theme = Theme.of(context);
-    return GestureDetector(
-      onTap: () {
-        showTarificationBottomSheet(context, course["name"]);
-      },
-      child: Container(
-        margin: EdgeInsets.only(
-          right: 10,
-        ), // Chevauchement pour la carte suivante
-        width: 200, // Ajuste la largeur
-        decoration: BoxDecoration(
-          color: theme.cardColor,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
-              spreadRadius: 2,
-              offset: Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            ClipRRect(
-              borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-              child: Image.asset(
-                course["image"],
-                width: double.infinity,
-                height: 120,
-                fit: BoxFit.cover, // Remplit bien la carte
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(10),
-              child: Column(
-                children: [
-                  Text(
-                    course["name"],
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+  // voir la liste de categorie de véhicule
+  void showCategoryVehiculeBottomSheet(
+    BuildContext context,
+    List<dynamic> typeCourses,
+    Map<String, dynamic> trajectoire,
+    Map<String, dynamic> datainfotarification,
+    int refTypeCourse,
+  ) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+      builder:
+          (context) => CategoryVehiculeScreen(
+            typeCourses: typeCourses,
+            trajectoire: trajectoire,
+            refTypeCourse: refTypeCourse,
+            datainfotarification: datainfotarification,
+            onCategorySelected: (Map<String, dynamic> selectedCategory) {
+              Map<String, dynamic> datainfoCategoy = {
+                'refCategorie': selectedCategory['refCategorie'],
+                'nomCategorieVehicule':
+                    selectedCategory['nomCategorieVehicule'],
+                'imageCategorieVehicule':
+                    selectedCategory['imageCategorieVehicule'],
+                'nomMarque': selectedCategory['nomMarque'],
+              };
+              setState(() {
+                datainfoCategoyVehicule = datainfoCategoy;
+              });
+              int refCategorie = selectedCategory['refCategorie'];
+              Navigator.of(context).push(
+                AnimatedPageRoute(
+                  page: TaxiCommandeScreen(
+                    typeCourses: typeCourses,
+                    trajectoire: trajectoire,
+                    datainfotarification: datainfotarification,
+                    categorieVehiculeInfo: datainfoCategoyVehicule,
+                    refCategorie: refCategorie,
+                  ),
+                ),
+              );
+
+              print("datainfoCategoyVehicule: $datainfoCategoyVehicule");
+            },
+          ),
     );
   }
 
@@ -1223,201 +1241,6 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
   *
   */
 
-  // 2. TarificationBottomSheet
-  void showTarificationBottomSheet(BuildContext context, String typeCourse) {
-    final theme = Theme.of(context);
-    // Navigator.pop(context);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: theme.cardColor,
-
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
-      builder: (context) {
-        return Container(
-          height:
-              MediaQuery.of(context).size.height *
-              0.60, // 60% de la hauteur de l'écran
-          padding: EdgeInsets.all(10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Barre d'en-tête
-              Center(
-                child: Container(
-                  width: 50,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[400],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-              ),
-              SizedBox(height: 15),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    "Tarifications - $typeCourse",
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      Icons.close,
-                      color: ConfigurationApp.dangerColor,
-                    ),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                  ),
-                ],
-              ),
-              SizedBox(height: 10),
-              // publicité card
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildCourseCard(
-                    "Confort, Sécurité et Récompenses à chaque trajet !",
-                    Icons.shield, // 🛡️
-                    Icons.directions_car, // 🚗
-                    Icons.attach_money, // 💰
-                  ),
-                  SizedBox(width: 10), // Espacement entre les deux cards
-                  _buildCourseCard(
-                    "Votre destination en toute confiance, avec un plus !",
-                    Icons.flag, // 🏁
-                    Icons.card_giftcard, // 🎁
-                  ),
-                ],
-              ),
-              // publicité card
-              SizedBox(height: 10),
-
-              Expanded(
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: tarifications.length,
-                  itemBuilder: (context, index) {
-                    var tarification = tarifications[index];
-                    return tarificationCard(context, tarification);
-                  },
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget tarificationCard(
-    BuildContext context,
-    Map<String, dynamic> tarification,
-  ) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.of(context).push(
-          AnimatedPageRoute(
-            page: TaxiCommandeScreen(categorieVehiculeInfo: tarification),
-          ),
-        );
-      },
-      child: Card(
-        elevation: 6,
-        margin: EdgeInsets.all(8),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Container(
-          width: 150,
-          padding: EdgeInsets.all(10),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.vertical(top: Radius.circular(15)),
-                child: Image.asset(
-                  tarification["image"],
-                  width: double.infinity,
-                  height: 80,
-                  fit: BoxFit.cover, // Remplit bien la carte
-                ),
-              ),
-
-              SizedBox(height: 8),
-              Text(
-                tarification["category"],
-                style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
-              ),
-              Text(
-                "${tarification["price"]} CDF",
-                style: GoogleFonts.poppins(
-                  color: Colors.green,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCourseCard(
-    String text,
-    IconData icon1,
-    IconData icon2, [
-    IconData? icon3,
-  ]) {
-    return Expanded(
-      child: Container(
-        padding: EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(15),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 6,
-              spreadRadius: 2,
-              offset: Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon1, color: Colors.blue, size: 22),
-                SizedBox(width: 5),
-                Icon(icon2, color: Colors.green, size: 22),
-                if (icon3 != null) ...[
-                  SizedBox(width: 5),
-                  Icon(icon3, color: Colors.orange, size: 22),
-                ],
-              ],
-            ),
-            SizedBox(height: 8),
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: GoogleFonts.poppins(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   /*
   *

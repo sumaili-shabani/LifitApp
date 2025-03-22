@@ -13,15 +13,17 @@ class CallApi {
   static String apiKey = "AIzaSyCCF6II62n7-ZB-ooj5M4PCr1v50SKxK-s";
   static String apikeyOpenrouteservice =
       "5b3ce3597851110001cf62484e660c3aa019470d8ac388d12b974480";
+  static String pusherAppKey = "50a88f66ba9024781e33";
 
   //par defaut en ligne
   // static const String fileUrl = "https://www.swiftride.tech/"; // Pour le fichier
   // static const String baseUrl ="https://www.swiftride.tech/api"; // Remplace par ton URL
 
   //par defaut en locale
-  static const String fileUrl = "http://10.35.202.127:8000"; // Pour le fichier
+  static const String fileUrl = "http://10.138.9.127:8000"; // Pour le fichier
   static const String baseUrl =
-      "http://10.35.202.127:8000/api"; // Remplace par ton URL
+      "http://10.138.9.127:8000/api"; // Remplace par ton URL
+  static const String siteUrl = "http://10.138.9.127:8000";
 
   /*
   *
@@ -131,6 +133,36 @@ class CallApi {
     }
   }
 
+  static Future<Map<String, dynamic>> insertData({
+    required String endpoint,
+    required Map<String, dynamic> data,
+    required String token, // Passer le token ici
+  }) async {
+    final String baseUrl = CallApi.baseUrl; // Remplace par ton URL
+
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/$endpoint"),
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token", // Token ajouté ici
+        },
+        body: json.encode(data),
+      );
+
+      // Vérification du statut de la réponse
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return json.decode(response.body); // Retourne les données de l'API
+      } else {
+        throw Exception("Erreur API ${response.statusCode} - ${response.body}");
+      }
+    } catch (e) {
+      print("❌ Erreur d'insertion : $e");
+      throw Exception("Erreur lors de l'insertion des données : $e");
+    }
+  }
+
   /// 🔹 **Méthode DELETE**
   // static Future<void> deleteData(String endpoint) async {
   //  String? token = await getToken();
@@ -203,6 +235,21 @@ class CallApi {
     );
   }
 
+  //le jour
+  static String getCurrentDateTime() {
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+    return formattedDate;
+  }
+
+  static String getCurrentDateTimeWithOffset(double minutesToAdd) {
+    DateTime now = DateTime.now().add(
+      Duration(seconds: (minutesToAdd * 60).toInt()),
+    );
+    String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+    return formattedDate;
+  }
+
   getData(baseUrl) async {
     // var fullUrl = _url + baseUrl + await getToken();
     var fullUrl = _url + baseUrl;
@@ -217,6 +264,11 @@ class CallApi {
   static Future<String?> getToken() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
     return localStorage.getString('token');
+  }
+
+  static Future<String?> getNameConnected() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    return localStorage.getString('nameConnected');
   }
 
   static Future<int?> getUserId() async {
@@ -266,7 +318,7 @@ class CallApi {
   static insertOrUpdateData(url, Map pdata) async {
     try {
       String? token = await getToken();
-      var  res = await http.post(
+      var res = await http.post(
         Uri.parse("${baseUrl.toString()}/${url.toString()}"),
         headers: {
           "Content-Type": "application/json; charset=UTF-8",

@@ -1,11 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Controller/ApiService.dart';
+import 'package:lifti_app/Controller/PusherService.dart';
 import 'package:lifti_app/Model/DemandeTaxiModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 
 class CommandeTaxiScreem extends StatefulWidget {
   const CommandeTaxiScreem({super.key});
@@ -154,6 +158,22 @@ class _CommandeTaxiScreemState extends State<CommandeTaxiScreem> {
     }
   }
 
+  /*
+  *
+  *===============================
+  * Pusher 
+  *===============================
+  *
+  */
+
+  /*
+  *
+  *===============================
+  * Pusher 
+  *===============================
+  *
+  */
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -177,6 +197,12 @@ class _CommandeTaxiScreemState extends State<CommandeTaxiScreem> {
               ? Center(child: CircularProgressIndicator())
               : Column(
                 children: [
+                  // mes commandes
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: ChauffeurScreen(chauffeurId: 30),
+                  ),
+                  // fin commandes
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: TextField(
@@ -283,6 +309,116 @@ class _CommandeTaxiScreemState extends State<CommandeTaxiScreem> {
                   ),
                 ],
               ),
+    );
+  }
+}
+
+class ChauffeurScreen extends StatefulWidget {
+  final int chauffeurId;
+
+  const ChauffeurScreen({required this.chauffeurId});
+
+  @override
+  _ChauffeurScreenState createState() => _ChauffeurScreenState();
+}
+
+class _ChauffeurScreenState extends State<ChauffeurScreen> {
+  final PusherService pusherService = PusherService();
+  Map<String, dynamic>? currentTaxiRequest;
+
+  PusherChannelsFlutter pusher = PusherChannelsFlutter();
+  Function(Map<String, dynamic>)?
+  onNewTaxiRequest; // Callback pour mettre à jour l'UI
+
+  Future<void> initPusher(int chauffeuiId) async {
+    try {
+      SharedPreferences localStorage = await SharedPreferences.getInstance();
+      String bearerToken = localStorage.getString('token')!;
+      print("Token: $bearerToken");
+      await pusher.init(
+        apiKey: CallApi.pusherAppKey,
+        cluster: "mt1",
+        useTLS: true,
+        authEndpoint:
+            "${CallApi.siteUrl}/broadcasting/auth?token=$bearerToken", // ✅ Ajout du token ici
+        onEvent: (PusherEvent event) {
+          print("📡 Nouvel événement : ${event.eventName}");
+          print("📨 Données reçues : ${event.data}");
+
+          if (event.eventName == "TaxiRequestEvent" ||
+              event.eventName == "App\\Events\\TaxiRequestEvent") {
+            print("🚖 Nouvelle demande de taxi détectée !");
+            if (onNewTaxiRequest != null) {
+              try {
+                Map<String, dynamic> data = jsonDecode(event.data);
+                onNewTaxiRequest!(data);
+              } catch (e) {
+                print("⚠️ Erreur de conversion des données : $e");
+              }
+            }
+          }
+        },
+        onSubscriptionSucceeded: (String channelName, dynamic data) {
+          print("✅ Abonné avec succès au canal : $channelName");
+        },
+        onConnectionStateChange: (String previousState, String currentState) {
+          print(
+            "🔄 État de connexion Pusher : $previousState ➡️ $currentState",
+          );
+        },
+        onError: (String message, int? code, dynamic e) {
+          print("❌ Erreur Pusher : $message (Code: $code)");
+        },
+      );
+
+      // ✅ Étape 1: Connexion à Pusher et attente de l'état CONNECTED
+      await pusher.connect();
+      print("🚀 Connexion à Pusher réussie");
+
+      String channel =
+          "chauffeur.$chauffeuiId"; // ✅ Vérifie bien que c'est un canal privé
+      await pusher.subscribe(channelName: channel);
+      print("📡 Abonnement au canal $channel réussi");
+
+    } catch (e) {
+      print("🚨 Erreur lors de l'initialisation de Pusher : $e");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    initPusher(30);
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    pusherService.pusher
+        .disconnect(); // 🔹 Déconnecter Pusher pour éviter des mises à jour inutiles
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Center(
+          child:
+              currentTaxiRequest == null
+                  ? Text("🚖 En attente des commandes...")
+                  : Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "📌 Nouvelle demande !",
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      Text("Client : ${currentTaxiRequest!['nom']}"),
+                      Text("Message : ${currentTaxiRequest!['message']}"),
+                    ],
+                  ),
+        ),
+      ],
     );
   }
 }
