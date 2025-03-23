@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:lifti_app/main.dart';
@@ -30,6 +31,7 @@ class App extends ConsumerWidget {
         supportedLocales: appSupportedLocales,
         debugShowCheckedModeBanner: false,
         home: const IntroPage(),
+        builder: EasyLoading.init(), // 🔥 IMPORTANT : Init ici !
         routes: _registerRoutes(),
       ),
     );

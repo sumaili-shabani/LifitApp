@@ -6,6 +6,7 @@ import 'config/app_config.dart';
 import 'core/di/service_locator.dart';
 import 'app.dart';
 import 'presentation/widgets/theme_switch.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart'; // Ajout de EasyLoading
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +19,19 @@ void main() async {
       child: App(),
     ),
   );
+  configLoading(); // Configurer EasyLoading
 }
+
+void configLoading() {
+  EasyLoading.instance
+    ..displayDuration = const Duration(milliseconds: 2000)
+    ..indicatorType = EasyLoadingIndicatorType.fadingCircle
+    ..loadingStyle = EasyLoadingStyle.dark
+    ..maskType = EasyLoadingMaskType.black
+    ..userInteractions = false
+    ..dismissOnTap = false;
+}
+
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});

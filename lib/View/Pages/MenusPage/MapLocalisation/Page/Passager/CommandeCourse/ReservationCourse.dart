@@ -1,10 +1,15 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Controller/ApiService.dart';
+import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
+import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:http/http.dart' as http;
 
@@ -37,6 +42,11 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
   int idConnected = 0;
   String nameConnected = "";
   String token = "";
+
+  final PusherChannelsFlutter pusher = PusherChannelsFlutter();
+  Function(Map<String, dynamic>)?
+  onNewTaxiRequest; // Callback pour mettre à jour l'UI
+
   Future<void> fetchNotifications() async {
     int? userId =
         await CallApi.getUserId(); // Récupérer l'ID de l'utilisateur connecté
@@ -84,11 +94,144 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
     }
   }
 
+  Future<void> initPusher() async {
+    int? userId = await CallApi.getUserId(); // Récupérer l'ID utilisateur
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    String? bearerToken = localStorage.getString('token');
+
+    if (bearerToken == null || bearerToken.isEmpty) {
+      print("❌ Erreur : Aucun token trouvé !");
+      return;
+    }
+
+    print("🔑 Token récupéré : $bearerToken");
+
+    try {
+      await pusher.init(
+        apiKey: CallApi.pusherAppKey.toString(),
+        cluster: "mt1",
+        // useTLS: false,
+        authEndpoint: "${CallApi.baseUrl}/broadcasting/auth?token=$bearerToken",
+        onEvent: (PusherEvent event) {
+          print("📡 Nouvel événement : $event");
+          print("📡 Nouvel événement : ${event.data}");
+          // ✅ Convertir les données reçues
+          Map<String, dynamic> response = jsonDecode(event.data);
+
+          if (mounted) {
+            setState(() {
+              if (response['statut'] == 'accepté') {
+                EasyLoading.dismiss();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text("🚖 Votre taxi est en route !")),
+                );
+              }
+            });
+          }
+        },
+      );
+
+      await pusher.subscribe(
+        channelName: "private-commande-taxi.$userId",
+        onSubscriptionSucceeded: (dynamic channelName) {
+          print("✅ Abonné au canal : $channelName");
+        },
+        onEvent: (dynamic event) {
+          // 🔥 Changer `PusherEvent` en `dynamic`
+          print("🚀 Événement reçu : ${event.data}");
+
+          // Vérifier que `event.data` est bien une chaîne JSON avant de la décoder
+          if (event is PusherEvent && event.data != null) {
+            try {
+              Map<String, dynamic> response = jsonDecode(event.data!);
+
+              if (mounted) {
+                setState(() {
+                  if (response['statut'] == '2') {
+                    EasyLoading.dismiss();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("❌ Chauffeur indisponible.")),
+                    );
+                    print("❌ Chauffeur indisponible.");
+                  } else if (response['statut'] == '3') {
+                    EasyLoading.dismiss();
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text("✅ Taxi confirmé, en route !")),
+                    );
+                    print("✅ Taxi confirmé, en route !");
+                  }
+                });
+              }
+            } catch (e) {
+              print("❌ Erreur lors du parsing JSON : $e");
+            }
+          } else {
+            print("⚠️ Événement Pusher invalide : $event");
+          }
+        },
+      );
+
+      await pusher.connect();
+    } catch (e) {
+      print("❌ Erreur Pusher : $e");
+    }
+  }
+
+  Timer? pusherTimer; // ✅ Timer pour recharger Pusher
+  List<CourseInfoPassagerModel> listCourseEncours = [];
+  Timer? _timer;
+  fetchCourses() async {
+    int? userId =
+        await CallApi.getUserId(); // Récupérer l'ID de l'utilisateur connecté
+
+    if (userId == null) {
+      throw Exception('Utilisateur non connecté');
+    }
+    try {
+      List<dynamic> data = await CallApi.fetchListData(
+        'passager_mobile_course_encours/${userId.toString()}',
+      );
+      // print("data: $data");
+      setState(() {
+        listCourseEncours =
+            data
+                .map((item) => CourseInfoPassagerModel.fromMap(item))
+                .toList();
+
+        isLoading = false;
+      });
+
+      print("listCourseEncours: $data");
+
+    } catch (e) {
+      print("Erreur: $e");
+      setState(() => isLoading = false);
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     fetchNotifications();
+    // initPusher();
+    fetchCourses();
+
+    // Exécute fetchNotifications() toutes les 30 secondes
+    // Timer.periodic(Duration(seconds: 5), (Timer t) {
+    //   fetchCourses();
+    // });
+
+     _timer = Timer.periodic(Duration(seconds: 60), (Timer t) {
+      fetchCourses(); // Rafraîchir la liste toutes les 30s
+    });
   }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Arrêter le timer pour éviter les fuites de mémoire
+    super.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -153,6 +296,11 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                 onChanged: filterSearchResults,
               ),
             ),
+
+
+          // debit composant
+          
+          // fin composant
 
           // Liste des catégories en mode Grid
           isLoading
@@ -221,7 +369,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                     );
 
                     double tempsMax = duration + durationPlus;
-                    double montantNormal = prix * distance;
+                    double montantNormal = prix * distance - ( (prix * distance * remise)/100);
 
                     String dateLimiteCourse =
                         CallApi.getCurrentDateTimeWithOffset(tempsMax);
@@ -279,23 +427,23 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                       )
                                       : TextButton(
                                         onPressed: () async {
-                                          setState(() {
-                                            isLoadingCommande = true;
-                                          });
+                                          // setState(() {
+                                          //   isLoadingCommande = true;
+                                          // });
+
+                                          EasyLoading.show(
+                                            status: 'Envoi en cours...',
+                                            maskType: EasyLoadingMaskType.black,
+                                          );
+
                                           Position? position =
                                               await ApiService.getCurrentLocation();
 
                                           if (position != null) {
-                                            // print(
-                                            //   "Latitude : ${position.latitude}, Longitude : ${position.longitude}",
-                                            // );
-
-                                          
-
                                             double latitude = position.latitude;
                                             double longitude =
                                                 position.longitude;
-                                            // Maintenant tu peux utiliser latitude et longitude
+
                                             String namePlace =
                                                 await ApiService.getPlaceName(
                                                   latitude,
@@ -306,6 +454,10 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                               "id": "",
                                               "refPassager":
                                                   idConnected.toInt(),
+                                              "refChauffeur": int.parse(
+                                                category['refChauffeur']
+                                                    .toString(),
+                                              ),
                                               "refConduite":
                                                   category['refConduite']!
                                                       .toString(),
@@ -350,7 +502,10 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                               "taxeSuplementaire":
                                                   taxeSuplementaire
                                                       .toStringAsFixed(0),
+                                              "timePlus": tempsMax.toString(),
                                             };
+
+                                            print("category: $category");
 
                                             try {
                                               final response =
@@ -364,34 +519,39 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                               String message =
                                                   response['message']
                                                       .toString();
-                                              if (message != "") {
+
+                                              if (message.isNotEmpty) {
                                                 print(
                                                   "✅ Réponse API : $response",
                                                 );
-                                                
-                                                showSnackBar(context, message, 'success');
+
+                                                EasyLoading.showSuccess(
+                                                  "Commande envoyée avec succès !",
+                                                );
+                                                showSnackBar(
+                                                  context,
+                                                  message,
+                                                  'success',
+                                                );
                                               } else {
-                                                 print(
-                                                  "Message : $message",
+                                                print("⚠️ Message vide reçu !");
+                                                EasyLoading.showError(
+                                                  "Erreur lors de l'envoi !",
                                                 );
                                               }
-
+                                            } catch (e) {
+                                              print("❌ Erreur API : $e");
+                                              EasyLoading.showError(
+                                                "Une erreur s'est produite !",
+                                              );
+                                            } finally {
+                                              EasyLoading.dismiss();
                                               setState(() {
                                                 isLoadingCommande = false;
                                               });
-                                            } catch (e) {
-                                              print("❌ Erreur API : $e");
                                             }
-
-                                            // print(
-                                            //   "trajectoire ${widget.trajectoire}",
-                                            // );
-
-                                            // print(
-                                            //   "datainfotarification ${widget.datainfotarification}",
-                                            // );
                                           } else {
-                                            print(
+                                            EasyLoading.showError(
                                               "Impossible d'obtenir la position.",
                                             );
                                           }

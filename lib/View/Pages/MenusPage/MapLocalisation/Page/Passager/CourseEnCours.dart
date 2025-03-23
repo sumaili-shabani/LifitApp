@@ -3,7 +3,6 @@ import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
 
-
 class PassagerCourseEnCourse extends StatefulWidget {
   const PassagerCourseEnCourse({super.key});
   @override
@@ -21,7 +20,6 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
     fetchNotifications();
   }
 
-  
   /// 🔹 **Méthode DELETE**
   Future<void> deleteData(int id, int refPassager) async {
     try {
@@ -40,7 +38,6 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
     }
   }
 
-
   Future<void> fetchNotifications() async {
     int? userId =
         await CallApi.getUserId(); // Récupérer l'ID de l'utilisateur connecté
@@ -52,7 +49,8 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
         'passager_mobile_course_encours/${userId.toInt()}',
       );
       setState(() {
-        notifications = data.map((item) => CourseInfoPassagerModel.fromMap(item)).toList();
+        notifications =
+            data.map((item) => CourseInfoPassagerModel.fromMap(item)).toList();
         isLoading = false;
       });
     } catch (e) {
@@ -93,7 +91,9 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                         child: CircleAvatar(
                           backgroundColor: Colors.transparent,
                           radius: 25,
-                          child: Image.network('${CallApi.fileUrl}/taxi/${course.imageTypeCourse}')
+                          child: Image.network(
+                            '${CallApi.fileUrl}/taxi/${course.imageTypeCourse}',
+                          ),
                         ),
                       ),
                       SizedBox(width: 12),
@@ -129,19 +129,15 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                   size: 18,
                                 ),
                                 SizedBox(width: 4),
-                                 SizedBox(
+                                SizedBox(
                                   width: 120,
-                                   child: Text(
+                                  child: Text(
                                     course.nomTypeCourse!,
                                     maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                    
-                                      fontSize: 14,
-                                    ),
-                                                                   ),
-                                 ),
-                               
+                                    style: TextStyle(fontSize: 14),
+                                  ),
+                                ),
                               ],
                             ),
                             SizedBox(height: 4),
@@ -154,15 +150,11 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                 ),
                                 SizedBox(width: 4),
                                 Text(
-                                  '${course.distance.toString()} Km - ${course.timeEst.toString()}',
-                                  style: TextStyle(
-                                    
-                                    fontSize: 14,
-                                  ),
+                                  '${course.distance.toString()} Km -${course.timeEst.toString()} min',
+                                  style: TextStyle(fontSize: 14),
                                 ),
                               ],
                             ),
-
                           ],
                         ),
                       ),
@@ -214,7 +206,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                     ],
                   ),
                 ),
-              )
+              ),
             ),
           ],
         );

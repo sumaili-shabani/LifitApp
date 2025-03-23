@@ -1,6 +1,5 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:get/route_manager.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 
