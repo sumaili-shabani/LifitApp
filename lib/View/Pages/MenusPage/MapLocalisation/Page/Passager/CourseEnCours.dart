@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
+import 'package:lifti_app/Controller/ApiService.dart';
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class PassagerCourseEnCourse extends StatefulWidget {
   const PassagerCourseEnCourse({super.key});
@@ -13,6 +16,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
   List<CourseInfoPassagerModel> notifications = [];
   String searchQuery = "";
   bool isLoading = true;
+    bool partageWhatsapp = false;
 
   @override
   void initState() {
@@ -76,139 +80,172 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
             SizedBox(height: 10),
             ...notifications.map(
               (course) => Card(
-                elevation: 4,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(16),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // ✅ Image de la voiture
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: CircleAvatar(
-                          backgroundColor: Colors.transparent,
-                          radius: 25,
-                          child: Image.network(
-                            '${CallApi.fileUrl}/taxi/${course.imageTypeCourse}',
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 12),
-
-                      // ✅ Infos sur la course
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                  elevation: 3,
+                  margin: EdgeInsets.symmetric(vertical: 8),
+                  child: Padding(
+                    padding: EdgeInsets.all(10),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
                           children: [
-                            Text(
-                              course.namePassager!,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Text(
-                              course.nameDestination!,
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.grey,
-                                fontSize: 14,
-                              ),
-                            ),
-                            SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.local_taxi,
-                                  color: Colors.blue,
-                                  size: 18,
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: CircleAvatar(
+                                backgroundColor: Colors.transparent,
+                                radius: 25,
+                                child: Image.network(
+                                  '${CallApi.fileUrl}/taxi/${course.imageTypeCourse}',
+                                  fit: BoxFit.cover,
                                 ),
-                                SizedBox(width: 4),
-                                SizedBox(
-                                  width: 120,
-                                  child: Text(
+                              ),
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
                                     course.nomTypeCourse!,
-                                    maxLines: 2,
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 14),
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                    ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            SizedBox(height: 4),
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.directions,
-                                  color: Colors.orange,
-                                  size: 18,
-                                ),
-                                SizedBox(width: 4),
-                                Text(
-                                  '${course.distance.toString()} Km -${course.timeEst.toString()} min',
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                              ],
+                                  Text(
+                                    course.nameChauffeur!,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.blueAccent,
+                                    ),
+                                  ),
+                                  Text(
+                                    "Prix: ${course.montantCourse} CDF",
+                                    style: TextStyle(
+                                      color: Colors.green,
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                           ],
                         ),
-                      ),
+                        SizedBox(height: 8),
+                       
+                       
+                        Text("Destination : ${course.nameDestination!}"),
+                        Text(
+                          "Distance : ${course.distance!}km/${course.timeEst!} min",
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Bouton Payer
+                            IconButton(
+                              onPressed: () {
+                               
+                              },
+                              icon: Icon(
+                                Icons.check_circle,
+                                color: Colors.green,
+                              ),
+                              tooltip: "Payer",
+                            ),
+                            // Bouton Annuler
+                            IconButton(
+                              onPressed: () {
+                                deleteData(course.id!, course.refPassager!);
+                              },
+                              icon: Icon(Icons.close, color: Colors.red),
+                              tooltip: "Annuler la course",
+                            ),
+                            // Bouton Commenter
+                            IconButton(
+                              onPressed: () {
+                                // Ajouter ici l’action pour commenter
+                                // widget.onCategorySelected(course);
+                              },
+                              icon: Icon(
+                                Icons.comment,
+                                color: Colors.blueAccent,
+                              ),
+                              tooltip: "Commenter",
+                            ),
+                            // Bouton Partager sur WhatsApp
+                            IconButton(
+                              onPressed:
+                                  partageWhatsapp
+                                      ? null
+                                      : () async {
+                                        setState(() {
+                                          partageWhatsapp = true;
+                                        });
+                                        Position? position =
+                                            await ApiService.getCurrentLocation();
+                                        if (position != null) {
+                                          setState(() {
+                                            partageWhatsapp = false;
+                                          });
+                                          shareOnWhatsApp(
+                                            position.latitude,
+                                            position.longitude,
+                                            course.nameDestination!,
+                                          );
+                                        }
+                                      },
+                              icon:
+                                  partageWhatsapp
+                                      ? CircularProgressIndicator(
+                                        color: Colors.blue,
+                                      )
+                                      : Icon(Icons.share, color: Colors.teal),
 
-                      // ✅ Nom du chauffeur + Prix + Bouton
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            course.nameChauffeur!, // 🔥 Nom du chauffeur
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blueAccent,
+                              tooltip: "Partager sur WhatsApp",
                             ),
-                          ),
-                          SizedBox(height: 4),
-                          Text(
-                            "Prix: ${course.montantCourse} CDF",
-                            style: TextStyle(
-                              color: Colors.green,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          SizedBox(height: 8),
-                          ElevatedButton.icon(
-                            icon: Icon(Icons.cancel, color: Colors.white),
-                            onPressed: () {
-                              deleteData(course.id!, course.refPassager!);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.redAccent,
-                              padding: EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            label: Text(
-                              "Annuler",
-                              style: TextStyle(fontSize: 14),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
             ),
           ],
         );
+  }
+
+
+  // Fonction de partage sur WhatsApp
+  void shareOnWhatsApp(
+    double latitude,
+    double longitude,
+    String destination,
+  ) async {
+    String message =
+        "🚖 Course en cours 🚖\n\n"
+        "Je suis en route vers *$destination*.\n"
+        "Suivez ma position en temps réel ici :\n"
+        "📍 https://www.google.com/maps/search/?api=1&query=$latitude,$longitude\n\n"
+        "À bientôt !";
+
+    String encodedMessage = Uri.encodeComponent(message);
+    String whatsappUrl = "https://wa.me/?text=$encodedMessage";
+
+    Uri uri = Uri.parse(whatsappUrl);
+
+    if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      // URL ouverte avec succès
+    } else {
+      print("Impossible d'ouvrir WhatsApp.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "WhatsApp ne peut pas être ouvert. Vérifiez son installation.",
+          ),
+        ),
+      );
+    }
   }
 }

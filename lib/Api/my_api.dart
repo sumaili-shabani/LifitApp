@@ -14,16 +14,17 @@ class CallApi {
   static String apikeyOpenrouteservice =
       "5b3ce3597851110001cf62484e660c3aa019470d8ac388d12b974480";
   static String pusherAppKey = "50a88f66ba9024781e33";
+  static String stripePublicKey ="pk_test_51GzffmHcKfZ3B3C9QaTVyo3LLihTTvxeIB664wbvnFtpKks4ylxc4WmvEA6mcru78pEiiON2jaWhoAPCrDjBkOho004cS9mB9n";
 
   //par defaut en ligne
   // static const String fileUrl = "https://www.swiftride.tech/"; // Pour le fichier
   // static const String baseUrl ="https://www.swiftride.tech/api"; // Remplace par ton URL
 
   //par defaut en locale
-  static const String fileUrl = "http://10.138.9.127:8000"; // Pour le fichier
+  static const String fileUrl = "http://10.56.35.127:8000"; // Pour le fichier
   static const String baseUrl =
-      "http://10.138.9.127:8000/api"; // Remplace par ton URL
-  static const String siteUrl = "http://10.138.9.127:8000";
+      "http://10.56.35.127:8000/api"; // Remplace par ton URL
+  static const String siteUrl = "http://10.56.35.127:8000";
 
   /*
   *
@@ -136,8 +137,9 @@ class CallApi {
   static Future<Map<String, dynamic>> insertData({
     required String endpoint,
     required Map<String, dynamic> data,
-    required String token, // Passer le token ici
+    // required String token, // Passer le token ici
   }) async {
+    String? token = await getToken();
     final String baseUrl = CallApi.baseUrl; // Remplace par ton URL
 
     try {

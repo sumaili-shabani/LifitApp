@@ -9,9 +9,9 @@ import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/Commentaire.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/PayementCourse.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/ReservationCourse.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 
 
 class TaxiCommandeScreen extends StatefulWidget {
@@ -270,7 +270,6 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
     });
     _loadIcons().then((_) => fetchNotifications());
     _getCurrentPosition();
-
   }
 
   @override
@@ -352,108 +351,34 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
             categorieVehiculeInfo: categorieVehiculeInfo,
             refCategorie: widget.refCategorie,
             onCategorySelected: (CourseInfoPassagerModel course) {
-                print("idCourse: ${course.id}");
-                showRatingBottomSheet(context, course);
+              print("idCourse: ${course.id}");
+              showRatingBottomSheet(context, course);
             },
           ),
     );
   }
 
-  //commentaire 
-
-  void showRatingBottomSheet(BuildContext context, CourseInfoPassagerModel course) {
-    double rating = 3.0; // Note par défaut
-    TextEditingController commentController = TextEditingController();
-
+  void showRatingBottomSheet(
+    BuildContext context,
+    CourseInfoPassagerModel course,
+  ) {
     showModalBottomSheet(
+      isScrollControlled: true,
       context: context,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
-      builder: (context) {
-        return Container(
-          padding: EdgeInsets.all(16),
-          height: MediaQuery.of(context).size.height * 0.5, // 60% de l'écran
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 50,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[400],
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                SizedBox(height: 5),
-                Center(
-                  child: Text(
-                    "Évaluez votre chauffeur",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(height: 16),
-          
-                // ⭐ Système de notation
-                Center(
-                  child: RatingBar.builder(
-                    initialRating: rating,
-                    minRating: 1,
-                    direction: Axis.horizontal,
-                    allowHalfRating: true,
-                    itemCount: 5,
-                    itemPadding: EdgeInsets.symmetric(horizontal: 4.0),
-                    itemBuilder:
-                        (context, _) => Icon(Icons.star, color: Colors.amber),
-                    onRatingUpdate: (newRating) {
-                      rating = newRating;
-                    },
-                  ),
-                ),
-                SizedBox(height: 16),
-          
-                // ✍️ Champ de commentaire
-                TextField(
-                  controller: commentController,
-                  decoration: InputDecoration(
-                    labelText: "Laissez un commentaire...",
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  maxLines: 3,
-                ),
-                SizedBox(height: 16),
-          
-                // ✅ Bouton d'envoi
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      String comment = commentController.text;
-                      print("Note: $rating, Commentaire: $comment");
-                      Navigator.pop(context); // Ferme le BottomSheet
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      padding: EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      "Envoyer",
-                      style: TextStyle(fontSize: 16, color: Colors.white),
-                    ),
-                  ),
-                ),
-              ],
-            ),
+      builder:
+          (context) => CommentaireCourse(
+            course: course,
+            onSubmitComment: (course) {
+              print("idcourse: ${course.id}");
+
+              Navigator.pop(context); // Ferme le BottomSheet
+            },
           ),
-        );
-      },
     );
   }
+
+  
 }

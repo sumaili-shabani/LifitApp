@@ -4,6 +4,7 @@ import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Controller/ApiService.dart';
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/PaymentScreen.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class Payementcourse extends StatefulWidget {
@@ -246,7 +247,7 @@ class _PayementcourseState extends State<Payementcourse> {
                             // Bouton Payer
                             IconButton(
                               onPressed: () {
-                               
+                               showPayementBottomSheet(context, course);
                               },
                               icon: Icon(
                                 Icons.check_circle,
@@ -350,4 +351,30 @@ class _PayementcourseState extends State<Payementcourse> {
       );
     }
   }
+
+  //appel de la fonction de paiement 
+  void showPayementBottomSheet(
+    BuildContext context,
+    CourseInfoPassagerModel course,
+  ) {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (context) => PaymentScreen(
+            course: course,
+            onSubmitComment: (course) {
+              print("idcourse: ${course.id}");
+
+              // Navigator.pop(context); // Ferme le BottomSheet
+            },
+          ),
+    );
+  }
+
+
+
 }

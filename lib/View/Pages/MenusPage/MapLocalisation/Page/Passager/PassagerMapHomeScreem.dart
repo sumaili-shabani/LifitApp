@@ -373,21 +373,15 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
   ) {
     showModalBottomSheet(
       context: context,
-      // isScrollControlled: true,
+      isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            ),
+        return SizedBox(
+           height: MediaQuery.of(context).size.height * 0.6, // 60% de l'écran
+          child: Padding(
+            padding: const EdgeInsets.all(16),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -423,7 +417,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                       children: [
                         Icon(Icons.map, color: Colors.blue),
                         SizedBox(width: 5),
-
+                    
                         SizedBox(
                           width: 300,
                           child: Text("Adresse: ${place["name"]}", maxLines: 4),
@@ -471,7 +465,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                         Text("Distance: ${distance.toStringAsFixed(2)} km"),
                       ],
                     ),
-
+                    
                     Divider(),
                     Row(
                       children: [
@@ -499,7 +493,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                         setState(() {
                           trajectoire = myTrajectoire;
                         });
-
+                    
                         showCourseSelectionBottomSheet(
                           context,
                           typeCourses,
