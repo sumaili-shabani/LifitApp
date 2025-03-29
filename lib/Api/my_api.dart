@@ -14,17 +14,23 @@ class CallApi {
   static String apikeyOpenrouteservice =
       "5b3ce3597851110001cf62484e660c3aa019470d8ac388d12b974480";
   static String pusherAppKey = "50a88f66ba9024781e33";
-  static String stripePublicKey ="pk_test_51GzffmHcKfZ3B3C9QaTVyo3LLihTTvxeIB664wbvnFtpKks4ylxc4WmvEA6mcru78pEiiON2jaWhoAPCrDjBkOho004cS9mB9n";
+  static String stripePublicKey =
+      "pk_test_51GzffmHcKfZ3B3C9QaTVyo3LLihTTvxeIB664wbvnFtpKks4ylxc4WmvEA6mcru78pEiiON2jaWhoAPCrDjBkOho004cS9mB9n";
+
+  //paypal
+  static String clientIDPaypal =
+      "ARrOsUcRXDJbnsY-H421KnsJVMq-shlnw-jshSUOUhY7xWPPuAXMKavFcN_s5YRoLIHBPXbYErhPS3q0";
+  static String secretkeyPaypal =
+      "EMQwmfqdSwgHcspmS-V-jpweCEPbkNYXfp5O88MBa7N1tZSXK3DH2KF8bl_DXz_jXXz_-I9mbGB1Ynf6";
+  static bool sandboxModePaypal = true;
 
   //par defaut en ligne
   // static const String fileUrl = "https://www.swiftride.tech/"; // Pour le fichier
   // static const String baseUrl ="https://www.swiftride.tech/api"; // Remplace par ton URL
 
   //par defaut en locale
-  static const String fileUrl = "http://10.56.35.127:8000"; // Pour le fichier
-  static const String baseUrl =
-      "http://10.56.35.127:8000/api"; // Remplace par ton URL
-  static const String siteUrl = "http://10.56.35.127:8000";
+  static const String fileUrl = "http://10.131.93.127:8000"; // Pour le fichier
+  static const String baseUrl = "http://10.131.93.127:8000/api"; // pour ton URL
 
   /*
   *
@@ -250,6 +256,17 @@ class CallApi {
     );
     String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
     return formattedDate;
+  }
+
+  static String formatDateString(String dateString) {
+    // Convertir la chaîne en DateTime
+    DateTime date = DateTime.parse(dateString);
+
+    // Créer un formatteur pour le format désiré
+    final DateFormat formatter = DateFormat('d MMMM yyyy à HH:mm:ss');
+
+    // Retourner la date formatée
+    return formatter.format(date);
   }
 
   getData(baseUrl) async {

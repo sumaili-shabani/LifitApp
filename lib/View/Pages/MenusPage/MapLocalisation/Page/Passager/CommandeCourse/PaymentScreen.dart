@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/StripePaymentScreen.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as stripe; // ✅ Alias ajouté
+import 'package:flutter_paypal/flutter_paypal.dart';
 
 class PaymentScreen extends StatefulWidget {
   final CourseInfoPassagerModel course;
@@ -28,33 +30,110 @@ class _PaymentScreenState extends State<PaymentScreen> {
     IconData icon,
     String description,
     CourseInfoPassagerModel course,
+    String imgFile,
   ) {
-    return Card(
-      elevation: 4,
-      child: ListTile(
-        leading: Icon(icon, color: Colors.blue),
-        title: Text(method, style: TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(description),
-        onTap: () {
-          setState(() {
-            selectedPaymentMethod = method;
-          });
-          // Navigator.pop(context);
-          if (method == "Mobile Money") {
-            showMobileMoneyOptions(course);
-          }
-          if (method == "Banque (Stripe)") {
-            // showStripePaiement(course);
-            makePayment();
-          }
-        },
-      ),
-    );
+    return insertedLoading
+        ? Center(child: CircularProgressIndicator())
+        : Card(
+          elevation: 4,
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: Colors.transparent,
+              child: Image.asset('assets/images/$imgFile', fit: BoxFit.cover),
+            ),
+            title: Text(method, style: TextStyle(fontWeight: FontWeight.bold)),
+            subtitle: Text(description),
+            onTap:
+                insertedLoading
+                    ? null
+                    : () async {
+                      setState(() {
+                        selectedPaymentMethod = method;
+                      });
+                      // Navigator.pop(context);
+
+                      if (method == "Cash") {
+                        storePaymentBackendCash();
+                      }
+                      if (method == "Mobile Money") {
+                        showMobileMoneyOptions(course);
+                      }
+                      if (method == "Banque (Stripe)") {
+                        makePayment();
+                      }
+                      if (method == "Banque (Paypal)") {
+                        print("paiement via Paypal");
+                        startPaypalPayment(context);
+                      }
+                    },
+          ),
+        );
+  }
+
+  Future<void> startPaypalPayment(BuildContext context) async {
+    try {
+      double montant = double.parse(widget.course.montantCourse.toString())/2850;
+      final result = await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder:
+              (context) => UsePaypal(
+                sandboxMode:
+                    CallApi
+                        .sandboxModePaypal, // Changez en false pour production
+                clientId:
+                    CallApi.clientIDPaypal, // Remplacez avec votre ID PayPal
+                secretKey:
+                    CallApi.secretkeyPaypal, // Remplacez avec votre clé secrète
+                returnURL: CallApi.baseUrl,
+                cancelURL: CallApi.baseUrl,
+                transactions: [
+                  {
+                    "amount": {
+                      "total": montant.toStringAsFixed(0), // Montant total
+                      "currency": "USD", // Devise (ex: EUR, USD)
+                      "details": {
+                        "subtotal": montant.toStringAsFixed(0),
+                        "shipping": "0",
+                        "shipping_discount": 0,
+                      },
+                    },
+                    "description": "Paiement course de taxi swiftride",
+                    "item_list": {
+                      "items": [
+                        {
+                          "name": widget.course.nomTypeCourse,
+                          "quantity": 1,
+                          "price": montant.toStringAsFixed(0),
+                          "currency": "USD",
+                        },
+                      ],
+                    },
+                  },
+                ],
+                note: "Merci pour votre confiance !",
+                onSuccess: (Map params) {
+                  print("Paiement réussi : $params");
+                  makePayment();
+                },
+                onCancel: (Map params) {
+                  print("Paiement annulé : $params");
+                },
+                onError: (error) {
+                  print("Erreur de paiement : $error");
+                },
+              ),
+        ),
+      );
+      print("🔹 Résultat du paiement: $result");
+    } catch (e) {
+      print("⚠️ Erreur lors du paiement : $e");
+    }
   }
 
   void showMobileMoneyOptions(CourseInfoPassagerModel course) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -62,7 +141,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         return Container(
           height:
               MediaQuery.of(context).size.height *
-              0.55, // Augmenté à 60% pour plus de visibilité
+              0.65, // Augmenté à 65% pour plus de visibilité
           padding: EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -88,6 +167,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Colors.white,
                 "mpesa.png",
                 course,
+                2,
               ),
               _buildMobileMoneyOption(
                 "Airtel Money",
@@ -96,6 +176,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Colors.white,
                 "airtelmoney.png",
                 course,
+                3,
               ),
               _buildMobileMoneyOption(
                 "Orange Money",
@@ -104,6 +185,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 Colors.white,
                 "orangemoney.png",
                 course,
+                4,
               ),
             ],
           ),
@@ -119,7 +201,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       int? userId =
           await CallApi.getUserId(); // Récupérer l'ID de l'utilisateur connecté
       String? sessionName = await CallApi.getNameConnected();
-      
+
       // 1️⃣ Créer PaymentIntent depuis Laravel
       Map<String, dynamic> svData = {'amount': widget.course.montantCourse};
       final response = await CallApi.postData("create-payment-stripe", svData);
@@ -143,8 +225,13 @@ class _PaymentScreenState extends State<PaymentScreen> {
       // 3️⃣ Afficher la boîte de dialogue de paiement
       await stripe.Stripe.instance.presentPaymentSheet();
 
-      
-
+      EasyLoading.show(
+        status: 'Envoi en cours...',
+        maskType: EasyLoadingMaskType.black,
+      );
+      setState(() {
+        insertedLoading = true;
+      });
       //appel de la fonction d'insertion
       Map<String, dynamic> svData2 = {
         'refCourse': widget.course.id!,
@@ -156,7 +243,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         'author': sessionName!.toString(),
         'refUser': userId!,
       };
-      
+
       final inserted = await CallApi.insertData(
         endpoint: "passager_store_payement_banque",
         data: svData2,
@@ -167,6 +254,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
       String messagePayement = inserted['data'];
       print('message: $messagePayement');
+
+      EasyLoading.showSuccess(messagePayement);
+
+      setState(() {
+        insertedLoading = false;
+      });
 
       setState(() {
         paymentIntent = null;
@@ -191,13 +284,14 @@ class _PaymentScreenState extends State<PaymentScreen> {
     Color colorIcone,
     String imgFile,
     CourseInfoPassagerModel course,
+    int refBanque,
   ) {
     return Card(
       elevation: 4,
       child: ListTile(
         leading: CircleAvatar(
-          backgroundColor: colorIcone,
-          child: Image.asset('assets/images/$imgFile'),
+          backgroundColor: Colors.transparent,
+          child: Image.asset('assets/images/$imgFile', fit: BoxFit.cover),
         ),
         title: Text(provider, style: TextStyle(fontWeight: FontWeight.bold)),
         subtitle: Text(description),
@@ -206,7 +300,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
             selectedMobileMoney = provider;
           });
           Navigator.pop(context);
-          showPhoneNumberInput(course);
+          showPhoneNumberInput(course, refBanque);
         },
         trailing: Column(
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -225,9 +319,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
-  void showPhoneNumberInput(CourseInfoPassagerModel course) {
+  void showPhoneNumberInput(CourseInfoPassagerModel course, int refBanque) {
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -235,7 +330,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         return Container(
           height:
               MediaQuery.of(context).size.height *
-              0.55, // Augmenté à 55% pour plus de visibilité
+              0.65, // Augmenté à 55% pour plus de visibilité
           padding: EdgeInsets.all(16),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -264,23 +359,33 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
               ),
               SizedBox(height: 16),
-              ElevatedButton(
-                onPressed: () {
-                  if (phoneController.text.isEmpty) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text("Veuillez entrer un numéro valide."),
-                      ),
-                    );
-                  } else {
-                    print(
-                      "Paiement via $selectedMobileMoney avec numéro ${phoneController.text}",
-                    );
-                    Navigator.pop(context);
-                  }
-                },
-                child: Text("Confirmer"),
-              ),
+              insertedLoading
+                  ? Center(child: CircularProgressIndicator())
+                  : ElevatedButton.icon(
+                    icon: Icon(Icons.payment),
+                    onPressed:
+                        insertedLoading
+                            ? null
+                            : () {
+                              if (phoneController.text.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      "Veuillez entrer un numéro valide.",
+                                    ),
+                                  ),
+                                );
+                              } else {
+                                storePaymentBackendMobile(refBanque);
+                                // print(
+                                //   "Paiement via $selectedMobileMoney avec numéro ${phoneController.text}",
+                                // );
+                                
+                                Navigator.pop(context);
+                              }
+                            },
+                    label: Text("Confirmer"),
+                  ),
             ],
           ),
         );
@@ -298,6 +403,91 @@ class _PaymentScreenState extends State<PaymentScreen> {
     );
   }
 
+  bool insertedLoading = false;
+
+  storePaymentBackendMobile(int refBanque) async {
+    int? userId =
+        await CallApi.getUserId(); // Récupérer l'ID de l'utilisateur connecté
+    String? sessionName = await CallApi.getNameConnected();
+
+    setState(() {
+      insertedLoading = true;
+    });
+    EasyLoading.show(
+      status: 'Envoi en cours...',
+      maskType: EasyLoadingMaskType.black,
+    );
+    //appel de la fonction d'insertion
+    Map<String, dynamic> svData2 = {
+      'refCourse': widget.course.id!,
+      'refBanque': refBanque,
+      'montant_paie': widget.course.montantCourse!,
+      'devise': widget.course.devise!,
+      'date_paie': widget.course.dateCourse!,
+      'libellepaie': "Paiement  ${widget.course.nomTypeCourse!}",
+      'numeroBordereau': "Stripe account",
+      'author': sessionName!.toString(),
+      'refUser': userId!,
+    };
+
+    final inserted = await CallApi.insertData(
+      endpoint: "passager_store_payement_mobile_money",
+      data: svData2,
+      // token: token.toString(),
+    );
+    // print("response: $inserted");
+    String messagePayement = inserted['data'];
+    print('message: $messagePayement');
+    showSnackBar(context, messagePayement, 'success');
+
+    EasyLoading.showSuccess(messagePayement);
+
+    setState(() {
+      insertedLoading = false;
+    });
+  }
+
+  storePaymentBackendCash() async {
+    int? userId =
+        await CallApi.getUserId(); // Récupérer l'ID de l'utilisateur connecté
+    String? sessionName = await CallApi.getNameConnected();
+
+    setState(() {
+      insertedLoading = true;
+    });
+    EasyLoading.show(
+      status: 'Envoi en cours...',
+      maskType: EasyLoadingMaskType.black,
+    );
+    //appel de la fonction d'insertion
+    Map<String, dynamic> svData2 = {
+      'refCourse': widget.course.id!,
+      'montant_paie': widget.course.montantCourse!,
+      'devise': widget.course.devise!,
+      'date_paie': widget.course.dateCourse!,
+      'libellepaie': "Paiement  ${widget.course.nomTypeCourse!}",
+      'numeroBordereau': "Stripe account",
+      'author': sessionName!.toString(),
+      'refUser': userId!,
+    };
+
+    final inserted = await CallApi.insertData(
+      endpoint: "passager_store_payement_cash",
+      data: svData2,
+      // token: token.toString(),
+    );
+    // print("response: $inserted");
+    String messagePayement = inserted['data'];
+    print('message: $messagePayement');
+    showSnackBar(context, messagePayement, 'success');
+
+    setState(() {
+      insertedLoading = false;
+    });
+    EasyLoading.showSuccess(messagePayement);
+    Navigator.pop(context);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -309,7 +499,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       padding: EdgeInsets.all(16),
       height:
           MediaQuery.of(context).size.height *
-          0.55, // Augmenté à 55% pour plus de visibilité
+          0.65, // Augmenté à 55% pour plus de visibilité
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -349,18 +539,28 @@ class _PaymentScreenState extends State<PaymentScreen> {
                         Icons.money,
                         "Payez directement au chauffeur",
                         widget.course,
+                        "Icon_cash.png",
                       ),
                       _buildPaymentOption(
                         "Banque (Stripe)",
                         Icons.credit_card,
                         "Paiement sécurisé via Stripe",
                         widget.course,
+                        "stripe.png",
+                      ),
+                      _buildPaymentOption(
+                        "Banque (Paypal)",
+                        Icons.credit_card,
+                        "Paiement sécurisé via Paypal",
+                        widget.course,
+                        "image_paypal.png",
                       ),
                       _buildPaymentOption(
                         "Mobile Money",
                         Icons.phone_android,
                         "Paiement rapide via M-Pesa, Airtel ou Orange",
                         widget.course,
+                        "mobile.png",
                       ),
                     ],
                   ),

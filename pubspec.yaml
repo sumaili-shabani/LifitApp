@@ -41,7 +41,7 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # mes ajouts
-  http: ^1.2.1 
+  http: ^1.2.1
   supabase_flutter: ^2.5.9
   duration: ^4.0.3
   flutter_map: ^8.1.1
@@ -57,6 +57,8 @@ dependencies:
   flutter_easyloading: ^3.0.5
   flutter_rating_bar: ^4.0.1
   flutter_stripe: ^9.3.0
+  flutter_paypal: ^0.2.1
+
   # flutter_local_notifications: ^19.0.0
   # pusher_client: ^2.0.0
   
@@ -104,7 +106,7 @@ dependencies:
   
   # Map
   geocoding: ^3.0.0
-
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter

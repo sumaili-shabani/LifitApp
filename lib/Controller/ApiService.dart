@@ -123,7 +123,7 @@ class ApiService {
         apiKey: CallApi.pusherAppKey,
         cluster: "mt1",
         useTLS: true, // 🔥 Ajout de TLS pour éviter des erreurs WebSocket
-        authEndpoint: "${CallApi.siteUrl}/broadcasting/auth", // Auth Laravel
+        authEndpoint: "${CallApi.fileUrl}/broadcasting/auth", // Auth Laravel
         onEvent: (PusherEvent event) {
           print("📡 Nouvel événement : ${event.eventName}");
           print("📨 Données reçues : ${event.data}");

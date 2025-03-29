@@ -167,92 +167,122 @@ class CourseInfoPassagerModel {
     this.rating,
   });
 
-  factory CourseInfoPassagerModel.fromMap(Map<String, dynamic> json) =>
-      CourseInfoPassagerModel(
-        id: json["id"],
-        refPassager: json["refPassager"],
-        refConduite: json["refConduite"],
-        refTypeCourse: json["refTypeCourse"],
-        refAdresseDepart: json["refAdresseDepart"],
-        refAdresseArrivee: json["refAdresseArrivee"],
-        departLongitude: json["depart_longitude"].toDouble(),
-        departLatitude: json["depart_latitude"].toDouble(),
-        arriveeLongitude: json["arrivee_longitude"].toDouble(),
-        arriveeLatitude: json["arrivee_latitude"].toDouble(),
-        currentLongitude: json["current_longitude"].toDouble(),
-        currentLatitude: json["current_latitude"].toDouble(),
-        dateCourse: json["date_course"],
-        devise: json["devise"],
-        taux: json["taux"],
-        status: json["status"],
-        author: json["author"],
-        refUser: json["refUser"],
-        createdAt: json["created_at"],
-        montantCourse: json["montant_course"],
-        codeCourse: json["codeCourse"],
-        latDepart: json["latDepart"].toDouble(),
-        lonDepart: json["lonDepart"].toDouble(),
-        latDestination: json["latDestination"].toDouble(),
-        lonDestination: json["lonDestination"].toDouble(),
-        nameDepart: json["nameDepart"],
-        nameDestination: json["nameDestination"],
-        distance: json["distance"].toDouble(),
-        prixCourse: json["prixCourse"],
-        timeEst: json["timeEst"],
-        calculate: json["calculate"],
-        commentaires: json["commentaires"],
-        nomTypeCourse: json["nomTypeCourse"],
-        location: json["location"],
-        refChauffeur: json["refChauffeur"],
-        refVehicule: json["refVehicule"],
-        genreVehicule: json["genreVehicule"],
-        numPlaqueVehicule: json["numPlaqueVehicule"],
-        numChassiVehicule: json["numChassiVehicule"],
-        numMoteurVehicule: json["numMoteurVehicule"],
-        dateFabrication: json["dateFabrication"],
-        refCouleur: json["refCouleur"],
-        refCategorie: json["refCategorie"],
-        numImpotVehicule: json["numImpotVehicule"],
-        nomProprietaire: json["nomProprietaire"],
-        adresseProprietaire: json["adresseProprietaire"],
-        contactProprietaire: json["contactProprietaire"],
-        nomCategorieVehicule: json["nomCategorieVehicule"],
-        refMarque: json["refMarque"],
-        nomMarque: json["nomMarque"],
-        nomCouleur: json["nomCouleur"],
-        avatarChauffeur: json["avatarChauffeur"],
-        nameChauffeur: json["nameChauffeur"],
-        emailChauffeur: json["emailChauffeur"],
-        idRoleChauffeur: json["id_roleChauffeur"],
-        sexeChauffeur: json["sexeChauffeur"],
-        telephoneChauffeur: json["telephoneChauffeur"],
-        adresseChauffeur: json["adresseChauffeur"],
-        activeChauffeur: json["activeChauffeur"],
-        avatarPassager: json["avatarPassager"],
-        namePassager: json["namePassager"],
-        emailPassager: json["emailPassager"],
-        idRolePassager: json["id_rolePassager"],
-        sexePassager: json["sexePassager"],
-        telephonePassager: json["telephonePassager"],
-        adressePassager: json["adressePassager"],
-        activePassager: json["activePassager"],
-        avatar: json["avatar"],
-        name: json["name"],
-        email: json["email"],
-        idRole: json["id_role"],
-        roleName: json["role_name"],
-        sexe: json["sexe"],
-        telephone: json["telephone"],
-        adresse: json["adresse"],
-        imageTypeCourse: json["imageTypeCourse"],
+  factory CourseInfoPassagerModel.fromMap(
+    Map<String, dynamic> json,
+  ) => CourseInfoPassagerModel(
+    id: json["id"],
+    refPassager: json["refPassager"],
+    refConduite: json["refConduite"],
+    refTypeCourse: json["refTypeCourse"],
+    refAdresseDepart: json["refAdresseDepart"],
+    refAdresseArrivee: json["refAdresseArrivee"],
 
-        taxeSuplementaire: json["taxeSuplementaire"].toDouble(),
-        timePlus: json["timePlus"],
-        rating: json["rating"],
-        dateLimiteCourse: json["dateLimiteCourse"],
+    dateCourse: json["date_course"],
+    devise: json["devise"],
+    taux: json["taux"],
+    status: json["status"],
+    author: json["author"],
+    refUser: json["refUser"],
+    createdAt: json["created_at"],
+    montantCourse: json["montant_course"],
+    codeCourse: json["codeCourse"],
+    departLongitude:
+        (json["depart_longitude"] != null)
+            ? json["depart_longitude"].toDouble()
+            : 0.0,
+    departLatitude:
+        (json["depart_latitude"] != null)
+            ? json["depart_latitude"].toDouble()
+            : 0.0,
+    arriveeLongitude:
+        (json["arrivee_longitude"] != null)
+            ? json["arrivee_longitude"].toDouble()
+            : 0.0,
+    arriveeLatitude:
+        (json["arrivee_latitude"] != null)
+            ? json["arrivee_latitude"].toDouble()
+            : 0.0,
+    currentLongitude:
+        (json["current_longitude"] != null)
+            ? json["current_longitude"].toDouble()
+            : 0.0,
+    currentLatitude:
+        (json["current_latitude"] != null)
+            ? json["current_latitude"].toDouble()
+            : 0.0,
+    latDepart: (json["latDepart"] != null) ? json["latDepart"].toDouble() : 0.0,
+    lonDepart: (json["lonDepart"] != null) ? json["lonDepart"].toDouble() : 0.0,
+    latDestination:
+        (json["latDestination"] != null)
+            ? json["latDestination"].toDouble()
+            : 0.0,
+    lonDestination:
+        (json["lonDestination"] != null)
+            ? json["lonDestination"].toDouble()
+            : 0.0,
+    distance: (json["distance"] != null) ? json["distance"].toDouble() : 0.0,
+    taxeSuplementaire:
+        (json["taxeSuplementaire"] != null)
+            ? json["taxeSuplementaire"].toDouble()
+            : 0.0,
+    nameDepart: json["nameDepart"],
+    nameDestination: json["nameDestination"],
 
-        active: json["active"],
-      );
+    prixCourse: json["prixCourse"],
+    timeEst: json["timeEst"],
+    calculate: json["calculate"],
+    commentaires: json["commentaires"],
+    nomTypeCourse: json["nomTypeCourse"],
+    location: json["location"],
+    refChauffeur: json["refChauffeur"],
+    refVehicule: json["refVehicule"],
+    genreVehicule: json["genreVehicule"],
+    numPlaqueVehicule: json["numPlaqueVehicule"],
+    numChassiVehicule: json["numChassiVehicule"],
+    numMoteurVehicule: json["numMoteurVehicule"],
+    dateFabrication: json["dateFabrication"],
+    refCouleur: json["refCouleur"],
+    refCategorie: json["refCategorie"],
+    numImpotVehicule: json["numImpotVehicule"],
+    nomProprietaire: json["nomProprietaire"],
+    adresseProprietaire: json["adresseProprietaire"],
+    contactProprietaire: json["contactProprietaire"],
+    nomCategorieVehicule: json["nomCategorieVehicule"],
+    refMarque: json["refMarque"],
+    nomMarque: json["nomMarque"],
+    nomCouleur: json["nomCouleur"],
+    avatarChauffeur: json["avatarChauffeur"],
+    nameChauffeur: json["nameChauffeur"],
+    emailChauffeur: json["emailChauffeur"],
+    idRoleChauffeur: json["id_roleChauffeur"],
+    sexeChauffeur: json["sexeChauffeur"],
+    telephoneChauffeur: json["telephoneChauffeur"],
+    adresseChauffeur: json["adresseChauffeur"],
+    activeChauffeur: json["activeChauffeur"],
+    avatarPassager: json["avatarPassager"],
+    namePassager: json["namePassager"],
+    emailPassager: json["emailPassager"],
+    idRolePassager: json["id_rolePassager"],
+    sexePassager: json["sexePassager"],
+    telephonePassager: json["telephonePassager"],
+    adressePassager: json["adressePassager"],
+    activePassager: json["activePassager"],
+    avatar: json["avatar"],
+    name: json["name"],
+    email: json["email"],
+    idRole: json["id_role"],
+    roleName: json["role_name"],
+    sexe: json["sexe"],
+    telephone: json["telephone"],
+    adresse: json["adresse"],
+    imageTypeCourse: json["imageTypeCourse"],
+
+    timePlus: json["timePlus"],
+    rating: json["rating"],
+    dateLimiteCourse: json["dateLimiteCourse"],
+
+    active: json["active"],
+  );
 
   Map<String, dynamic> toMap() => {
     "id": id,

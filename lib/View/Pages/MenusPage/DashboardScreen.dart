@@ -116,15 +116,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       children: [Icon(Icons.chat), Text(" Messagerie")],
                     ),
                   ),
-                  PopupMenuItem(
-                    value: "calendar",
-                    child: Row(
-                      children: [
-                        Icon(Icons.taxi_alert),
-                        Text(" Commande Taxi"),
-                      ],
-                    ),
-                  ),
+                  // PopupMenuItem(
+                  //   value: "calendar",
+                  //   child: Row(
+                  //     children: [
+                  //       Icon(Icons.taxi_alert),
+                  //       Text(" Commande Taxi"),
+                  //     ],
+                  //   ),
+                  // ),
                   PopupMenuItem(
                     value: "logout",
                     child: Row(
@@ -165,7 +165,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
               // _buildGraphiqueRevenus(),
               // SizedBox(height: 20),
-              PetitCourseEnCourse(),
+              // PetitCourseEnCourse(),
               SizedBox(height: 20),
 
               // _buildEvaluations(),

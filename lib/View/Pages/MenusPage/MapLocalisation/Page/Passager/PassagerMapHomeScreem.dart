@@ -15,7 +15,6 @@ import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/button.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/CategoryVehicleScreen.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/CourseSelectionBottomSheet.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/TaxiCommandeScreen.dart';
@@ -130,7 +129,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
   ) async {
     final String url =
         'https://api.openrouteservice.org/v2/directions/driving-car?api_key=$apikeyOpenrouteservice&start=${start.longitude},${start.latitude}&end=${end.longitude},${end.latitude}';
-
+    print("Url: $url");
     try {
       // Appel à l'API OpenRouteService
       final response = await http.get(Uri.parse(url));
@@ -204,7 +203,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
   ) async {
     final String url =
         'https://api.openrouteservice.org/v2/directions/driving-car?api_key=$apikeyOpenrouteservice&start=${start.longitude},${start.latitude}&end=${end.longitude},${end.latitude}';
-
+     print("Url: $url");
     try {
       // Appel à l'API OpenRouteService
       final response = await http.get(Uri.parse(url));
@@ -497,7 +496,9 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                         showCourseSelectionBottomSheet(
                           context,
                           typeCourses,
+                          typeCourseLocation,
                           trajectoire,
+                          
                         );
                       },
                     ),
@@ -634,12 +635,19 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
         'fetch_tarification_to_mobile_app',
       );
 
+      List<dynamic> typeClocation = await CallApi.fetchListData(
+        'fetch_tarification_location_to_mobile_app',
+      );
+      
+
       print(typeCourse);
 
       setState(() {
         passagers = clients;
         placesJson = cities;
         typeCourses = typeCourse;
+        typeCourseLocation = typeClocation;
+        
         isLoading = false;
       });
 
@@ -1091,6 +1099,31 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
     },
   ];
 
+  List<dynamic> typeCourseLocation = [
+    {
+      "id": 2,
+      "idTarif": 2,
+      "time": "15:42",
+      "refTypeCourse": 1,
+      "montant": 5000,
+      "montant2": 10000,
+      "montant3": 7000,
+      "taxeAmbouteillage": 3000,
+      "temps1Debut": "10:01",
+      "temps1Fin": "19:00",
+      "temps2Debut": "19:01",
+      "temps2Fin": "06:59",
+      "temps3Debut": "07:00",
+      "temps3Fin": "10:00",
+      "prix": 5000,
+      "devise": "CDF",
+      "unite": "Par Km",
+      "remise": 0,
+      "nomTypeCourse": "Course  VIP et VTC",
+      "imageTypeCourse": "1741860047.png",
+    },
+  ];
+
   List<Map<String, dynamic>> tarifications = [
     {
       "id": 1,
@@ -1134,6 +1167,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
   void showCourseSelectionBottomSheet(
     BuildContext context,
     List<dynamic> typeCourses,
+    List<dynamic> typeCourseLocation,
     Map<String, dynamic> trajectoire,
   ) {
     showModalBottomSheet(
@@ -1145,7 +1179,8 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
       builder:
           (context) => CourseSelectionBottomSheet(
             typeCourses: typeCourses, // Liste des types de courses
-            onCourseSelected: (Map<String, dynamic> selectedCourse) {
+            typeCourseLocation: typeCourseLocation,
+            onCourseSelected: (Map<String, dynamic> selectedCourse, bool isLocation) {
               Map<String, dynamic> datainfotarif = {
                 'refTypeCourse': selectedCourse['refTypeCourse'],
                 'prix': selectedCourse['prix'],
@@ -1154,9 +1189,11 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                 'unite': selectedCourse['unite'],
                 'remise': selectedCourse['remise'],
                 'durationPlus': selectedCourse['durationPlus'],
+                
               };
 
               // Gérer la sélection ici (ex: mise à jour de l'état)
+              // print("isLocation: $isLocation");
               setState(() {
                 datainfotarification = datainfotarif;
               });
@@ -1167,6 +1204,8 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                 trajectoire,
                 datainfotarification,
                 idTypeCourse,
+                isLocation
+          
               );
 
               // print("Course sélectionnée : $datainfotarification");
@@ -1183,6 +1222,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
     Map<String, dynamic> trajectoire,
     Map<String, dynamic> datainfotarification,
     int refTypeCourse,
+    bool isLocation
   ) {
     showModalBottomSheet(
       context: context,
@@ -1217,11 +1257,13 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
                     datainfotarification: datainfotarification,
                     categorieVehiculeInfo: datainfoCategoyVehicule,
                     refCategorie: refCategorie,
+                    isLocation: isLocation,
+
                   ),
                 ),
               );
 
-              print("datainfoCategoyVehicule: $datainfoCategoyVehicule");
+              // print("datainfoCategoyVehicule: $datainfoCategoyVehicule");
             },
           ),
     );

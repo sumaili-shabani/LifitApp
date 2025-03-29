@@ -21,7 +21,7 @@ class PusherService {
         apiKey: CallApi.pusherAppKey,
         cluster: "mt1",
         useTLS: true, // 🔥 Ajout de TLS pour éviter des erreurs WebSocket
-        authEndpoint: "${CallApi.siteUrl}/broadcasting/auth",
+        authEndpoint: "${CallApi.fileUrl}/broadcasting/auth",
         onEvent: (PusherEvent event) {
           print("📡 Événement reçu : ${event.eventName}");
 
@@ -80,7 +80,7 @@ class PusherService {
       // ✅ Étape 3: Authentification Laravel Sanctum avec le socket_id
       String channel = "chauffeur.$chauffeurId";
       var response = await http.post(
-        Uri.parse("${CallApi.siteUrl}/broadcasting/auth"),
+        Uri.parse("${CallApi.fileUrl}/broadcasting/auth"),
         headers: {
           "Authorization": "Bearer $bearerToken",
           "Content-Type": "application/json",

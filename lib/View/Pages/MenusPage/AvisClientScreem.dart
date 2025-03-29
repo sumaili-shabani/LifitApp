@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
 
 import 'package:lifti_app/Model/CourseModel.dart';
 
@@ -10,15 +11,9 @@ class AvisClientScreem extends StatefulWidget {
 }
 
 class _AvisClientScreemState extends State<AvisClientScreem> {
-  List<CourseModel> notifications = [];
+  List<CourseInfoPassagerModel> notifications = [];
   String searchQuery = "";
   bool isLoading = true;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchNotifications();
-  }
 
   Future<void> fetchNotifications() async {
     int? userId =
@@ -31,14 +26,24 @@ class _AvisClientScreemState extends State<AvisClientScreem> {
         'chauffeur_mobile_commentaire_course_termine/${userId.toInt()}',
       );
       setState(() {
-        notifications = data.map((item) => CourseModel.fromMap(item)).toList();
+        notifications = data.map((item) => CourseInfoPassagerModel.fromMap(item)).toList();
         isLoading = false;
       });
+
+      print(data);
     } catch (e) {
       print("Erreur: $e");
       setState(() => isLoading = false);
     }
   }
+
+  
+  @override
+  void initState() {
+    super.initState();
+    fetchNotifications();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -60,23 +65,23 @@ class _AvisClientScreemState extends State<AvisClientScreem> {
                 child: ListTile(
                   leading: CircleAvatar(
                     backgroundColor: CallApi.getRandomColor(),
-                    child: Text(CallApi.limitText(eval.namePassager!, 1)),
-                    // backgroundImage: NetworkImage(
-                    //   "${CallApi.fileUrl}/images/${order.avatarPassager}",
-                    // ),
+                    // child: Text(CallApi.limitText(eval.namePassager??'', 1)),
+                    backgroundImage: NetworkImage(
+                      "${CallApi.fileUrl}/images/${eval.avatarPassager??'avatar.png'}",
+                    ),
                   ),
-                  title: Text(eval.namePassager!),
+                  title: Text(eval.namePassager??''),
                   subtitle: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         children: List.generate(
-                          4,
+                          int.parse(eval.rating.toString()),
                           (index) =>
                               Icon(Icons.star, color: Colors.orange, size: 18),
                         ),
                       ),
-                      Text(eval.commentaires!, maxLines: 4),
+                      Text(eval.commentaires!??'', maxLines: 4),
                     ],
                   ),
                 ),

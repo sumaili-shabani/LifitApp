@@ -356,11 +356,13 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
             children: [
               Icon(Icons.info, color: Colors.green, size: 15),
               SizedBox(width: 5),
-              Text(
-                "Au compte de ${item['roleName']}",
-                style: TextStyle(
-                  color: Colors.green,
-                  fontWeight: FontWeight.w500,
+              Expanded(
+                child: Text(
+                  "Au compte de ${item['roleName']}",
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
@@ -619,10 +621,10 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
                                             ),
                                           ),
                                           Text(
-                                            "${course.distance!} Km",
+                                             "${course.calculate == 1 ? 'Distance:' : 'Location:'}${course.distance!.toStringAsFixed(2)} ${course.calculate == 1 ? 'Km ➡️${course.timeEst!}' : 'J/H'}",
                                             style: TextStyle(
                                               color: Colors.grey,
-                                              fontSize: 14,
+                                              fontSize: 12,
                                             ),
                                           ),
                                         ],
@@ -707,7 +709,7 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
                                               );
                                             },
                                             label: Text(
-                                              "Détail Info Commission ${course.id!}",
+                                              "Détail Info Commission",
                                             ),
                                             icon: Icon(Icons.diversity_3_sharp),
                                           ),

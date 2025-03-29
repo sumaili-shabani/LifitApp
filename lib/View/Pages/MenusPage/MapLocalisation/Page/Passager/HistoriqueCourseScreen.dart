@@ -412,10 +412,10 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
                                             ),
                                           ),
                                           Text(
-                                            "${course.distance!} Km - ${course.timeEst}",
+                                            "${course.calculate == 1 ?'Distance:':''}${course.distance!.toStringAsFixed(2)} ${course.calculate == 1 ? 'Km' : 'J/H'}➡️${course.timeEst!}",
                                             style: TextStyle(
                                               color: Colors.grey,
-                                              fontSize: 14,
+                                              fontSize: 11,
                                             ),
                                           ),
 

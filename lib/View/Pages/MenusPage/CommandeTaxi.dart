@@ -340,7 +340,7 @@ class _ChauffeurScreenState extends State<ChauffeurScreen> {
         cluster: "mt1",
         useTLS: true,
         authEndpoint:
-            "${CallApi.siteUrl}/broadcasting/auth?token=$bearerToken", // ✅ Ajout du token ici
+            "${CallApi.fileUrl}/broadcasting/auth?token=$bearerToken", // ✅ Ajout du token ici
         onEvent: (PusherEvent event) {
           print("📡 Nouvel événement : ${event.eventName}");
           print("📨 Données reçues : ${event.data}");

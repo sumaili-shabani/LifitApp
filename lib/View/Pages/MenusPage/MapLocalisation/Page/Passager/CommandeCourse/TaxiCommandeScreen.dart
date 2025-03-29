@@ -12,7 +12,8 @@ import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/Commentaire.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/PayementCourse.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/ReservationCourse.dart';
-
+import 'package:lifti_app/View/Pages/MenusPage/NotificationBottom.dart';
+import 'package:lifti_app/View/Pages/MenusPage/NotificationScreem.dart';
 
 class TaxiCommandeScreen extends StatefulWidget {
   final List<dynamic> typeCourses;
@@ -20,6 +21,7 @@ class TaxiCommandeScreen extends StatefulWidget {
   final Map<String, dynamic> datainfotarification;
   final Map<String, dynamic> categorieVehiculeInfo;
   final int refCategorie;
+  final bool isLocation;
 
   const TaxiCommandeScreen({
     super.key,
@@ -28,6 +30,7 @@ class TaxiCommandeScreen extends StatefulWidget {
     required this.datainfotarification,
     required this.categorieVehiculeInfo,
     required this.refCategorie,
+    required this.isLocation,
   });
 
   @override
@@ -174,9 +177,12 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
       throw Exception('Utilisateur non connecté');
     }
     try {
-      List<dynamic> listVehicule = await CallApi.fetchListData(
-        'fetch_vehicule_map_on_line_bycatvehicule/${widget.refCategorie}',
-      );
+      int refTypeCourse = widget.datainfotarification['refTypeCourse'];
+
+      String url =
+          "fetch_vehicule_map_on_line_bycatvehicule/${widget.refCategorie}/$refTypeCourse";
+      // print("url: $url");
+      List<dynamic> listVehicule = await CallApi.fetchListData(url);
 
       print(listVehicule);
 
@@ -205,6 +211,8 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
                       widget.datainfotarification,
                       widget.categorieVehiculeInfo,
                       widget.refCategorie,
+                      widget.isLocation,
+                      chauffeur["name"]
                     ),
               );
             }).toSet();
@@ -240,6 +248,8 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
     Map<String, dynamic> datainfotarification,
     Map<String, dynamic> categorieVehiculeInfo,
     int refCategorie,
+    bool isLocation,
+    String nameVehicule
   ) {
     showModalBottomSheet(
       context: context,
@@ -257,7 +267,21 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
             onCategorySelected: (Map<String, dynamic> selectedCourse) {
               // print("CategorySelected : $selectedCourse");
             },
+            isLocation: isLocation,
+            nameVehicule: nameVehicule,
           ),
+    );
+  }
+
+  void showNotificationInfo() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Theme.of(context).cardColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => NotificationBottom(),
     );
   }
 
@@ -285,6 +309,41 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
         showBackButton: true,
         title: Text("Taxis", style: TextStyle(color: Colors.white)),
         actions: [
+          Stack(
+            children: [
+              IconButton(
+                onPressed: () {
+                  showNotificationInfo();
+                },
+                icon: Icon(Icons.notification_add, color: Colors.white),
+                tooltip: "Voir les notifications",
+              ),
+              if (2 >
+                  0) // Afficher le badge seulement s'il y a des notifications
+                Positioned(
+                  right: 0,
+                  top: 1,
+
+                  child: Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    constraints: BoxConstraints(minWidth: 18, minHeight: 18),
+                    child: Text(
+                      '2+',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+            ],
+          ),
           IconButton(
             onPressed: () {
               chargement();
@@ -312,6 +371,8 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
                 widget.datainfotarification,
                 widget.categorieVehiculeInfo,
                 widget.refCategorie,
+                widget.isLocation,
+                ""
               );
             },
             icon: Icon(Icons.local_taxi, color: Colors.white),
@@ -379,6 +440,4 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
           ),
     );
   }
-
-  
 }

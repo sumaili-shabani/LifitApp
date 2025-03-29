@@ -35,7 +35,8 @@ class _CommentaireCourseState extends State<CommentaireCourse> {
   @override
   void initState() {
     super.initState();
-    commentController.text = widget.course.commentaires! ?? '';
+    commentController.text = widget.course.commentaires ?? '';
+    rating = double.tryParse(widget.course.rating?.toString() ?? '') ?? 3.0;
   }
 
   @override
@@ -44,7 +45,7 @@ class _CommentaireCourseState extends State<CommentaireCourse> {
       padding: EdgeInsets.all(16),
       height:
           MediaQuery.of(context).size.height *
-          0.85, // Augmenté à 85% pour plus de visibilité
+          0.82, // Augmenté à 85% pour plus de visibilité
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [

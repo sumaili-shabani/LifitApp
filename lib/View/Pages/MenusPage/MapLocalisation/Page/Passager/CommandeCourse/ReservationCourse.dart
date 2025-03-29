@@ -11,7 +11,6 @@ import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:http/http.dart' as http;
 
 class ReservationTaxi extends StatefulWidget {
   final List<dynamic> typeCourses;
@@ -19,6 +18,8 @@ class ReservationTaxi extends StatefulWidget {
   final Map<String, dynamic> datainfotarification;
   final int refCategorie;
   final Function(Map<String, dynamic>) onCategorySelected; // Callback function
+  final bool isLocation;
+  final String nameVehicule;
   const ReservationTaxi({
     super.key,
     required this.typeCourses,
@@ -26,6 +27,8 @@ class ReservationTaxi extends StatefulWidget {
     required this.refCategorie,
     required this.datainfotarification,
     required this.onCategorySelected,
+    required this.isLocation,
+    required this.nameVehicule,
   });
 
   @override
@@ -57,8 +60,9 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
       throw Exception('Utilisateur non connecté');
     }
     try {
+      int refTypeCourse = widget.datainfotarification['refTypeCourse'];
       List<dynamic> listVehicule = await CallApi.fetchListData(
-        'fetch_vehicule_map_on_line_bycatvehicule/${widget.refCategorie}',
+        'fetch_vehicule_map_on_line_bycatvehicule/${widget.refCategorie}/$refTypeCourse',
       );
       // print(listVehicule);
       setState(() {
@@ -194,18 +198,245 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
       // print("data: $data");
       setState(() {
         listCourseEncours =
-            data
-                .map((item) => CourseInfoPassagerModel.fromMap(item))
-                .toList();
+            data.map((item) => CourseInfoPassagerModel.fromMap(item)).toList();
 
         isLoading = false;
       });
 
       print("listCourseEncours: $data");
-
     } catch (e) {
       print("Erreur: $e");
       setState(() => isLoading = false);
+    }
+  }
+
+  Future<void> _showInputDialog(
+    BuildContext context,
+    String unite,
+    Map<String, dynamic> category,
+  ) async {
+    TextEditingController daysController = TextEditingController();
+
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Center(
+            child: Text(
+              "Pour combien de temps voulez-vous louer cette voitre ?",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+            ),
+          ),
+          content: TextField(
+            controller: daysController,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              hintText: "Pour 5 /$unite",
+              border: OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed:
+                  () => Navigator.pop(context), // Fermer la boîte de dialogue
+              child: Text("Annuler", style: TextStyle(color: Colors.red)),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                int? jours = int.tryParse(daysController.text);
+                if (jours != null && jours > 0) {
+                  Navigator.pop(context); // Fermer la boîte de dialogue
+
+                  double duration = double.parse(
+                    widget.trajectoire['duration']?.toString() ?? '0',
+                  );
+
+                 
+
+                  double prix = double.parse(
+                    widget.datainfotarification['prix']?.toString() ?? '0',
+                  );
+                  double taxeAmbouteillage = double.parse(
+                    widget.datainfotarification['taxeAmbouteillage']
+                            ?.toString() ??
+                        '0',
+                  );
+
+                  double taxeSuplementaire = taxeAmbouteillage / 60;
+
+                  String devise =
+                      widget.datainfotarification['devise']?.toString() ?? '';
+
+                  String placeLat =
+                      widget.trajectoire['placeLat']?.toString() ?? '';
+                  String placeLon =
+                      widget.trajectoire['placeLon']?.toString() ?? '';
+                  String placeName =
+                      widget.trajectoire['placeName']?.toString() ?? '';
+
+                  int remise = int.parse(
+                    widget.datainfotarification['remise']?.toString() ?? '0',
+                  );
+
+                  int refTypeCourse = int.parse(
+                    widget.datainfotarification['refTypeCourse']?.toString() ??
+                        '0',
+                  );
+
+                  double durationPlus = double.parse(
+                    widget.datainfotarification['durationPlus']?.toString() ??
+                        '0',
+                  );
+
+                  double tempsMax = duration + durationPlus;
+                  double montantNormal =
+                      widget.isLocation
+                          ? prix * jours - ((prix * jours * remise) / 100)
+                          : prix * jours -
+                              ((prix * jours * remise) / 100);
+
+                  String dateLimiteCourse =
+                      CallApi.getCurrentDateTimeWithOffset(tempsMax);
+
+                  // traitement de l'insertion
+                  envoyerCommande(
+                    context,
+                    idConnected: idConnected,
+                    category: category,
+                    refTypeCourse: refTypeCourse,
+                    placeName: placeName,
+                    placeLon: double.parse(placeLon),
+                    placeLat: double.parse(placeLat),
+                    montantNormal: montantNormal,
+                    devise: devise,
+                    nameConnected: nameConnected,
+                    distance: double.parse(jours.toString()),
+                    tempsMax: tempsMax,
+                    dateLimiteCourse: dateLimiteCourse,
+                    taxeSuplementaire: taxeSuplementaire,
+                    calculate: 0,
+                  );
+                  // fin triatement insertion
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Veuillez entrer un nombre valide."),
+                    ),
+                  );
+                }
+              },
+              child: Text("Valider"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /*
+  *
+  *===================================
+  * FOnction d'insertion
+  *===================================
+  *
+  */
+  Future<void> envoyerCommande(
+    BuildContext context, {
+    required int idConnected,
+    required Map<String, dynamic> category,
+    required int refTypeCourse,
+    required String placeName,
+    required double placeLon,
+    required double placeLat,
+    required double montantNormal,
+    required String devise,
+    required String nameConnected,
+    required double distance,
+    required double tempsMax,
+    required String dateLimiteCourse,
+    required double taxeSuplementaire,
+    required int calculate,
+  }) async {
+    try {
+      // Afficher le chargement
+      EasyLoading.show(
+        status: 'Envoi en cours...',
+        maskType: EasyLoadingMaskType.black,
+      );
+
+      // Récupérer la position actuelle
+      Position? position = await ApiService.getCurrentLocation();
+
+      if (position == null) {
+        EasyLoading.showError("Impossible d'obtenir la position.");
+        return;
+      }
+
+      double latitude = position.latitude;
+      double longitude = position.longitude;
+
+      // Récupérer le nom du lieu
+      String namePlace = await ApiService.getPlaceName(latitude, longitude);
+
+      // Création de la data à envoyer
+      Map<String, dynamic> svData = {
+        "id": "",
+        "refPassager": idConnected,
+        "refChauffeur": int.parse(category['refChauffeur'].toString()),
+        "refConduite": category['refConduite']!.toString(),
+        "refTypeCourse": refTypeCourse,
+        "refAdresseDepart": namePlace,
+        "refAdresseArrivee": placeName,
+        "depart_longitude": longitude,
+        "depart_latitude": latitude,
+        "arrivee_longitude": placeLon,
+        "arrivee_latitude": placeLat,
+        "current_longitude": longitude,
+        "current_latitude": latitude,
+        "montant_course": montantNormal.toStringAsFixed(0),
+        "devise": devise,
+        "status": 2,
+        "author": nameConnected,
+        "refUser": idConnected,
+        "latDepart": latitude.toString(),
+        "lonDepart": longitude.toString(),
+        "latDestination": placeLat.toString(),
+        "lonDestination": placeLon.toString(),
+        "nameDepart": namePlace,
+        "nameDestination": placeName,
+        "distance": distance.toStringAsFixed(2),
+        "prixCourse": montantNormal.toStringAsFixed(0),
+        "timeEst": "${tempsMax.toStringAsFixed(2)} Min",
+        "calculate": calculate,
+        "dateLimiteCourse": dateLimiteCourse,
+        "taxeSuplementaire": taxeSuplementaire.toStringAsFixed(0),
+        "timePlus": tempsMax.toString(),
+      };
+
+      print("🔹 Envoi de la requête avec les données : $svData");
+
+      // Envoi des données à l'API
+      final response = await CallApi.insertData(
+        endpoint: "mobile_passager_store_course",
+        data: svData,
+      );
+
+      String message = response['message'].toString();
+
+      if (message.isNotEmpty) {
+        print("✅ Réponse API : $response");
+        EasyLoading.showSuccess("Commande envoyée avec succès !");
+        showSnackBar(context, message, 'success');
+      } else {
+        print("⚠️ Message vide reçu !");
+        EasyLoading.showSuccess("Commande envoyée avec succès !");
+        // EasyLoading.showError("Erreur lors de l'envoi !");
+      }
+    } catch (e) {
+      print("❌ Erreur API : $e");
+      // EasyLoading.showError("Une erreur s'est produite !");
+    } finally {
+      EasyLoading.dismiss();
     }
   }
 
@@ -213,17 +444,21 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
   void initState() {
     super.initState();
     fetchNotifications();
-    // initPusher();
     fetchCourses();
-
-    // Exécute fetchNotifications() toutes les 30 secondes
-    // Timer.periodic(Duration(seconds: 5), (Timer t) {
-    //   fetchCourses();
-    // });
-
-     _timer = Timer.periodic(Duration(seconds: 60), (Timer t) {
-      fetchCourses(); // Rafraîchir la liste toutes les 30s
+    setState(() {
+      searchController.text = widget.nameVehicule.toString();
+     
     });
+    
+
+    
+
+    // Déclenche fetchNotification toutes les 60 secondes
+     _timer = Timer.periodic(Duration(seconds: 30), (timer) {
+      fetchCourses();
+    });
+
+
   }
 
   @override
@@ -231,7 +466,6 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
     _timer?.cancel(); // Arrêter le timer pour éviter les fuites de mémoire
     super.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -273,7 +507,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                     filterSearchResults("");
                   });
 
-                  print("showSearchBar: $showSearchBar");
+                  // print("showSearchBar: $showSearchBar");
                 },
               ),
             ],
@@ -297,9 +531,8 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
               ),
             ),
 
-
           // debit composant
-          
+
           // fin composant
 
           // Liste des catégories en mode Grid
@@ -369,7 +602,11 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                     );
 
                     double tempsMax = duration + durationPlus;
-                    double montantNormal = prix * distance - ( (prix * distance * remise)/100);
+                    double montantNormal =
+                        widget.isLocation
+                            ? prix * 1 - ((prix * 1 * remise) / 100)
+                            : prix * distance -
+                                ((prix * distance * remise) / 100);
 
                     String dateLimiteCourse =
                         CallApi.getCurrentDateTimeWithOffset(tempsMax);
@@ -421,140 +658,44 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                               padding: const EdgeInsets.all(8),
                               child: Column(
                                 children: [
-                                  isLoadingCommande
-                                      ? Center(
-                                        child: CircularProgressIndicator(),
+                                  widget.isLocation
+                                      ? TextButton(
+                                        onPressed: () async {
+                                          _showInputDialog(
+                                            context,
+                                            unite,
+                                            category,
+                                          );
+                                        },
+                                        child: Text(
+                                          "Commander la location ${category["name"] ?? ''}",
+                                          style: TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
                                       )
                                       : TextButton(
                                         onPressed: () async {
-                                          // setState(() {
-                                          //   isLoadingCommande = true;
-                                          // });
-
-                                          EasyLoading.show(
-                                            status: 'Envoi en cours...',
-                                            maskType: EasyLoadingMaskType.black,
+                                          await envoyerCommande(
+                                            context,
+                                            idConnected: idConnected,
+                                            category: category,
+                                            refTypeCourse: refTypeCourse,
+                                            placeName: placeName,
+                                            placeLon: double.parse(placeLon),
+                                            placeLat: double.parse(placeLat),
+                                            montantNormal: montantNormal,
+                                            devise: devise,
+                                            nameConnected: nameConnected,
+                                            distance: distance,
+                                            tempsMax: tempsMax,
+                                            dateLimiteCourse: dateLimiteCourse,
+                                            taxeSuplementaire:
+                                                taxeSuplementaire,
+                                            calculate: 1,
                                           );
-
-                                          Position? position =
-                                              await ApiService.getCurrentLocation();
-
-                                          if (position != null) {
-                                            double latitude = position.latitude;
-                                            double longitude =
-                                                position.longitude;
-
-                                            String namePlace =
-                                                await ApiService.getPlaceName(
-                                                  latitude,
-                                                  longitude,
-                                                );
-
-                                            Map<String, dynamic> svData = {
-                                              "id": "",
-                                              "refPassager":
-                                                  idConnected.toInt(),
-                                              "refChauffeur": int.parse(
-                                                category['refChauffeur']
-                                                    .toString(),
-                                              ),
-                                              "refConduite":
-                                                  category['refConduite']!
-                                                      .toString(),
-                                              "refTypeCourse":
-                                                  refTypeCourse.toInt(),
-                                              "refAdresseDepart":
-                                                  namePlace.toString(),
-                                              "refAdresseArrivee":
-                                                  placeName.toString(),
-                                              "depart_longitude": longitude,
-                                              "depart_latitude": latitude,
-                                              "arrivee_longitude": placeLon,
-                                              "arrivee_latitude": placeLat,
-                                              "current_longitude": longitude,
-                                              "current_latitude": latitude,
-                                              "montant_course": montantNormal
-                                                  .toStringAsFixed(0),
-                                              "devise": devise.toString(),
-                                              "status": 2,
-                                              "author":
-                                                  nameConnected.toString(),
-                                              "refUser": idConnected.toInt(),
-                                              "latDepart": latitude.toString(),
-                                              "lonDepart": longitude.toString(),
-                                              "latDestination":
-                                                  placeLat.toString(),
-                                              "lonDestination":
-                                                  placeLon.toString(),
-                                              "nameDepart":
-                                                  namePlace.toString(),
-                                              "nameDestination":
-                                                  placeName.toString(),
-                                              "distance": distance
-                                                  .toStringAsFixed(2),
-                                              "prixCourse": montantNormal
-                                                  .toStringAsFixed(0),
-                                              "timeEst": tempsMax
-                                                  .toStringAsFixed(2),
-                                              "calculate": "1",
-                                              "dateLimiteCourse":
-                                                  dateLimiteCourse.toString(),
-                                              "taxeSuplementaire":
-                                                  taxeSuplementaire
-                                                      .toStringAsFixed(0),
-                                              "timePlus": tempsMax.toString(),
-                                            };
-
-                                            print("category: $category");
-
-                                            try {
-                                              final response =
-                                                  await CallApi.insertData(
-                                                    endpoint:
-                                                        "mobile_passager_store_course",
-                                                    data: svData,
-                                                    // token: token,
-                                                  );
-
-                                              String message =
-                                                  response['message']
-                                                      .toString();
-
-                                              if (message.isNotEmpty) {
-                                                print(
-                                                  "✅ Réponse API : $response",
-                                                );
-
-                                                EasyLoading.showSuccess(
-                                                  "Commande envoyée avec succès !",
-                                                );
-                                                showSnackBar(
-                                                  context,
-                                                  message,
-                                                  'success',
-                                                );
-                                              } else {
-                                                print("⚠️ Message vide reçu !");
-                                                EasyLoading.showError(
-                                                  "Erreur lors de l'envoi !",
-                                                );
-                                              }
-                                            } catch (e) {
-                                              print("❌ Erreur API : $e");
-                                              EasyLoading.showError(
-                                                "Une erreur s'est produite !",
-                                              );
-                                            } finally {
-                                              EasyLoading.dismiss();
-                                              setState(() {
-                                                isLoadingCommande = false;
-                                              });
-                                            }
-                                          } else {
-                                            EasyLoading.showError(
-                                              "Impossible d'obtenir la position.",
-                                            );
-                                          }
                                         },
                                         child: Text(
                                           "Commander ${category["name"] ?? ''}",
@@ -603,27 +744,43 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                       Icon(
                                         Icons.map,
                                         color: Colors.blueGrey,
-                                        size: 14,
+                                        size: 12,
                                       ),
                                       SizedBox(width: 2),
                                       Expanded(
                                         child: Text(
-                                          'Distance:',
+                                          "${widget.isLocation ? 'Location:' : 'Distance:'} ",
                                           style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                       ),
-                                      Expanded(
-                                        child: Text(
-                                          '${distance.toStringAsFixed(0)} Km / pour ${tempsMax.toStringAsFixed(0)} Minutes',
-                                          style: TextStyle(
-                                            fontSize: 10,
-                                            fontWeight: FontWeight.w500,
+                                      widget.isLocation
+                                          ? Expanded(
+                                            child: Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment.end,
+                                              children: [
+                                                Text(
+                                                  ' $unite',
+                                                  style: TextStyle(
+                                                    fontSize: 10,
+                                                    fontWeight: FontWeight.w500,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          )
+                                          : Expanded(
+                                            child: Text(
+                                              '${distance.toStringAsFixed(0)} Km / pour ${tempsMax.toStringAsFixed(0)} Minutes',
+                                              style: TextStyle(
+                                                fontSize: 10,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
                                           ),
-                                        ),
-                                      ),
                                     ],
                                   ),
                                   //fin minutes

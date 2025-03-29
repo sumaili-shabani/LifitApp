@@ -10,7 +10,6 @@ import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Cou
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/EmergencyAlertSheet.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/PaiementCommission.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/PassagerHistoriqueCourse.dart';
-import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/PaymentHistoryScreen.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Statistique/DynamicColumnChart.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Statistique/DynamicPieChart.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Statistique/PaieCommissionChart.dart';
