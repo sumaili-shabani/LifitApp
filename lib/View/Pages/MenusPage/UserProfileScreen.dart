@@ -43,7 +43,28 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     );
 
     // print(response);
-    if (roleId == 3) {
+    if (roleId == 2) {
+      //passager
+      List<dynamic> dataDash = await CallApi.fetchListData(
+        'passager_mobile_dashboard/${userId.toInt()}',
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body)['data'];
+        // print(data);
+        setState(() {
+          idRole = roleId!;
+          user = UserModel.fromMap(data);
+          dashInfo =
+              dataDash
+                  .map((item) => ChauffeurDashBoardModel.fromMap(item))
+                  .toList();
+          isLoading = false;
+        });
+      } else {
+        throw Exception('Erreur de chargement des données');
+      }
+    } else if (roleId == 3) {
       //chauffeur
       List<dynamic> dataDash = await CallApi.fetchListData(
         'chauffeur_mobile_dashboard/${userId.toInt()}',
@@ -286,7 +307,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
                 SizedBox(height: 20),
 
-                Card(
+                idRole != 2?Card(
                   margin: EdgeInsets.symmetric(horizontal: 20),
                   child: ListTile(
                     leading: Icon(Icons.car_crash, color: Colors.green),
@@ -296,7 +317,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
-                ),
+                ):SizedBox(),
 
                 SizedBox(height: 20),
                 Card(

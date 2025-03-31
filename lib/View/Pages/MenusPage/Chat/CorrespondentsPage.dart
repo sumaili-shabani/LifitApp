@@ -37,7 +37,19 @@ class _CorrespondentsPageState extends State<CorrespondentsPage> {
     }
     try {
      
-      if (userRole==3) {
+      if(userRole == 2){
+        List<dynamic> data = await CallApi.fetchListData(
+          'mobile_ambassadeur_show_user_list_message/${userId.toString()}',
+        );
+
+         setState(() {
+          correspondents = data;
+          filteredCorrespondents = data;
+          isLoading = false;
+        });
+
+        // print(data);
+      }else if (userRole==3) {
 
         List<dynamic> data = await CallApi.fetchListData(
           'mobile_show_user_list_message/${userId.toString()}',

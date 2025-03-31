@@ -1,26 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Ambassadeur/Pages/ChauffeurPage.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/HistoriqueCourseScreen.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/PassagerMapHomeScreem.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/WalletPage.dart';
 import 'package:lifti_app/View/Pages/MenusPage/ProfilScreen.dart';
-
 import 'package:lifti_app/core/theme/app_theme.dart';
 
-class PassagerApp extends StatefulWidget {
-  const PassagerApp({super.key});
+class AmbassadeurApp extends StatefulWidget {
+  const AmbassadeurApp({super.key});
 
   @override
-  State<PassagerApp> createState() => _PassagerAppState();
+  State<AmbassadeurApp> createState() => _AmbassadeurAppState();
 }
 
-class _PassagerAppState extends State<PassagerApp> {
+class _AmbassadeurAppState extends State<AmbassadeurApp> {
   int _selectedIndex = 0;
 
   // Liste des écrans du menu
   final List<Widget> _pages = [
-    PassagerMapHomeScreem(),
-    HistoriqueCourseScreen(),
-    WalletPage(),
+    // PassagerMapHomeScreem(),
+    // HistoriqueCourseScreen(),
+    // WalletPage(),
+    
+
+    Center(child: Text("Accueil"),),
+    Center(child: Text("Voiture")),
+   ChauffeurAmbassadeurPage(),
     ProfilScreen(),
   ];
 
@@ -45,11 +50,11 @@ class _PassagerAppState extends State<PassagerApp> {
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "Accueil"),
           BottomNavigationBarItem(
             icon: Icon(Icons.local_taxi),
-            label: "Courses",
+            label: "Voiture",
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.account_balance_wallet),
-            label: "Portefeuille",
+            icon: Icon(Icons.group),
+            label: "Chauffeur",
           ),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
         ],

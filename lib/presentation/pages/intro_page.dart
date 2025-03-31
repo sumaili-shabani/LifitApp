@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/View/Pages/AmbassadeurApp.dart';
 import 'package:lifti_app/View/Pages/ChauffeurApp.dart';
 import 'package:lifti_app/View/Pages/PassagerApp.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -246,7 +247,9 @@ class _IntroPageState extends ConsumerState<IntroPage>
       ),
     ];
 
-    return idRoleConnected == 3
+    return idRoleConnected == 2
+        ? AmbassadeurApp()
+        : idRoleConnected == 3
         ? ChauffeurApp()
         : idRoleConnected == 4
         ? PassagerApp()

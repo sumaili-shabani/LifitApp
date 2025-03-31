@@ -59,7 +59,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
       child: Scaffold(
         appBar: CustomAppBar(
           title: Text(
-            "Profil du Chauffeur",
+            "Profil",
             style: TextStyle(color: Colors.white),
           ),
           actions: [
@@ -119,7 +119,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
 
   AppBar newMethod() {
     return AppBar(
-      title: Text("Profil du Chauffeur"),
+      title: Text("Profil"),
       actions: [
         IconButton(
           onPressed: _showSettings,

@@ -7,6 +7,7 @@ import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 import 'package:lifti_app/Components/ButtonComponent.dart';
 import 'package:lifti_app/Components/TextFildComponent.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
+import 'package:lifti_app/View/Pages/AmbassadeurApp.dart';
 import 'package:lifti_app/View/Pages/ChauffeurApp.dart';
 import 'package:lifti_app/View/Pages/PassagerApp.dart';
 
@@ -132,6 +133,26 @@ class _LoginPageState extends State<LoginPage> {
               ),
               (route) => false, // Supprime toutes les pages précédentes
             );
+          } else if (data['user']['id_role'] == 2) {
+            Navigator.of(context).pushAndRemoveUntil(
+              PageRouteBuilder(
+                pageBuilder:
+                    (context, animation, secondaryAnimation) =>
+                        const AmbassadeurApp(),
+                transitionsBuilder: (
+                  context,
+                  animation,
+                  secondaryAnimation,
+                  child,
+                ) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                transitionDuration: const Duration(
+                  milliseconds: 500,
+                ), // Durée de l'animation
+              ),
+              (route) => false, // Supprime toutes les pages précédentes
+            );
           } else {}
         }
       } catch (e) {
@@ -171,7 +192,6 @@ class _LoginPageState extends State<LoginPage> {
           Center(
             child: SingleChildScrollView(
               child: Container(
-               
                 child: Form(
                   key: formKey,
                   child: Padding(
@@ -184,7 +204,7 @@ class _LoginPageState extends State<LoginPage> {
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Image.asset("assets/images/logo.png", width: 210),
-          
+
                               Padding(
                                 padding: EdgeInsets.all(5),
                                 child: Column(
@@ -204,7 +224,7 @@ class _LoginPageState extends State<LoginPage> {
                             ],
                           ),
                           const SizedBox(height: 10),
-          
+
                           TextFildComponent(
                             labeltext: "Email et N° Téléphone",
                             hint: "Entrer Email  ou N° Téléphone",
@@ -212,7 +232,7 @@ class _LoginPageState extends State<LoginPage> {
                             controller: usrName,
                             validatorInput: true,
                           ),
-          
+
                           const SizedBox(height: 10),
                           // TextFildComponent(
                           //   labeltext: "Mot de passe",
@@ -221,7 +241,7 @@ class _LoginPageState extends State<LoginPage> {
                           //   controller: password,
                           //   validatorInput: true,
                           // ),
-          
+
                           // Password field
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 1),
@@ -233,11 +253,11 @@ class _LoginPageState extends State<LoginPage> {
                             child: Center(
                               child: TextFormField(
                                 controller: password,
-          
+
                                 decoration: InputDecoration(
                                   labelText: "Mot de passe",
                                   hintText: "Entre votre mot de passe",
-          
+
                                   prefixIcon: const Icon(Icons.lock_outline),
                                   suffixIcon: IconButton(
                                     icon: Icon(
@@ -253,7 +273,7 @@ class _LoginPageState extends State<LoginPage> {
                                   ),
                                 ),
                                 obscureText: _obscurePassword,
-          
+
                                 textInputAction: TextInputAction.next,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
@@ -268,7 +288,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                           ),
                           const SizedBox(height: 16),
-          
+
                           const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -299,13 +319,16 @@ class _LoginPageState extends State<LoginPage> {
                                 onPressed:
                                     () => Navigator.of(context).push(
                                       MaterialPageRoute(
-                                        builder: (_) => const ForgotPasswordPage(),
+                                        builder:
+                                            (_) => const ForgotPasswordPage(),
                                       ),
                                     ),
                                 backgroundColor: Colors.transparent,
                                 foregroundColor: theme.colorScheme.primary,
                                 elevation: 0,
-                                padding: const EdgeInsets.symmetric(horizontal: 8),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
                                 child: Text(
                                   "Mot de passe oublié?",
                                   style: TextStyle(
@@ -316,7 +339,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ],
                           ),
-          
+
                           const SizedBox(height: 10),
                           ButtonComponent(
                             icon: Icons.login,
