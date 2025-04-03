@@ -28,9 +28,14 @@ class CallApi {
   // static const String fileUrl = "https://www.swiftride.tech/"; // Pour le fichier
   // static const String baseUrl ="https://www.swiftride.tech/api"; // Remplace par ton URL
 
+   static const String fileUrl =
+      "https://lifti.e-serv.org/"; // Pour le fichier
+  static const String baseUrl =
+      "https://lifti.e-serv.org/api"; // Remplace par ton URL
+
   //par defaut en locale
-  static const String fileUrl = "http://10.237.243.127:8000"; // Pour le fichier
-  static const String baseUrl = "http://10.237.243.127:8000/api"; // pour ton URL
+  // static const String fileUrl = "http://10.35.83.127:8000"; // Pour le fichier
+  // static const String baseUrl = "http://10.35.83.127:8000/api"; // pour ton URL
 
   /*
   *
@@ -371,5 +376,13 @@ class CallApi {
       if (token != null) 'Authorization': 'Bearer $token',
     };
     return headers;
+  }
+
+  static dynamic getValidDropdownValue(
+    List<Map<String, dynamic>> items,
+    dynamic value,
+    String valueKey,
+  ) {
+    return items.any((item) => item[valueKey] == value) ? value : null;
   }
 }

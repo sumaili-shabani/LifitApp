@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Model/ConducteurModel.dart';
-import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Ambassadeur/Pages/AddChauffeur.dart';
-import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Ambassadeur/Pages/AvatarImage.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Ambassadeur/Pages/composants/InfoRevenuChauffeur.dart';
 
-class ChauffeurAmbassadeurPage extends StatefulWidget {
-  const ChauffeurAmbassadeurPage({super.key});
+
+class MesChauffeur extends StatefulWidget {
+  const MesChauffeur({super.key});
 
   @override
-  State<ChauffeurAmbassadeurPage> createState() =>
-      _ChauffeurAmbassadeurPageState();
+  State<MesChauffeur> createState() => _MesChauffeurState();
 }
 
-class _ChauffeurAmbassadeurPageState extends State<ChauffeurAmbassadeurPage> {
+class _MesChauffeurState extends State<MesChauffeur> {
   late List<ConducteurModel> chauffeurlist = [];
   late List<ConducteurModel> filteredList = [];
   TextEditingController searchController = TextEditingController();
@@ -30,7 +29,7 @@ class _ChauffeurAmbassadeurPageState extends State<ChauffeurAmbassadeurPage> {
 
     //passager
     List<dynamic> dataDash = await CallApi.fetchListData(
-      'list_chauffeur_all_ambassadeur/${userId.toInt()}',
+      'list_chauffeur_ambassadeur/${userId.toInt()}',
     );
     // print(dataDash);
     setState(() {
@@ -65,7 +64,6 @@ class _ChauffeurAmbassadeurPageState extends State<ChauffeurAmbassadeurPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      
       body: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Column(
@@ -106,63 +104,37 @@ class _ChauffeurAmbassadeurPageState extends State<ChauffeurAmbassadeurPage> {
                             chauffeur.name ?? '',
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          subtitle: Text(
-                            "Sexe: ${chauffeur.sexe} | ${chauffeur.roleName ?? ''}\nTel: ${chauffeur.telephone ?? ''}",
+                          subtitle: Column(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                "Sexe: ${chauffeur.sexe} | ${chauffeur.roleName ?? ''}\nTel: ${chauffeur.telephone ?? ''}",
+                              ),
+                              Row(
+                                children: [
+                                  Icon(Icons.account_balance_wallet, size: 14),
+                                  SizedBox(width: 2),
+                                  Expanded(
+                                    child: Text(
+                                      "wallet Solde: ${chauffeur.soldeCommission} CDF",
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
                           ),
                           trailing: Wrap(
                             spacing: 0,
                             children: [
                               IconButton(
-                                icon: Icon(Icons.edit, color: Colors.blue),
-                                onPressed: () async {
-                                  // Action Modifier
-                                  bool? result = await Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder:
-                                          (context) => Addchauffeur(
-                                            id:
-                                                chauffeur.id ??
-                                                0, // Assure que `id` ne soit jamais null
-                                            name:
-                                                chauffeur.name ??
-                                                '', // Valeur par défaut ''
-                                            email: chauffeur.email ?? '',
-                                            telephone:
-                                                chauffeur.telephone ?? '',
-                                            adresse: chauffeur.adresse ?? '',
-                                            sexe:
-                                                chauffeur.sexe ??
-                                                '', // Assure que `sexe` ne soit jamais null
-                                            tel1: chauffeur.tel1 ?? '',
-                                            tel2: chauffeur.tel2 ?? '',
-                                            tel3: chauffeur.tel3 ?? '',
-                                            tel4: chauffeur.tel4 ?? '',
-                                            refBanque:
-                                                chauffeur.refBanque ??
-                                                0, // Assure que `refBanque` ne soit jamais null
-                                            refMode:
-                                                chauffeur.refMode ??
-                                                0, // Assure que `refMode` ne soit jamais null
-
-                                            nomBanque:
-                                                chauffeur.nomBanque ?? '',
-                                            nomMode: chauffeur.nomMode ?? '',
-                                          ),
-                                    ),
-                                  );
-
-                                  if (result == true) {
-                                    // Rafraîchir la liste des chauffeurs ici
-                                    fetchUser();
-                                  }
-                                },
-                              ),
-                              IconButton(
-                                icon: Icon(Icons.image, color: Colors.green),
+                                icon: Icon(
+                                  Icons.keyboard_arrow_right,
+                                  size: 30,
+                                ),
                                 onPressed: () {
-                                  // Action Changer Image
-                                  showRatingBottomSheet(context, chauffeur);
+                                  // Action revenu
+                                  showRevenuBottomSheet(context, chauffeur);
                                 },
                               ),
                             ],
@@ -187,7 +159,7 @@ class _ChauffeurAmbassadeurPageState extends State<ChauffeurAmbassadeurPage> {
   */
 
   // Fonction pour ouvrir le BottomSheet
-  void showRatingBottomSheet(BuildContext context, ConducteurModel user) {
+  void showRevenuBottomSheet(BuildContext context, ConducteurModel user) {
     showModalBottomSheet(
       isScrollControlled: true,
       context: context,
@@ -195,7 +167,7 @@ class _ChauffeurAmbassadeurPageState extends State<ChauffeurAmbassadeurPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return AvatarImage(
+        return InfoRevenuChauffeur(
           user: user,
           onClicFunction: () {
             Navigator.pop(context);

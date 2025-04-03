@@ -51,9 +51,12 @@ class _PaiementCommissionState extends State<PaiementCommission> {
         : Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              "Paiement Commission",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 0, 0, 0),
+              child: Text(
+                "Paiement Commission",
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
             ),
             SizedBox(height: 10),
             ...notifications.map(

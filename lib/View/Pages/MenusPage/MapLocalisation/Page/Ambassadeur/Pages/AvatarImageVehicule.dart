@@ -4,18 +4,18 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:lifti_app/Api/my_api.dart';
-import 'package:lifti_app/Model/ConducteurModel.dart';
+import 'package:lifti_app/Model/VehiculeModel.dart';
 
-class AvatarImage extends StatefulWidget {
-  final ConducteurModel user;
-  final Function onClicFunction;
-  const AvatarImage({super.key, required this.user, required this.onClicFunction});
+class AvatarImageVehicule extends StatefulWidget {
+  final VoitureModel vehicule;
+  final Function(VoitureModel taxi) onClicFunction;
+  const AvatarImageVehicule({super.key, required this.vehicule, required this.onClicFunction});
 
   @override
-  State<AvatarImage> createState() => _AvatarImageState();
+  State<AvatarImageVehicule> createState() => _AvatarImageVehiculeState();
 }
 
-class _AvatarImageState extends State<AvatarImage> {
+class _AvatarImageVehiculeState extends State<AvatarImageVehicule> {
   /*
   *
   *============================
@@ -52,7 +52,7 @@ class _AvatarImageState extends State<AvatarImage> {
 
     try {
       String apiUrl =
-          '${CallApi.baseUrl}/chauffeur_mobile_edit_photo_user'; // Changez l'URL de votre API
+          '${CallApi.baseUrl}/update_mobile_image_vehicule'; // Changez l'URL de votre API
       int? userId = await CallApi.getUserId();
       if (userId == null) {
         throw Exception("ID utilisateur introuvable");
@@ -63,7 +63,7 @@ class _AvatarImageState extends State<AvatarImage> {
       request.files.add(
         await http.MultipartFile.fromPath("image", _imageFile!.path),
       );
-      request.fields["data"] = jsonEncode({"id": widget.user.id.toString()});
+      request.fields["data"] = jsonEncode({"id": widget.vehicule.id!.toString()});
 
       var response = await request.send();
       if (response.statusCode == 200) {
@@ -79,7 +79,8 @@ class _AvatarImageState extends State<AvatarImage> {
           SnackBar(content: Text("Image mise à jour avec succès")),
         );
         //actualisation de la fonction user
-        widget.onClicFunction();
+        widget.onClicFunction(widget.vehicule);
+        Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(
           context,
@@ -111,7 +112,7 @@ class _AvatarImageState extends State<AvatarImage> {
       padding: EdgeInsets.all(16),
       height:
           MediaQuery.of(context).size.height *
-          0.35, // Augmenté à 85% pour plus de visibilité
+          0.40, // Augmenté à 85% pour plus de visibilité
       width: MediaQuery.of(context).size.width * 1,
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -133,10 +134,11 @@ class _AvatarImageState extends State<AvatarImage> {
           // uploader fichieer
           CircleAvatar(
             radius: 60,
+            backgroundColor: Colors.transparent,
             backgroundImage:
                 _imageFile != null
                     ? FileImage(File(_imageFile!.path)) as ImageProvider
-                    : NetworkImage("${CallApi.fileUrl}/images/${widget.user.avatar}"),
+                    : NetworkImage("${CallApi.fileUrl}/taxi/${widget.vehicule.imageVehicule.toString()}"),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,

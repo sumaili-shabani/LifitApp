@@ -14,23 +14,27 @@ class ChauffeurDashBoardModel {
   final int? sumMontantCourseTermine;
   final double? sumDistanceCourseEncours;
   final double? sumDistanceCourseTermine;
+  final int? countVoiture;
+  final int? countPaiementSalaire;
 
   ChauffeurDashBoardModel({
-     this.id,
-     this.sommePaiementBonus,
-     this.sommePaiementRecette,
-     this.sommePaiementCommission,
-     this.sommeRetrait,
-     this.sommeRecharge,
-     this.countCourse,
-     this.countCourseEncours,
-     this.countCourseTermine,
-     this.countRecharge,
-     this.sommePaiement,
-     this.sumMontantCourseEncours,
-     this.sumMontantCourseTermine,
-     this.sumDistanceCourseEncours,
-     this.sumDistanceCourseTermine,
+    this.id,
+    this.sommePaiementBonus,
+    this.sommePaiementRecette,
+    this.sommePaiementCommission,
+    this.sommeRetrait,
+    this.sommeRecharge,
+    this.countCourse,
+    this.countCourseEncours,
+    this.countCourseTermine,
+    this.countRecharge,
+    this.sommePaiement,
+    this.sumMontantCourseEncours,
+    this.sumMontantCourseTermine,
+    this.sumDistanceCourseEncours,
+    this.sumDistanceCourseTermine,
+    this.countVoiture,
+    this.countPaiementSalaire,
   });
 
   factory ChauffeurDashBoardModel.fromMap(Map<String, dynamic> json) =>
@@ -50,6 +54,9 @@ class ChauffeurDashBoardModel {
         sumMontantCourseTermine: json["SumMontantCourse_termine"],
         sumDistanceCourseEncours: json["SumDistanceCourse_encours"].toDouble(),
         sumDistanceCourseTermine: json["SumDistanceCourse_termine"].toDouble(),
+
+        countVoiture: json["CountVoiture"]??0,
+        countPaiementSalaire: json["CountPaiementSalaire"]??0,
       );
 
   Map<String, dynamic> toMap() => {
@@ -68,5 +75,7 @@ class ChauffeurDashBoardModel {
     "SumMontantCourse_termine": sumMontantCourseTermine,
     "SumDistanceCourse_encours": sumDistanceCourseEncours,
     "SumDistanceCourse_termine": sumDistanceCourseTermine,
+    "CountVoiture": countVoiture,
+    "CountPaiementSalaire": countPaiementSalaire,
   };
 }

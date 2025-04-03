@@ -4,45 +4,51 @@ import 'dart:io';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:lifti_app/Api/my_api.dart';
-import 'package:lifti_app/Model/ConducteurModel.dart';
+import 'package:lifti_app/Model/VehiculeModel.dart';
+import 'package:file_picker/file_picker.dart';
 
-class AvatarImage extends StatefulWidget {
-  final ConducteurModel user;
-  final Function onClicFunction;
-  const AvatarImage({super.key, required this.user, required this.onClicFunction});
+class AvatarFichierVehicule extends StatefulWidget {
+  final VoitureModel vehicule;
+  final Function(VoitureModel taxi) onClicFunction;
+
+  const AvatarFichierVehicule({
+    super.key,
+    required this.vehicule,
+    required this.onClicFunction,
+  });
 
   @override
-  State<AvatarImage> createState() => _AvatarImageState();
+  State<AvatarFichierVehicule> createState() => _AvatarFichierVehiculeState();
 }
 
-class _AvatarImageState extends State<AvatarImage> {
-  /*
-  *
-  *============================
-  * Pour upload de l'image
-  *============================
-  *
-  */
-  File? _imageFile;
+class _AvatarFichierVehiculeState extends State<AvatarFichierVehicule> {
+  File? _selectedFile;
   bool _isUploading = false;
   // ignore: unused_field
-  String? _imageUrl;
+  String? _fileUrl;
+  // ignore: unused_field
   final ImagePicker _picker = ImagePicker();
+  bool isImage = false;
 
-  Future<void> _pickImage() async {
-    final pickedFile = await _picker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
+  Future<void> _pickFile() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['jpg', 'jpeg', 'png', 'pdf'],
+    );
+
+    if (result != null) {
       setState(() {
-        _imageFile = File(pickedFile.path);
+        _selectedFile = File(result.files.single.path!);
+        isImage = result.files.single.extension != 'pdf';
       });
     }
   }
 
-  Future<void> _uploadImage() async {
-    if (_imageFile == null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("Sélectionnez d'abord une image")));
+  Future<void> _uploadFile() async {
+    if (_selectedFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Sélectionnez d'abord un fichier")),
+      );
       return;
     }
 
@@ -51,19 +57,18 @@ class _AvatarImageState extends State<AvatarImage> {
     });
 
     try {
-      String apiUrl =
-          '${CallApi.baseUrl}/chauffeur_mobile_edit_photo_user'; // Changez l'URL de votre API
+      String apiUrl = '${CallApi.baseUrl}/update_mobile_fichier_vehicule';
       int? userId = await CallApi.getUserId();
-      if (userId == null) {
-        throw Exception("ID utilisateur introuvable");
-      }
+      if (userId == null) throw Exception("ID utilisateur introuvable");
 
       var request = http.MultipartRequest('POST', Uri.parse(apiUrl));
       request.headers.addAll(await CallApi.getHeaders());
       request.files.add(
-        await http.MultipartFile.fromPath("image", _imageFile!.path),
+        await http.MultipartFile.fromPath("image", _selectedFile!.path),
       );
-      request.fields["data"] = jsonEncode({"id": widget.user.id.toString()});
+      request.fields["data"] = jsonEncode({
+        "id": widget.vehicule.id!.toString(),
+      });
 
       var response = await request.send();
       if (response.statusCode == 200) {
@@ -71,15 +76,15 @@ class _AvatarImageState extends State<AvatarImage> {
         var decodedData = jsonDecode(responseData);
 
         setState(() {
-          _imageUrl = decodedData['image_url'].toString();
-          _imageFile = null;
+          _fileUrl = decodedData['file_url'].toString();
+          _selectedFile = null;
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("Image mise à jour avec succès")),
+          SnackBar(content: Text("Fichier mis à jour avec succès")),
         );
-        //actualisation de la fonction user
-        widget.onClicFunction();
+        widget.onClicFunction(widget.vehicule);
+        Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(
           context,
@@ -97,22 +102,12 @@ class _AvatarImageState extends State<AvatarImage> {
     }
   }
 
-  /*
-  *
-  *============================
-  * Fin Pour upload de l'image
-  *============================
-  *
-  */
-
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.all(16),
-      height:
-          MediaQuery.of(context).size.height *
-          0.35, // Augmenté à 85% pour plus de visibilité
-      width: MediaQuery.of(context).size.width * 1,
+      height: MediaQuery.of(context).size.height * 0.40,
+      width: MediaQuery.of(context).size.width,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -126,32 +121,41 @@ class _AvatarImageState extends State<AvatarImage> {
           ),
           SizedBox(height: 5),
           Text(
-            "Modifier sa photo",
+            "Modifier son document",
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           SizedBox(height: 10),
-          // uploader fichieer
-          CircleAvatar(
-            radius: 60,
-            backgroundImage:
-                _imageFile != null
-                    ? FileImage(File(_imageFile!.path)) as ImageProvider
-                    : NetworkImage("${CallApi.fileUrl}/images/${widget.user.avatar}"),
-          ),
+
+          // Affichage de l'image ou du fichier PDF
+          isImage
+              ? CircleAvatar(
+                radius: 60,
+                backgroundColor: Colors.transparent,
+                backgroundImage:
+                    _selectedFile != null
+                        ? FileImage(_selectedFile!) as ImageProvider
+                        : NetworkImage(
+                          "${CallApi.fileUrl}/taxi/${widget.vehicule.imageVehicule.toString()}",
+                        ),
+              )
+              : _selectedFile != null
+              ? Icon(Icons.picture_as_pdf, size: 60, color: Colors.red)
+              : Icon(Icons.file_present, size: 60, color: Colors.grey),
+
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               GestureDetector(
-                onTap: _pickImage,
+                onTap: _pickFile,
                 child: CircleAvatar(
                   radius: 20,
                   backgroundColor: Colors.blue,
-                  child: Icon(Icons.camera_alt, color: Colors.white),
+                  child: Icon(Icons.upload_file, color: Colors.white),
                 ),
               ),
               SizedBox(width: 10),
               InkWell(
-                onTap: _uploadImage,
+                onTap: _uploadFile,
                 child: CircleAvatar(
                   backgroundColor: Colors.green,
                   radius: 20,
@@ -162,13 +166,11 @@ class _AvatarImageState extends State<AvatarImage> {
                               Colors.white,
                             ),
                           )
-                          : Icon(Icons.upload, color: Colors.white),
+                          : Icon(Icons.cloud_upload, color: Colors.white),
                 ),
               ),
             ],
           ),
-
-          // fin upload fichier
         ],
       ),
     );

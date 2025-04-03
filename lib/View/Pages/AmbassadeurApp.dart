@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Ambassadeur/Pages/ChauffeurPage.dart';
-import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/HistoriqueCourseScreen.dart';
-import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/PassagerMapHomeScreem.dart';
-import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/WalletPage.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Ambassadeur/Pages/AmbassadeurWalletPage.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Ambassadeur/Pages/MenuChauffeur.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Ambassadeur/Pages/VehiculePage.dart';
 import 'package:lifti_app/View/Pages/MenusPage/ProfilScreen.dart';
 import 'package:lifti_app/core/theme/app_theme.dart';
 
@@ -18,14 +17,9 @@ class _AmbassadeurAppState extends State<AmbassadeurApp> {
 
   // Liste des écrans du menu
   final List<Widget> _pages = [
-    // PassagerMapHomeScreem(),
-    // HistoriqueCourseScreen(),
-    // WalletPage(),
-    
-
-    Center(child: Text("Accueil"),),
-    Center(child: Text("Voiture")),
-   ChauffeurAmbassadeurPage(),
+    AmbassadeurWalletPage(),
+    VehiculePage(),
+    MenuChauffeurPage(),
     ProfilScreen(),
   ];
 
@@ -37,7 +31,6 @@ class _AmbassadeurAppState extends State<AmbassadeurApp> {
 
   @override
   Widget build(BuildContext context) {
-    
     return Scaffold(
       body: _pages[_selectedIndex],
       bottomNavigationBar: BottomNavigationBar(
@@ -52,16 +45,10 @@ class _AmbassadeurAppState extends State<AmbassadeurApp> {
             icon: Icon(Icons.local_taxi),
             label: "Voiture",
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.group),
-            label: "Chauffeur",
-          ),
+          BottomNavigationBarItem(icon: Icon(Icons.group), label: "Chauffeur"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
         ],
       ),
     );
   }
 }
-
-
-

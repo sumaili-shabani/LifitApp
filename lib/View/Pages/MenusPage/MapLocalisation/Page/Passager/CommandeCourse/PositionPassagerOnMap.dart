@@ -419,13 +419,23 @@ class _PositionPassagerOnMapState extends State<PositionPassagerOnMap> {
                                   ); // 🔥 Lancer l'animation du chauffeur avec rotation
                                 }
 
-                                checkStatutCourse(
-                                  course.id!,
-                                  course.status!,
-                                  course.refPassager!,
-                                  course.refChauffeur!,
-                                  "checkEtat_DisponibiliteLocationCourse",
-                                );
+                               if (course.calculate==0) {
+                                  checkStatutCourse(
+                                    course.id!,
+                                    course.status!,
+                                    course.refPassager!,
+                                    course.refChauffeur!,
+                                    "checkEtat_DisponibiliteLocationCourse",
+                                  );
+                               } else {
+                                  checkStatutCourse(
+                                    course.id!,
+                                    course.status!,
+                                    course.refPassager!,
+                                    course.refChauffeur!,
+                                    "checkEtat_DemandeCourse",
+                                  );
+                               }
                               },
                               child: Text("Accepter la demande de la course"),
                             ),

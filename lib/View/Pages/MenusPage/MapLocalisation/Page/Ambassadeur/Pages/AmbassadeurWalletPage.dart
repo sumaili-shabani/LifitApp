@@ -6,22 +6,19 @@ import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Model/ChauffeurDashBoardModel.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
-import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CourseEnCours.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Ambassadeur/Pages/MesChauffeur.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/EmergencyAlertSheet.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/PaiementCommission.dart';
-import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/PassagerHistoriqueCourse.dart';
-import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Statistique/DynamicColumnChart.dart';
-import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Statistique/DynamicPieChart.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Statistique/PaieCommissionChart.dart';
 
-class WalletPage extends StatefulWidget {
-  const WalletPage({super.key});
+class AmbassadeurWalletPage extends StatefulWidget {
+  const AmbassadeurWalletPage({super.key});
 
   @override
-  State<WalletPage> createState() => _WalletPageState();
+  State<AmbassadeurWalletPage> createState() => _AmbassadeurWalletPageState();
 }
 
-class _WalletPageState extends State<WalletPage> {
+class _AmbassadeurWalletPageState extends State<AmbassadeurWalletPage> {
   final double totalEarnings = 250.75;
   final int totalRides = 15;
   final double totalDistance = 120.5;
@@ -107,6 +104,8 @@ class _WalletPageState extends State<WalletPage> {
               .toList();
       isLoading = false;
     });
+
+    // print(dataDash);
   }
 
   //appel historique de courese
@@ -118,9 +117,30 @@ class _WalletPageState extends State<WalletPage> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
-        return FractionallySizedBox(
-          heightFactor: 0.75, // 🔥 Prend 75% de la hauteur de l'écran
-          child: PassagerHistoriqueCourse(), // Appel du StatefulWidget
+        return Container(
+           padding: EdgeInsets.all(8),
+          height:
+              MediaQuery.of(context).size.height *
+              0.6, // Augmenté à 75% pour plus de visibilité
+          width: MediaQuery.of(context).size.width * 1,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 50,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+              SizedBox(height: 5),
+            
+              Expanded(
+                child: MesChauffeur(),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -140,7 +160,7 @@ class _WalletPageState extends State<WalletPage> {
     return Scaffold(
       appBar: CustomAppBar(
         title: Text(
-          "Portefeuille Passager",
+          "Tableau de bord",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -171,7 +191,7 @@ class _WalletPageState extends State<WalletPage> {
             onPressed: () {
               _showHistoriqueCourse(context);
             },
-            tooltip: "Historique des courses",
+            tooltip: "Mes chauffeurs",
           ),
         ],
       ),
@@ -184,31 +204,14 @@ class _WalletPageState extends State<WalletPage> {
               ...dashInfo.map(
                 (item) => buildSummaryCard(
                   double.parse(item.sommePaiementBonus.toString()),
-                  int.parse(item.countCourseTermine.toString()),
-                  double.parse(item.sumDistanceCourseTermine.toString()),
+                  int.parse(item.countVoiture!.toString()),
+                  int.parse(item.countPaiementSalaire!.toString()),
                   double.parse(item.sommeRetrait.toString()),
                 ),
               ),
 
               SizedBox(height: 10),
-              //course passager en cours
-              PassagerCourseEnCourse(),
-
-              //fin course passager
-
-              // buildPaymentHistory(paymentHistory),
-              SizedBox(height: 20),
-              ColumnChartPaiementCourse(),
-              SizedBox(height: 10),
-
-              Text(
-                "Répartition des modes de paiement",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(height: 10),
-              DynamicPieChartPaiementCourse(),
-          
-              SizedBox(height: 10),
+             
               // liste de paiement de la personne
               PaiementCommission(),
 
@@ -437,7 +440,7 @@ class _WalletPageState extends State<WalletPage> {
   Widget buildSummaryCard(
     double totalEarnings,
     int totalRides,
-    double totalDistance,
+    int totalDistance,
     double totalPaid,
   ) {
     return Card(
@@ -453,7 +456,7 @@ class _WalletPageState extends State<WalletPage> {
                 Icon(Icons.account_balance_wallet, color: Colors.green),
                 SizedBox(width: 8),
                 Text(
-                  "Bonus:",
+                  "Commission:",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ],
@@ -470,11 +473,11 @@ class _WalletPageState extends State<WalletPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                buildStat(Icons.local_taxi, "Courses", totalRides.toString()),
+                buildStat(Icons.local_taxi, "Tot.Chauffeur", totalRides.toString()),
                 buildStat(
-                  Icons.map,
-                  "Distance",
-                  "${totalDistance.toStringAsFixed(1)} km",
+                  Icons.payment,
+                  "Paiement reçu",
+                  "${totalDistance.toStringAsFixed(0)} ",
                 ),
                 buildStat(
                   Icons.attach_money,
