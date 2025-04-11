@@ -6,6 +6,7 @@ import 'package:lifti_app/Api/my_api.dart';
 class CourseSelectionBottomSheet extends StatelessWidget {
   final List<dynamic> typeCourses;
   final List<dynamic> typeCourseLocation;
+  final Map<String, dynamic> trajectoire;
   final Function(Map<String, dynamic>, bool)
   onCourseSelected; // ✅ Ajout de bool
 
@@ -14,6 +15,7 @@ class CourseSelectionBottomSheet extends StatelessWidget {
     required this.typeCourses,
     required this.onCourseSelected,
     required this.typeCourseLocation,
+    required this.trajectoire,
   });
 
   @override
@@ -87,7 +89,12 @@ class CourseSelectionBottomSheet extends StatelessWidget {
                           itemCount: typeCourses.length,
                           itemBuilder: (context, index) {
                             final course = typeCourses[index];
-                            return _buildCourseItem(course, false, onCourseSelected);
+                            return _buildCourseItem(
+                              course,
+                              false,
+                              onCourseSelected,
+                              trajectoire,
+                            );
                           },
                         ),
                         // pour la location
@@ -96,7 +103,11 @@ class CourseSelectionBottomSheet extends StatelessWidget {
                           itemBuilder: (context, index) {
                             final courseLocation = typeCourseLocation[index];
                             return _buildCourseItem(
-                              courseLocation, true, onCourseSelected);
+                              courseLocation,
+                              true,
+                              onCourseSelected,
+                              trajectoire,
+                            );
                           },
                         ),
                         // Center(
@@ -119,6 +130,7 @@ Widget _buildCourseItem(
   Map<String, dynamic> course,
   bool isLocation, // ✅ Ajout du booléen
   Function(Map<String, dynamic>, bool) onCourseSelected,
+  Map<String, dynamic> trajectoire,
 ) {
   return GestureDetector(
     onTap: () {
@@ -168,9 +180,15 @@ Widget _buildCourseItem(
                     children: [
                       Icon(Icons.account_balance_wallet_rounded, size: 14),
                       SizedBox(width: 5),
-                      Text(
-                        "${course['prix'] ?? 0} ${course['devise'] ?? 'N/A'} (${course['unite'] ?? 'Unité inconnue'})",
-                      ),
+                      isLocation
+                          ? Text(
+                            "${course['prix'] ?? 0} ${course['devise'] ?? 'N/A'} (${course['unite'] ?? 'Unité inconnue'})",
+                          )
+                          : Text(
+                             "${((double.tryParse(course['prix'].toString()) ?? 0) * (double.tryParse(trajectoire['distance'].toString()) ?? 0)).toStringAsFixed(0)} "
+                            "${course['devise'] ?? 'N/A'} "
+                            "(${((double.tryParse(course['durationPlus'].toString()) ?? 0) + (double.tryParse(trajectoire['duration'].toString()) ?? 0)).toStringAsFixed(1)} min)",
+                          ),
                     ],
                   ),
                 ],
@@ -184,6 +202,7 @@ Widget _buildCourseItem(
     ),
   );
 }
+
 // Widget pour afficher la remise
 Widget notifcationRemiseWidget(Map<String, dynamic> course) {
   if (course['remise'] == null || course['remise'] <= 0) {

@@ -8,7 +8,7 @@ import 'package:lifti_app/View/Components/DynamicPieChart.dart';
 import 'package:lifti_app/View/Components/StatJurnaliere.dart';
 import 'package:lifti_app/View/Pages/MenusPage/AvisClientScreem.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
-import 'package:lifti_app/View/Pages/MenusPage/CommandeTaxi.dart';
+
 import 'package:lifti_app/View/Pages/MenusPage/InfoDashBoardPage.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/InformationMenu.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/PaiementCommission.dart';
@@ -101,9 +101,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
               } else if (value == "calendar") {
                 // print("Voir le calendrier...");
               
-                Navigator.of(
-                  context,
-                ).push(AnimatedPageRoute(page: CommandeTaxiScreem()));
+              
               } else {
                 print("Boom");
               }

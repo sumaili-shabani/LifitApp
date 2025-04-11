@@ -12,9 +12,12 @@
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <!-- Fin ajoutmes ajouts -->
+    <!-- pour les notifications -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- fin notification -->
     <application
         android:theme="@style/NormalTheme"
-        android:label="Lifti-Teste"
+        android:label="Lifti-Test"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true">

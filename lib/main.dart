@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as stripe; // ✅ Alias ajouté
 import 'package:get_storage/get_storage.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Controller/NotificationService.dart';
 import 'package:lifti_app/presentation/widgets/language_switch.dart';
 import 'config/app_config.dart';
 import 'core/di/service_locator.dart';
@@ -16,13 +17,20 @@ void main() async {
   await GetStorage.init();
   await setupServiceLocator();
 
-  WidgetsFlutterBinding.ensureInitialized();
+  
   stripe.Stripe.publishableKey =
       CallApi.stripePublicKey; // ✅ Ajout de l'alias stripe.
+
+  // pour les notification
+  // Initialisation des notifications
+  await NotificationService.initialize();
+  // fin push notification
 
   runApp(const ProviderScope(child: App()));
   configLoading(); // Configurer EasyLoading
 }
+
+
 
 void configLoading() {
   EasyLoading.instance

@@ -98,8 +98,8 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
           center: passengerPosition,
           radius: 1000,
           strokeWidth: 2,
-          strokeColor: Colors.blue,
-          fillColor: Colors.blue.withOpacity(0.2),
+          strokeColor: Colors.green,
+          fillColor: Colors.green.withOpacity(0.2),
         ),
       );
     });

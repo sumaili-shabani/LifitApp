@@ -117,6 +117,18 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                             ),
                           ),
                           SizedBox(width: 10),
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: CircleAvatar(
+                              backgroundColor: Colors.transparent,
+                              radius: 15,
+                              child: Image.network(
+                                '${CallApi.fileUrl}/images/${course.avatarChauffeur}',
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 2),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -144,6 +156,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                               ],
                             ),
                           ),
+                          
                           // Ajouter un bouton payer à droite du prix
                           if (course.status == '4')
                             Align(

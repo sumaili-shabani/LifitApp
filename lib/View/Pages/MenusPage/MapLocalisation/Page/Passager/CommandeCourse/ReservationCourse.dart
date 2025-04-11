@@ -5,10 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Components/DateTimePickerField.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Controller/ApiService.dart';
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
-import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -46,7 +46,6 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
   String nameConnected = "";
   String token = "";
 
-  final PusherChannelsFlutter pusher = PusherChannelsFlutter();
   Function(Map<String, dynamic>)?
   onNewTaxiRequest; // Callback pour mettre à jour l'UI
 
@@ -98,89 +97,6 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
     }
   }
 
-  Future<void> initPusher() async {
-    int? userId = await CallApi.getUserId(); // Récupérer l'ID utilisateur
-    SharedPreferences localStorage = await SharedPreferences.getInstance();
-    String? bearerToken = localStorage.getString('token');
-
-    if (bearerToken == null || bearerToken.isEmpty) {
-      print("❌ Erreur : Aucun token trouvé !");
-      return;
-    }
-
-    print("🔑 Token récupéré : $bearerToken");
-
-    try {
-      await pusher.init(
-        apiKey: CallApi.pusherAppKey.toString(),
-        cluster: "mt1",
-        // useTLS: false,
-        authEndpoint: "${CallApi.baseUrl}/broadcasting/auth?token=$bearerToken",
-        onEvent: (PusherEvent event) {
-          print("📡 Nouvel événement : $event");
-          print("📡 Nouvel événement : ${event.data}");
-          // ✅ Convertir les données reçues
-          Map<String, dynamic> response = jsonDecode(event.data);
-
-          if (mounted) {
-            setState(() {
-              if (response['statut'] == 'accepté') {
-                EasyLoading.dismiss();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text("🚖 Votre taxi est en route !")),
-                );
-              }
-            });
-          }
-        },
-      );
-
-      await pusher.subscribe(
-        channelName: "private-commande-taxi.$userId",
-        onSubscriptionSucceeded: (dynamic channelName) {
-          print("✅ Abonné au canal : $channelName");
-        },
-        onEvent: (dynamic event) {
-          // 🔥 Changer `PusherEvent` en `dynamic`
-          print("🚀 Événement reçu : ${event.data}");
-
-          // Vérifier que `event.data` est bien une chaîne JSON avant de la décoder
-          if (event is PusherEvent && event.data != null) {
-            try {
-              Map<String, dynamic> response = jsonDecode(event.data!);
-
-              if (mounted) {
-                setState(() {
-                  if (response['statut'] == '2') {
-                    EasyLoading.dismiss();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("❌ Chauffeur indisponible.")),
-                    );
-                    print("❌ Chauffeur indisponible.");
-                  } else if (response['statut'] == '3') {
-                    EasyLoading.dismiss();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text("✅ Taxi confirmé, en route !")),
-                    );
-                    print("✅ Taxi confirmé, en route !");
-                  }
-                });
-              }
-            } catch (e) {
-              print("❌ Erreur lors du parsing JSON : $e");
-            }
-          } else {
-            print("⚠️ Événement Pusher invalide : $event");
-          }
-        },
-      );
-
-      await pusher.connect();
-    } catch (e) {
-      print("❌ Erreur Pusher : $e");
-    }
-  }
-
   Timer? pusherTimer; // ✅ Timer pour recharger Pusher
   List<CourseInfoPassagerModel> listCourseEncours = [];
   Timer? _timer;
@@ -215,7 +131,10 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
     String unite,
     Map<String, dynamic> category,
   ) async {
+    final formKey = GlobalKey<FormState>();
     TextEditingController daysController = TextEditingController();
+    TextEditingController periode1 = TextEditingController();
+    TextEditingController periode2 = TextEditingController();
 
     return showDialog(
       context: context,
@@ -227,12 +146,43 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ),
-          content: TextField(
-            controller: daysController,
-            keyboardType: TextInputType.number,
-            decoration: InputDecoration(
-              hintText: "Pour 5 /$unite",
-              border: OutlineInputBorder(),
+          content: Container(
+            height: MediaQuery.of(context).size.height * 0.3,
+            child: Form(
+              key: formKey,
+              child: Column(
+                children: [
+                  TextField(
+                    controller: daysController,
+                    keyboardType: TextInputType.number,
+
+                    decoration: InputDecoration(
+                      label: Text("Pour 5 /$unite"),
+                      hintText: "Pour 5 /$unite",
+                      border: OutlineInputBorder(),
+                      prefixIcon: Icon(Icons.calendar_month),
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  //composant de période
+                  DateTimePickerField(
+                    label: "Période debit",
+
+                    onChanged: (value) {
+                      periode1.text = value;
+                    },
+                  ),
+                  SizedBox(height: 10),
+                  //composant de période
+                  DateTimePickerField(
+                    label: "Période Fin",
+                    onChanged: (value) {
+                      periode2.text = value;
+                    },
+                  ),
+                  SizedBox(height: 10),
+                ],
+              ),
             ),
           ),
           actions: [
@@ -244,14 +194,15 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
             ElevatedButton(
               onPressed: () {
                 int? jours = int.tryParse(daysController.text);
-                if (jours != null && jours > 0) {
+                if (jours != null &&
+                    jours > 0 &&
+                    periode1.text != '' &&
+                    periode2.text != '') {
                   Navigator.pop(context); // Fermer la boîte de dialogue
 
                   double duration = double.parse(
                     widget.trajectoire['duration']?.toString() ?? '0',
                   );
-
-                 
 
                   double prix = double.parse(
                     widget.datainfotarification['prix']?.toString() ?? '0',
@@ -292,8 +243,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                   double montantNormal =
                       widget.isLocation
                           ? prix * jours - ((prix * jours * remise) / 100)
-                          : prix * jours -
-                              ((prix * jours * remise) / 100);
+                          : prix * jours - ((prix * jours * remise) / 100);
 
                   String dateLimiteCourse =
                       CallApi.getCurrentDateTimeWithOffset(tempsMax);
@@ -315,6 +265,8 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                     dateLimiteCourse: dateLimiteCourse,
                     taxeSuplementaire: taxeSuplementaire,
                     calculate: 0,
+                    periode1: periode1.text,
+                    periode2: periode2.text,
                   );
                   // fin triatement insertion
                 } else {
@@ -356,6 +308,8 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
     required String dateLimiteCourse,
     required double taxeSuplementaire,
     required int calculate,
+    required String periode1,
+    required String periode2,
   }) async {
     try {
       // Afficher le chargement
@@ -411,6 +365,8 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
         "dateLimiteCourse": dateLimiteCourse,
         "taxeSuplementaire": taxeSuplementaire.toStringAsFixed(0),
         "timePlus": tempsMax.toString(),
+        "periode1": periode1,
+        "periode2": periode2,
       };
 
       print("🔹 Envoi de la requête avec les données : $svData");
@@ -447,18 +403,12 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
     fetchCourses();
     setState(() {
       searchController.text = widget.nameVehicule.toString();
-     
     });
-    
-
-    
 
     // Déclenche fetchNotification toutes les 60 secondes
-     _timer = Timer.periodic(Duration(seconds: 30), (timer) {
+    _timer = Timer.periodic(Duration(seconds: 30), (timer) {
       fetchCourses();
     });
-
-
   }
 
   @override
@@ -695,6 +645,8 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                             taxeSuplementaire:
                                                 taxeSuplementaire,
                                             calculate: 1,
+                                            periode1: "",
+                                            periode2: "",
                                           );
                                         },
                                         child: Text(

@@ -6,11 +6,11 @@ import 'package:lifti_app/Model/BarData.dart';
 import 'package:lifti_app/Model/ChartData.dart';
 import 'package:lifti_app/Model/DemandeTaxiModel.dart';
 import 'package:lifti_app/Model/PieData.dart';
-import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
+
 
 
 class ApiService {
-  PusherChannelsFlutter pusher = PusherChannelsFlutter();
+
 
   static Future<List<PieData>> fetchPieData(String url) async {
     String? token = await CallApi.getToken();
@@ -116,39 +116,6 @@ class ApiService {
       throw Exception("Erreur lors de la récupération des données");
     }
   }
-
-  Future<void> initPusher() async {
-    try {
-      await pusher.init(
-        apiKey: CallApi.pusherAppKey,
-        cluster: "mt1",
-        useTLS: true, // 🔥 Ajout de TLS pour éviter des erreurs WebSocket
-        authEndpoint: "${CallApi.fileUrl}/broadcasting/auth", // Auth Laravel
-        onEvent: (PusherEvent event) {
-          print("📡 Nouvel événement : ${event.eventName}");
-          print("📨 Données reçues : ${event.data}");
-        },
-        onSubscriptionSucceeded: (String channelName, dynamic data) {
-          print("✅ Abonné avec succès au canal : $channelName");
-        },
-        onConnectionStateChange: (String previousState, String currentState) {
-          print("🔄 État de connexion Pusher : $previousState ➡️ $currentState");
-        },
-        onError: (String message, int? code, dynamic e) {
-          print("❌ Erreur Pusher : $message (Code: $code)");
-        },
-      );
-
-      await pusher.subscribe(channelName: "chauffeur.30"); // Remplace par ton canal privé
-      print("📡 Abonnement au canal privé-chauffeur-30 réussi");
-
-      await pusher.connect();
-      print("🚀 Connexion à Pusher réussie");
-    } catch (e) {
-      print("🚨 Erreur lors de l'initialisation de Pusher : $e");
-    }
-  }
-
 
   static Future<String> getPlaceName(double latitude, double longitude) async {
     final url = Uri.parse(

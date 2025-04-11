@@ -16,6 +16,12 @@
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>Nous avons besoin d'accéder à votre bibliothèque pour télécharger une image.</string>
 	<!-- fin ajout -->
+	<!-- pour les notification local -->
+	<key>flutter_local_notifications</key>
+	<true/>
+	<key>NSUserNotificationAlertStyle</key>
+	<string>alert</string>
+	<!-- fin notification local -->
 
 	<key>IOs</key>
 	<dict>

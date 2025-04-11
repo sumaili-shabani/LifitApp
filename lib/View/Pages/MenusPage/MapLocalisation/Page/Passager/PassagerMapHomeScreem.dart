@@ -18,6 +18,7 @@ import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/CategoryVehicleScreen.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/CourseSelectionBottomSheet.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/TaxiCommandeScreen.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Recherche/SearchLocation.dart';
 
 class PassagerMapHomeScreem extends StatefulWidget {
   const PassagerMapHomeScreem({super.key});
@@ -1180,6 +1181,7 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
           (context) => CourseSelectionBottomSheet(
             typeCourses: typeCourses, // Liste des types de courses
             typeCourseLocation: typeCourseLocation,
+             trajectoire: trajectoire,
             onCourseSelected: (Map<String, dynamic> selectedCourse, bool isLocation) {
               Map<String, dynamic> datainfotarif = {
                 'refTypeCourse': selectedCourse['refTypeCourse'],
@@ -1334,7 +1336,13 @@ class _PassagerMapHomeScreemState extends State<PassagerMapHomeScreem> {
           IconButton(
             icon: Icon(Icons.search, color: Colors.white),
             onPressed: () {
-              callBottomSheetSearch();
+              // callBottomSheetSearch();
+
+              Navigator.of(
+                context,
+              ).push(AnimatedPageRoute(page: SearchLocation()));
+
+              
             },
           ),
           IconButton(
