@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -9,6 +10,7 @@ import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/button.dart';
 import 'package:lifti_app/Controller/NotificationService.dart';
+import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/CategoryVehicleScreen.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/CourseSelectionBottomSheet.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/TaxiCommandeScreen.dart';
@@ -22,6 +24,7 @@ import 'dart:typed_data';
 
 import 'package:lifti_app/View/Pages/MenusPage/NotificationBottom.dart';
 // importation pour pusher
+import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 
 class SearchLocation extends StatefulWidget {
   const SearchLocation({super.key});
@@ -1320,95 +1323,239 @@ class _SearchLocationState extends State<SearchLocation> {
   *utilisation de push
   *==========================
   */
-  // Dans votre StatefulWidget
-  /*
-  PusherChannelsFlutter? _pusher;
-  int? currentUserId;
 
-  Future<void> _initPusher() async {
+  late PusherChannelsFlutter pusher;
+  bool isNotify = false; // à contrôler selon ton backend ou événement reçu
+
+  void _connectToPusher() async {
+    pusher = PusherChannelsFlutter.getInstance();
+    int? passagerId = await CallApi.getUserId();
+    final token = await CallApi.getToken();
+
+    debugPrint("🔌 Initialisation Pusher pour l'utilisateur $passagerId");
+
+    await pusher.init(
+      apiKey: CallApi.pusherAppKey,
+      cluster: "mt1",
+      onConnectionStateChange: (currentState, previousState) async {
+        debugPrint("🔌 État Pusher: $previousState → $currentState");
+
+        if (currentState == 'CONNECTED') {
+          _subscribeToChannel(passagerId!);
+        }
+
+        // 🔁 Reconnexion automatique si déconnecté
+        if (currentState == 'DISCONNECTED' || currentState == 'FAILED') {
+          debugPrint("🔁 Reconnexion dans 3 secondes...");
+          await Future.delayed(Duration(seconds: 3));
+          await pusher.connect();
+        }
+      },
+      onError: (message, code, e) {
+        debugPrint("❌ Erreur Pusher: $message (code: $code) | exception: $e");
+      },
+    );
+
+    await pusher.connect();
+  }
+
+  void _subscribeToChannel(int passagerId) async {
+    final channelName = 'commande-taxi.$passagerId';
+
+    debugPrint("🔗 Abonnement au canal: $channelName");
+
     try {
-      currentUserId = await CallApi.getUserId();
-      final token = await CallApi.getToken();
-
-      _pusher = PusherChannelsFlutter.getInstance();
-
-      await _pusher!.init(
-        apiKey: CallApi.pusherAppKey,
-        cluster: 'mt1',
-        authEndpoint: '${CallApi.baseUrl}/broadcasting/auth',
-        authParams: {
-          'headers': {
-            'Authorization': 'Bearer $token',
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-          },
-        },
-        onConnectionStateChange: (String currentState, String previousState) {
-          debugPrint('État: $previousState -> $currentState');
-          if (currentState == 'CONNECTED') {
-            debugPrint('✅ Connexion établie');
-          }
-        },
-        onError: (String message, int? code, dynamic error) {
-          debugPrint('❌ Erreur: $message (Code: $code)');
-          Future.delayed(const Duration(seconds: 3), _initPusher);
-        },
-      );
-
-      // Connexion simple
-      await _pusher!.connect();
-
-      final channelName = 'private-commande-taxi.$currentUserId';
-      await _pusher!.subscribe(
+      await pusher.unsubscribe(channelName: channelName);
+      await pusher.subscribe(
         channelName: channelName,
-        onEvent: (PusherEvent event) {
+        onEvent: (event) {
+          debugPrint("\n📡 Événement reçu:");
+          debugPrint("Canal: ${event.channelName}");
+          debugPrint("Type: ${event.eventName}");
+          debugPrint("Données: ${event.data}\n");
+
           if (event.eventName == 'chauffeur.response') {
-            debugPrint('📩 Données reçues: ${event.data}');
             _handleDriverResponse(event);
           }
         },
       );
+
+      debugPrint("✅ Abonnement réussi à $channelName");
     } catch (e) {
-      debugPrint('⚠️ Erreur initialisation: $e');
-      Future.delayed(const Duration(seconds: 5), _initPusher);
+      debugPrint("❌ Erreur d'abonnement: $e");
     }
   }
 
   void _handleDriverResponse(PusherEvent event) {
     try {
-      final data = jsonDecode(event.data ?? '{}');
+      debugPrint("📡 Traitement de l'événement: ${event.eventName}");
+      debugPrint("📦 Données brutes: ${event.data}");
+
+      final Map<String, dynamic> data = jsonDecode(event.data ?? '{}');
+
+      debugPrint("🔍 Données décodées: $data");
+
       if (data['statut'] == '3') {
+        debugPrint("✅ Course acceptée - Affichage de la notification");
+
+        final driverName = data['driver_name'] ?? 'Chauffeur';
+        final rideId = data['ride_id']?.toString() ?? '0';
+
+        // 1. Afficher un SnackBar
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("🚕 $driverName a accepté votre course !"),
+              duration: Duration(seconds: 5),
+            ),
+          );
+
+          // 2. Rafraîchir l’interface avec setState
+          setState(() {
+            // mettez à jour vos variables si besoin ici
+            isNotify = true;
+          });
+        }
+
+        // 3. Jouer le son de notification
         NotificationService.acceptingRideSaundNotification();
+
+        // 4. Afficher la notification système
         NotificationService.showRideAcceptedNotification(
-          rideId: data['ride_id'].toString(),
-          driverName: data['driver_name'] ?? 'Chauffeur',
-          carDetails: data['car_details'] ?? 'Véhicule',
+          rideId: rideId,
+          driverName: driverName,
+          carDetails: data['car_details'] ?? 'Véhicule en approche',
         );
 
+        // 5. Naviguer vers le suivi si nécessaire
         if (mounted) {
-          Navigator.pushNamed(
-            context,
-            '/suivi-course',
-            arguments: {
-              'rideId': data['ride_id'],
-              'driver': data['driver_name'],
-            },
+          // Navigator.pushNamed(context, '/suivi-course', arguments: {
+          //   'rideId': rideId,
+          //   'driver': driverName,
+          // });
+          showCourseBottomSheet(context);
+        }
+      } else if (data['statut'] == '2') {
+        final driverName = data['driver_name'] ?? 'Chauffeur';
+        final rideId = data['ride_id']?.toString() ?? '0';
+        // 1. Afficher un SnackBar
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("🚕 $driverName non disponible!"),
+              duration: Duration(seconds: 5),
+            ),
           );
+
+          // 2. Rafraîchir l’interface avec setState
+          setState(() {
+            // mettez à jour vos variables si besoin ici
+            isNotify = true;
+          });
+        }
+        // 3. Jouer le son de notification
+        NotificationService.paddingRideSaundNotification();
+        // 4. Afficher la notification système
+        NotificationService.courseRejeterParChauffeurNotification(
+          rideId: rideId,
+          driverName: driverName,
+          carDetails: data['car_details'] ?? 'Véhicule en approche',
+        );
+        // 5. Naviguer vers le suivi si nécessaire
+        if (mounted) {
+          showCourseBottomSheet(context);
+        }
+      } else if (data['statut'] == '4') {
+        final driverName = data['driver_name'] ?? 'Chauffeur';
+        final rideId = data['ride_id']?.toString() ?? '0';
+        // 1. Afficher un SnackBar
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("🚕 Destination complète!"),
+              duration: Duration(seconds: 5),
+            ),
+          );
+
+          // 2. Rafraîchir l’interface avec setState
+          setState(() {
+            // mettez à jour vos variables si besoin ici
+            isNotify = true;
+          });
+        }
+        // 3. Jouer le son de notification
+        NotificationService.finishedSoundNotification();
+        // 4. Afficher la notification système
+        NotificationService.courseFinieParChauffeurNotification(
+          rideId: rideId,
+          driverName: driverName,
+          carDetails: data['car_details'] ?? 'Véhicule en approche',
+        );
+        // 5. Naviguer vers le suivi si nécessaire
+        if (mounted) {
+          showCourseBottomSheet(context);
+        }
+      } else if (data['statut'] == '0') {
+        final driverName = data['driver_name'] ?? 'Chauffeur';
+        final rideId = data['ride_id']?.toString() ?? '0';
+        // 1. Afficher un SnackBar
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("🚕 Course en cours!"),
+              duration: Duration(seconds: 5),
+            ),
+          );
+
+          // 2. Rafraîchir l’interface avec setState
+          setState(() {
+            // mettez à jour vos variables si besoin ici
+            isNotify = true;
+          });
+        }
+        // 3. Jouer le son de notification
+        NotificationService.paddingRideSaundNotification();
+        // 4. Afficher la notification système
+        NotificationService.courseDemarerParChauffeurNotification(
+          rideId: rideId,
+          driverName: driverName,
+          carDetails: data['car_details'] ?? 'Véhicule en approche',
+        );
+        // 5. Naviguer vers le suivi si nécessaire
+        if (mounted) {
+          showCourseBottomSheet(context);
+        }
+      } else {
+        if (mounted) {
+          showCourseBottomSheet(context);
         }
       }
     } catch (e) {
-      debugPrint('⚠️ Erreur traitement: $e');
+      debugPrint('⚠️ Erreur traitement événement: $e');
     }
   }
-  */
+
+  void testDnsLookup() async {
+    try {
+      print('🔍 Résolution DNS pour ws-mt1.pusher.com...');
+      final result = await InternetAddress.lookup('ws-mt1.pusher.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        print('✅ DNS OK : ${result.first.address}');
+      } else {
+        print('❌ Aucun résultat DNS');
+      }
+    } catch (e) {
+      print('⚠️ Erreur de résolution DNS: $e');
+    }
+  }
 
   @override
   void initState() {
     super.initState();
 
-    // WidgetsBinding.instance.addPostFrameCallback((_) {
-    //   if (mounted) _initPusher();
-    // });
+    testDnsLookup();
+
+    _connectToPusher();
 
     changeMyPosition();
     fetchNotifications();
@@ -1428,14 +1575,32 @@ class _SearchLocationState extends State<SearchLocation> {
   }
 
   @override
+  void dispose() {
+    pusher.disconnect();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: CustomAppBar(
-        showBackButton: true,
+        
         title: Text(
           'Planifier votre course',
           style: TextStyle(color: Colors.white),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.chat, color: Colors.white),
+            tooltip: "Discussion instantanée",
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(AnimatedPageRoute(page: CorrespondentsPage()));
+            },
+          ),
+        ],
       ),
       body:
           // ignore: unnecessary_null_comparison
@@ -1477,7 +1642,7 @@ class _SearchLocationState extends State<SearchLocation> {
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: Colors.white,
+                            color: theme.canvasColor,
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
@@ -1563,7 +1728,7 @@ class _SearchLocationState extends State<SearchLocation> {
                           Container(
                             height: MediaQuery.of(context).size.height * 0.4,
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.95),
+                              color: theme.canvasColor,
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
@@ -1736,50 +1901,104 @@ class _SearchLocationState extends State<SearchLocation> {
                     ),
                   ),
                   //les bouttons
+                  // 🔘 Les boutons avec badges
                   Positioned(
                     bottom: 100,
                     right: 7,
                     child: Column(
                       children: [
-                        // 🔔 Bouton notification
-                        FloatingActionButton(
-                          heroTag: "btn1",
-                          mini: true,
-                          backgroundColor: Colors.white,
-                          onPressed: () {
-                            // naviguer vers notifications
-                            showNotificationBottomSheet(context);
-                          },
-                          child: Icon(Icons.notifications, color: Colors.black),
+                        // 🔔 Bouton notification avec badge
+                        Stack(
+                          children: [
+                            FloatingActionButton(
+                              heroTag: "btn1",
+                              mini: true,
+                              backgroundColor: Colors.white,
+                              onPressed: () {
+                                setState(() {
+                                  isNotify = false;
+                                });
+                                showNotificationBottomSheet(context);
+                              },
+                              child: Icon(
+                                Icons.notifications,
+                                color: Colors.black,
+                              ),
+                            ),
+                            if (isNotify)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: TweenAnimationBuilder<double>(
+                                  tween: Tween(begin: 1.0, end: 1.2),
+                                  duration: Duration(milliseconds: 500),
+                                  curve: Curves.easeInOut,
+                                  builder: (context, scale, child) {
+                                    return Transform.scale(
+                                      scale: scale,
+                                      child: child,
+                                    );
+                                  },
+                                  onEnd: () {
+                                    // Boucle l'animation
+                                    if (mounted && isNotify) setState(() {});
+                                  },
+                                  child: Container(
+                                    padding: EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: Colors.red,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: Colors.red.withOpacity(0.6),
+                                          blurRadius: 6,
+                                          spreadRadius: 1,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                         SizedBox(height: 5),
 
-                        // 📜 Bouton historique
-                        FloatingActionButton(
-                          heroTag: "btn2",
-                          mini: true,
-                          backgroundColor: Colors.white,
-                          onPressed: () async {
-                            //naviguer vers l'historique
-                            NotificationService.paddingRideSaundNotification();
+                        // 📜 Bouton historique avec badge aussi (optionnel)
+                        Stack(
+                          children: [
+                            FloatingActionButton(
+                              heroTag: "btn2",
+                              mini: true,
+                              backgroundColor: Colors.white,
+                              onPressed: () {
+                                setState(() {
+                                  isNotify = false;
+                                });
 
-                            // test de notification push
-                            //  await NotificationService.showSimpleNotification(
-                            //     title: 'Notification de test 🚀',
-                            //     body: 'Félicitations, tout fonctionne !',
-                            //   );
-
-                            // NotificationService.showDriverNotification(
-                            //   passengerName: 'Jean Dupont',
-                            //   pickupAddress: '12 Rue de Paris',
-                            //   rideId: '12345',
-                            // );
-                            // print("Notification envoyée !");
-                            // fin test notification
-
-                            showCourseBottomSheet(context);
-                          },
-                          child: Icon(Icons.history, color: Colors.black),
+                                showCourseBottomSheet(context);
+                              },
+                              child: Icon(Icons.history, color: Colors.black),
+                            ),
+                            if (isNotify)
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                child: Container(
+                                  padding: EdgeInsets.all(4),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    color: Colors.red,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.red.withOpacity(0.6),
+                                        blurRadius: 6,
+                                        spreadRadius: 1,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          ],
                         ),
                         SizedBox(height: 5),
 

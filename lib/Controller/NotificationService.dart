@@ -1,16 +1,18 @@
 import 'dart:convert';
 
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:lifti_app/Components/AnimatedPageRoute.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Recherche/SearchLocation.dart';
 
-class NotificationService{
-  
+class NotificationService {
   static Future<void> finishedSoundNotification() async {
     final AudioPlayer audioPlayer = AudioPlayer();
     await audioPlayer.play(AssetSource('sounds/notification1.mp3'));
   }
 
-   static Future<void> paddingRideSaundNotification() async {
+  static Future<void> paddingRideSaundNotification() async {
     final AudioPlayer audioPlayer = AudioPlayer();
     await audioPlayer.play(AssetSource('sounds/notification.mp3'));
   }
@@ -26,6 +28,8 @@ class NotificationService{
   * pour le push notification
   *===================================
   */
+  static final GlobalKey<NavigatorState> navigatorKey =
+      GlobalKey<NavigatorState>();
   // Instance du plugin
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -40,9 +44,6 @@ class NotificationService{
 
   //   await _notificationsPlugin.initialize(initializationSettings);
   // }
-
-
- 
 
   static const InitializationSettings _initSettings = InitializationSettings(
     android: AndroidInitializationSettings('@mipmap/ic_launcher'),
@@ -74,12 +75,22 @@ class NotificationService{
 
     switch (data['type']) {
       case 'ride_accepted':
-        // Navigator.of(
-        //   context,
-        // ).pushNamed('/ride-details', arguments: {'rideId': data['ride_id']});
+        // navigatorKey.currentState?.pushNamed(
+        //   '/ride-details',
+        //   arguments: {'rideId': data['ride_id']},
+        // );
+
+        navigatorKey.currentState?.push(
+          AnimatedPageRoute(page: SearchLocation()),
+        );
+
         break;
       case 'ride_request':
         // Le chauffeur a cliqué (géré par les actions)
+        // SearchLocationMap pour chauffeur
+        navigatorKey.currentState?.push(
+          AnimatedPageRoute(page: SearchLocation()),
+        );
         break;
     }
   }
@@ -112,7 +123,7 @@ class NotificationService{
   /*
   *
   *============================================
-  *pour lesnotifications avance
+  *pour les notifications avance
   *============================================ 
   *
   */
@@ -161,7 +172,6 @@ class NotificationService{
     );
   }
 
-
   static void _handleAction(NotificationResponse response) async {
     final payload = jsonDecode(response.payload ?? '{}');
 
@@ -178,8 +188,68 @@ class NotificationService{
 
       // 3. Rediriger vers l'écran de course
       // Navigator.of(context).pushNamed('/active-ride');
-    }
+    } else if (response.actionId == 'reject_action') {
+      // Envoyer notification au passager
+      courseRejeterParChauffeurNotification(
+        rideId: payload['ride_id'],
+        driverName: 'Votre nom',
+        carDetails: 'Votre véhicule',
+      );
+    } else {}
   }
+
+  /*
+  *
+  *============================
+  * Les réponses du passager
+  *============================
+  */
+
+  //  Notification d'Acceptation (Pour le Passager)
+  static Future<void> coursePayerParClientNotification({
+    required String driverName,
+    required String carDetails,
+    required String rideId,
+  }) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'passenger_channel',
+          'Statut des courses',
+          importance: Importance.high,
+          priority: Priority.defaultPriority,
+          category: AndroidNotificationCategory.status,
+        );
+
+    final NotificationDetails details = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await _notificationsPlugin.show(
+      rideId.hashCode,
+      'Course Payé!',
+      "Merci pour votre confiance!!! $driverName ($carDetails)",
+      details,
+      payload: jsonEncode({
+        'type': 'ride_accepted',
+        'ride_id': rideId,
+        'driver_name': driverName,
+      }),
+    );
+  }
+
+  /*
+  *
+  *============================
+  * Fin réponses du passager
+  *============================
+  */
+
+   /*
+  *
+  *============================
+  * Les réponses du chauffeur
+  *============================
+  */
 
   //  Notification d'Acceptation (Pour le Passager)
   static Future<void> showRideAcceptedNotification({
@@ -203,7 +273,7 @@ class NotificationService{
     await _notificationsPlugin.show(
       rideId.hashCode,
       'Course acceptée!',
-      '$driverName (${carDetails}) vient de prendre votre course',
+      '$driverName ($carDetails) vient de prendre votre course',
       details,
       payload: jsonEncode({
         'type': 'ride_accepted',
@@ -213,8 +283,133 @@ class NotificationService{
     );
   }
 
+  //  Notification d'Acceptation (Pour le Passager)
+  static Future<void> courseRejeterParChauffeurNotification({
+    required String driverName,
+    required String carDetails,
+    required String rideId,
+  }) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'passenger_channel',
+          'Statut des courses',
+          importance: Importance.high,
+          priority: Priority.defaultPriority,
+          category: AndroidNotificationCategory.status,
+        );
 
+    final NotificationDetails details = NotificationDetails(
+      android: androidDetails,
+    );
 
+    await _notificationsPlugin.show(
+      rideId.hashCode,
+      'Course Rejetée!',
+      '$driverName ($carDetails) vient de rejeter votre course',
+      details,
+      payload: jsonEncode({
+        'type': 'ride_accepted',
+        'ride_id': rideId,
+        'driver_name': driverName,
+      }),
+    );
+  }
 
+  //  Notification d'Acceptation (Pour le Passager)
+  static Future<void> courseEnCoursParChauffeurNotification({
+    required String driverName,
+    required String carDetails,
+    required String rideId,
+  }) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'passenger_channel',
+          'Statut des courses',
+          importance: Importance.high,
+          priority: Priority.defaultPriority,
+          category: AndroidNotificationCategory.status,
+        );
 
+    final NotificationDetails details = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await _notificationsPlugin.show(
+      rideId.hashCode,
+      'Course En cours!',
+      'votre course course en encours vers la destination',
+      details,
+      payload: jsonEncode({
+        'type': 'ride_accepted',
+        'ride_id': rideId,
+        'driver_name': driverName,
+      }),
+    );
+  }
+
+  //  Notification d'Acceptation (Pour le Passager)
+  static Future<void> courseDemarerParChauffeurNotification({
+    required String driverName,
+    required String carDetails,
+    required String rideId,
+  }) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'passenger_channel',
+          'Statut des courses',
+          importance: Importance.high,
+          priority: Priority.defaultPriority,
+          category: AndroidNotificationCategory.status,
+        );
+
+    final NotificationDetails details = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await _notificationsPlugin.show(
+      rideId.hashCode,
+      'Course Démarer!',
+      '$driverName ($carDetails) vient de démarer votre course',
+      details,
+      payload: jsonEncode({
+        'type': 'ride_accepted',
+        'ride_id': rideId,
+        'driver_name': driverName,
+      }),
+    );
+  }
+
+  //  Notification d'Acceptation (Pour le Passager)
+  static Future<void> courseFinieParChauffeurNotification({
+    required String driverName,
+    required String carDetails,
+    required String rideId,
+  }) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'passenger_channel',
+          'Statut des courses',
+          importance: Importance.high,
+          priority: Priority.defaultPriority,
+          category: AndroidNotificationCategory.status,
+        );
+
+    final NotificationDetails details = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await _notificationsPlugin.show(
+      rideId.hashCode,
+      'Course Terminée!',
+      "Félicitation course vient d'arriver à la destination!!! $driverName ($carDetails)",
+      details,
+      payload: jsonEncode({
+        'type': 'ride_accepted',
+        'ride_id': rideId,
+        'driver_name': driverName,
+      }),
+    );
+  }
+
+  
 }

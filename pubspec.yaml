@@ -64,6 +64,7 @@ dependencies:
   audioplayers: ^6.4.0
   flutter_datetime_picker: ^1.5.1
   flutter_local_notifications: ^17.0.0
+  pusher_channels_flutter: ^2.2.2
   # laravel_echo_null: ^0.1.1
   # laravel_flutter_pusher: ^0.0.4
   

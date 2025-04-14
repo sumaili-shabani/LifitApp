@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/HistoriqueCourseScreen.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/PassagerMapHomeScreem.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Recherche/SearchLocation.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/WalletPage.dart';
 import 'package:lifti_app/View/Pages/MenusPage/ProfilScreen.dart';
 
@@ -18,7 +19,7 @@ class _PassagerAppState extends State<PassagerApp> {
 
   // Liste des écrans du menu
   final List<Widget> _pages = [
-    PassagerMapHomeScreem(),
+    SearchLocation(),
     HistoriqueCourseScreen(),
     WalletPage(),
     ProfilScreen(),

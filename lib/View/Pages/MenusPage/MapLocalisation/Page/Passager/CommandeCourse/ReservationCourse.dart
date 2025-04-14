@@ -620,7 +620,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                         child: Text(
                                           "Commander la location ${category["name"] ?? ''}",
                                           style: TextStyle(
-                                            fontSize: 11,
+                                            fontSize: 13,
                                             fontWeight: FontWeight.bold,
                                           ),
                                           textAlign: TextAlign.center,
@@ -652,7 +652,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                         child: Text(
                                           "Commander ${category["name"] ?? ''}",
                                           style: TextStyle(
-                                            fontSize: 11,
+                                            fontSize: 13,
                                             fontWeight: FontWeight.bold,
                                           ),
                                           textAlign: TextAlign.center,

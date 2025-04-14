@@ -37,6 +37,8 @@ android {
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")  // Syntaxe Kotlin DSL
     implementation("androidx.window:window:1.0.0")  // Syntaxe Kotlin DSL
+    implementation("com.stripe:stripe-android:20.52.0")
+    implementation("com.pusher:pusher-java-client:2.2.6") // <- version stable
 
 }
 
