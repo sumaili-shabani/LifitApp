@@ -666,7 +666,7 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
                     minimumSize: Size(60, 30),
                   ),
                   icon: Icon(Icons.local_taxi_outlined),
-                  label: Text("J'arrive", style: TextStyle(fontSize: 12)),
+                  label: Text("Accepter", style: TextStyle(fontSize: 12)),
                 ),
               if (course.calculate == 0)
                 ElevatedButton.icon(

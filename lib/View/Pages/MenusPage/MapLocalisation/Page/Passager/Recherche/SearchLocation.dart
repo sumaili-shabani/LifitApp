@@ -1330,8 +1330,7 @@ class _SearchLocationState extends State<SearchLocation> {
   void _connectToPusher() async {
     pusher = PusherChannelsFlutter.getInstance();
     int? passagerId = await CallApi.getUserId();
-    final token = await CallApi.getToken();
-
+    // final token = await CallApi.getToken();
     debugPrint("🔌 Initialisation Pusher pour l'utilisateur $passagerId");
 
     await pusher.init(

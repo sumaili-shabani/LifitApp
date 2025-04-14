@@ -7,6 +7,7 @@ import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Controller/ApiService.dart';
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/Commentaire.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/DestinationCourseOnMap.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/PaymentScreen.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/PositionChaufeurOnMap.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -28,7 +29,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
   void initState() {
     super.initState();
     fetchNotifications();
-     // Déclenche fetchNotification toutes les 60 secondes
+    // Déclenche fetchNotification toutes les 60 secondes
     _timer = Timer.periodic(Duration(seconds: 30), (timer) {
       fetchNotifications();
     });
@@ -156,7 +157,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                               ],
                             ),
                           ),
-                          
+
                           // Ajouter un bouton payer à droite du prix
                           if (course.status == '4')
                             Align(
@@ -192,7 +193,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                             "Heure d'arrivage : ${CallApi.formatDateString(course.dateLimiteCourse ?? '')}",
                           )
                           : SizedBox(),
-                    
+
                       SizedBox(height: 10),
 
                       // Affichage du status avec icône
@@ -214,17 +215,36 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                   color: _getStatusColor(course.status!),
                                 ),
                               ),
-                              SizedBox(width: 10),
+                            
 
-                              course.status.toString() == '3'
-                                  ? TextButton(
-                                    onPressed: () {
-                                       showMapBottomSheet(context, course);
-                                     
-                                    },
-                                    child: Text("| Voir sa position"),
-                                  )
-                                  : SizedBox(),
+                              Column(
+                                children: [
+                                    SizedBox(width: 10),
+                                  course.status.toString() == '3'
+                                      ? TextButton(
+                                        onPressed: () {
+                                          showMapBottomSheet(context, course);
+                                        },
+                                        child: Text("| Voir sa position"),
+                                      )
+                                      : course.status.toString() == '0' ||
+                                          course.status.toString() == '1' ||
+                                          course.status.toString() == '4'
+                                      ? TextButton(
+                                        onPressed: () {
+                                          showDestinationMapBottomSheet(
+                                            context,
+                                            course,
+                                          );
+                                        },
+                                        child: Text(
+                                          "| Voir le trajet",
+                                          style: TextStyle(color: Colors.blue),
+                                        ),
+                                      )
+                                      : SizedBox(),
+                                ]
+                              ),
                             ],
                           ),
                         ],
@@ -305,7 +325,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
   }
 
   //position actuelle to map
-   void showMapBottomSheet(
+  void showMapBottomSheet(
     BuildContext context,
     CourseInfoPassagerModel course,
   ) {
@@ -328,6 +348,30 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
   }
   //fin position actuelle to map
 
+  //destination de la course sur le map
+
+  //position actuelle to map
+  void showDestinationMapBottomSheet(
+    BuildContext context,
+    CourseInfoPassagerModel course,
+  ) {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (context) => Destinationcourseonmap(
+            course: course,
+            onSubmitComment: (course) {
+              // print("idcourse: ${course.id}");
+              Navigator.pop(context); // Ferme le BottomSheet
+            },
+          ),
+    );
+  }
+  //fin destination de la course
 
   void showRatingBottomSheet(
     BuildContext context,
@@ -362,6 +406,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
+
       builder:
           (context) => PaymentScreen(
             course: course,

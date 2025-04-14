@@ -143,7 +143,7 @@ class _TargetListScreenState extends State<TargetListScreen> {
                               ),
                               SizedBox(width: 5),
                               Text(
-                                "Exigence: ${target["nombreCourse"]} ${target["uniteTarget"]}",
+                                "Nbr des courses: ${target["nombreCourse"]} ${target["uniteTarget"]}",
                               ),
                             ],
                           ),

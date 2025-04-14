@@ -453,34 +453,30 @@ class _PositionChaufeurOnMapState extends State<PositionChaufeurOnMap> {
 
           //la carte ici
           Expanded(
-            child: SizedBox(
-              height:
-                  MediaQuery.of(context).size.height *
-                  0.6, // Ajuste la hauteur selon le BottomSheet
-              child: GoogleMap(
-                initialCameraPosition: CameraPosition(
-                  target:
-                      passagerConnectedPosition, // Position initiale de la caméra (chauffeur)
-                  zoom: 14,
-                ),
-                onMapCreated: (GoogleMapController controller) {
-                  mapController = controller;
-                },
-                markers:
-                    markers, // Affichage des marqueurs (chauffeur et passagers)
-                polylines:
-                    polylines, // Affichage des polylines pour les itinéraires
-                circles: circles, // Ajout des cercles
-
-                myLocationEnabled:
-                    true, // Active la localisation de l'utilisateur
-                zoomControlsEnabled:
-                    true, // Désactive les boutons de zoom pour éviter les conflits
-                tiltGesturesEnabled: true, // Permet l'inclinaison
-                rotateGesturesEnabled: true, // Permet la rotation
-                scrollGesturesEnabled: true, // Permet le déplacement
-                
+            child: GoogleMap(
+              
+              initialCameraPosition: CameraPosition(
+                target:
+                    passagerConnectedPosition, // Position initiale de la caméra (chauffeur)
+                zoom: 14,
               ),
+              onMapCreated: (GoogleMapController controller) {
+                mapController = controller;
+              },
+              markers:
+                  markers, // Affichage des marqueurs (chauffeur et passagers)
+              polylines:
+                  polylines, // Affichage des polylines pour les itinéraires
+              circles: circles, // Ajout des cercles
+            
+              myLocationEnabled:
+                  true, // Active la localisation de l'utilisateur
+              zoomControlsEnabled:
+                  true, // Désactive les boutons de zoom pour éviter les conflits
+              tiltGesturesEnabled: true, // Permet l'inclinaison
+              rotateGesturesEnabled: true, // Permet la rotation
+              scrollGesturesEnabled: true, // Permet le déplacement
+              
             ),
           ),
           //fin integration map
