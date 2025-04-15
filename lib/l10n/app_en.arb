@@ -5,6 +5,7 @@
     "welcome": "Welcome",
     "login": "Login",
     "signUp": "Sign Up",
+    "signUpPhone": "Create an account",
     "email": "Email",
     "password": "Password",
     "forgotPassword": "Forgot Password?",

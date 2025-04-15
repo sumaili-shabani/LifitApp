@@ -3,12 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
-import '../../core/models/account.dart';
+import 'package:lifti_app/presentation/pages/login_page.dart';
 import '../../core/statement/account/account_bloc.dart';
 
 class SignupPage extends ConsumerStatefulWidget {
-  const SignupPage({super.key});
+  final String? completePhone;
+  const SignupPage({super.key, this.completePhone});
 
   @override
   ConsumerState<SignupPage> createState() => _SignupPageState();
@@ -27,16 +29,19 @@ class _SignupPageState extends ConsumerState<SignupPage> {
 
   void _handleSignup() async {
     if (_formKey.currentState!.validate()) {
+      String mail = CallApi.generateEmail(_nameController.text);
+     
       Map<String, dynamic> svData = {
         'id': '',
         'name': _nameController.text,
-        'email': _emailController.text,
+        'email':_emailController.text.isEmpty? mail: _emailController.text,
         'address': '',
         'password': _passwordController.text,
         'sexe': '',
         'telephone': _phoneController.text,
         'adresse': '',
       };
+      // print('svData: $svData');
 
       final response = await CallApi.postData("register", svData);
       final data = response;
@@ -49,17 +54,36 @@ class _SignupPageState extends ConsumerState<SignupPage> {
         // redirection vers la page de connexion
         Navigator.of(context).pop(); // Retour à la page précédente
 
+         Navigator.of(context).push(
+          AnimatedPageRoute(
+            page: LoginPage(),
+          ),
+        );
+
       }
     }
   }
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.completePhone! != '') {
+      setState(() {
+        _phoneController.text = widget.completePhone!.toString();
+      });
+      
+    } else {
+      
+    }
+  }
+
+  @override
   void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
+    // _nameController.dispose();
+    // _emailController.dispose();
+    // _phoneController.dispose();
+    // _passwordController.dispose();
+    // _confirmPasswordController.dispose();
     super.dispose();
   }
 
@@ -144,37 +168,27 @@ class _SignupPageState extends ConsumerState<SignupPage> {
                       ),
                       keyboardType: TextInputType.emailAddress,
                       textInputAction: TextInputAction.next,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return l10n.emailRequired;
-                        }
-                        if (!RegExp(
-                          r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                        ).hasMatch(value)) {
-                          return l10n.invalidEmail;
-                        }
-                        return null;
-                      },
+                      
                     ),
                     const SizedBox(height: 16),
             
                     // Phone field
-                    TextFormField(
-                      controller: _phoneController,
-                      decoration: InputDecoration(
-                        labelText: l10n.phoneNumber,
-                        prefixIcon: const Icon(Icons.phone_outlined),
-                      ),
-                      keyboardType: TextInputType.phone,
-                      textInputAction: TextInputAction.next,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return l10n.phoneRequired;
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 16),
+                    // TextFormField(
+                    //   controller: _phoneController,
+                    //   decoration: InputDecoration(
+                    //     labelText: l10n.phoneNumber,
+                    //     prefixIcon: const Icon(Icons.phone_outlined),
+                    //   ),
+                    //   keyboardType: TextInputType.phone,
+                    //   textInputAction: TextInputAction.next,
+                    //   validator: (value) {
+                    //     if (value == null || value.isEmpty) {
+                    //       return l10n.phoneRequired;
+                    //     }
+                    //     return null;
+                    //   },
+                    // ),
+                    // const SizedBox(height: 16),
             
                     // Password field
                     TextFormField(

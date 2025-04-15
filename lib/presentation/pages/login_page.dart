@@ -10,6 +10,7 @@ import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/View/Pages/AmbassadeurApp.dart';
 import 'package:lifti_app/View/Pages/ChauffeurApp.dart';
 import 'package:lifti_app/View/Pages/PassagerApp.dart';
+import 'package:lifti_app/presentation/pages/Otp/PhoneNumberPage.dart';
 
 import 'package:lifti_app/presentation/pages/forgot_password_page.dart';
 import 'package:lifti_app/presentation/pages/signup_page.dart';
@@ -358,9 +359,15 @@ class _LoginPageState extends State<LoginPage> {
                               TextButton(
                                 onPressed: () {
                                   //
+                                  // Navigator.of(
+                                  //   context,
+                                  // ).push(AnimatedPageRoute(page: SignupPage()));
+
                                   Navigator.of(
                                     context,
-                                  ).push(AnimatedPageRoute(page: SignupPage()));
+                                  ).push(AnimatedPageRoute(page: PhoneNumberPage()));
+
+                                  
                                 },
                                 child: const Text("S'inscrire"),
                               ),

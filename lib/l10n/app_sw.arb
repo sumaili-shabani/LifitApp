@@ -1,10 +1,10 @@
 {
     "@@locale": "sw",
-    
     "appName": "SwiftRide",
     "welcome": "Karibu",
     "login": "Ingia",
     "signup": "Jisajili",
+    "signUpPhone": "Fungua akaunti",
     "email": "Barua pepe",
     "password": "Nywila",
     "forgotPassword": "Umesahau nywila?",
@@ -13,7 +13,6 @@
     "language": "Lugha",
     "theme": "Mandhari",
     "logout": "Toka",
-
     "welcomeBack": "Karibu tena!",
     "loginToContinue": "Ingia ili kuendelea",
     "emailRequired": "Barua pepe inahitajika",

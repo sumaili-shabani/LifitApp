@@ -34,8 +34,8 @@ class CallApi {
   //     "https://lifti.e-serv.org/api"; // Remplace par ton URL
 
   // par defaut en locale
-  static const String fileUrl = "http://10.154.70.127:8000"; // Pour le fichier
-  static const String baseUrl = "http://10.154.70.127:8000/api"; // pour ton URL
+  static const String fileUrl = "http://10.70.56.127:8000"; // Pour le fichier
+  static const String baseUrl = "http://10.70.56.127:8000/api"; // pour ton URL
 
   /*
   *
@@ -385,4 +385,17 @@ class CallApi {
   ) {
     return items.any((item) => item[valueKey] == value) ? value : null;
   }
+
+  static String generateEmail(String name) {
+    // Nettoyage du nom : suppression des espaces, accents, mise en minuscule
+    final cleanedName = name
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s+'), '-') // espaces remplacés par des points
+        .replaceAll(RegExp(r'[^a-z0-9.]'), ''); // supprime caractères spéciaux
+
+    return "$cleanedName@demo.com";
+  }
+
+
 }
