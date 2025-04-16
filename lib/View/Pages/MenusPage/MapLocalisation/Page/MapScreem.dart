@@ -18,6 +18,7 @@ import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/CarteSelectionPosition.dart';
 
 class MapScreemChauffeur extends StatefulWidget {
   const MapScreemChauffeur({super.key});
@@ -428,13 +429,13 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                               ); // 🔥 Lancer l'animation du chauffeur avec rotation
                             }
 
-                            reponseDemande(
-                              passager['id'],
-                              passager['statut'],
-                              passager['idPassager'],
-                            );
+                            // reponseDemande(
+                            //   passager['id'],
+                            //   passager['statut'],
+                            //   passager['idPassager'],
+                            // );
                           },
-                          child: Text("Accepter la demande de la course"),
+                          child: Text("Allez vers le passager"),
                         ),
                       ],
                     ),
@@ -698,7 +699,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
   }
 
   Future<void> _loadIcons() async {
-    customChauffeurIcon = await getCustomIcon("assets/images/taxi_icon.png");
+    customChauffeurIcon = await getCustomIcon("assets/images/taxi_icon2.png");
     customPassagerIcon = await getCustomIcon("assets/images/person_icon.png");
     customPlaceIcon = await getCustomIcon("assets/images/center-pin.png");
     setState(() {}); // Rafraîchir l'affichage après le chargement
@@ -906,201 +907,6 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
     setState(() {
       isSearchingBottom = !isSearchingBottom;
     });
-  }
-
-  Widget showSearchBottomShhet(context) {
-    final theme = Theme.of(context);
-    return
-    // BottomSheet pour la recherche
-    DraggableScrollableSheet(
-      initialChildSize: 0.5,
-      minChildSize: 0.5,
-      maxChildSize: 0.8,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            boxShadow: [
-              BoxShadow(color: Colors.black26, blurRadius: 10, spreadRadius: 2),
-            ],
-          ),
-          padding: EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Container(
-                width: 50,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[400],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              SizedBox(height: 10),
-
-              // Barre de recherche
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: searchController,
-                      decoration: InputDecoration(
-                        label: Text("Où voulez-vous partir?"),
-                        hintText: "Entrez un lieu...",
-                        prefixIcon: Icon(Icons.search),
-                        filled: true,
-                        fillColor: theme.cardColor,
-
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  // Bouton de recherche
-                  Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: searchPlace2,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ConfigurationApp.successColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                        ),
-                        child: Icon(Icons.search, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-
-              SizedBox(height: 20),
-
-              // Affichage des résultats
-              Expanded(
-                child:
-                    isLoading
-                        ? Center(child: CircularProgressIndicator())
-                        : listfilteredPlaces.isEmpty
-                        ? Center(
-                          child: Text(
-                            "Aucun résultat trouvé",
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        )
-                        : ListView.builder(
-                          controller: scrollController,
-                          itemCount: listfilteredPlaces.length,
-                          itemBuilder: (context, index) {
-                            var place = listfilteredPlaces[index];
-                            return Card(
-                              margin: EdgeInsets.symmetric(vertical: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: ListTile(
-                                leading: Icon(Icons.place, color: Colors.red),
-                                title: Text(
-                                  place['name'],
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: Text("${place['description']}"),
-                                trailing: Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 16,
-                                ),
-                                onTap: () {
-                                  // print(
-                                  //   "Lieu sélectionné: ${place['name']} (latitude: ${place['latitude']}, longitude: ${place['longitude']})",
-                                  // );
-
-                                  goToPlace(
-                                    LatLng(
-                                      place['latitude'],
-                                      place['longitude'],
-                                    ),
-                                    place['name'],
-                                    place,
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),
-              ),
-
-              SizedBox(height: 20),
-              // liste horizontale
-              // Liste horizontale des lieux
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  scrollDirection: Axis.horizontal,
-                  itemCount: placesJson.length,
-                  itemBuilder: (context, index) {
-                    var place = placesJson[index];
-                    return GestureDetector(
-                      onTap: () {
-                        goToPlace(
-                          LatLng(place['latitude'], place['longitude']),
-                          place['name'],
-                          place,
-                        );
-                      },
-                      child: SizedBox(
-                        height: MediaQuery.of(context).size.height * 100,
-                        child: Card(
-                          margin: EdgeInsets.symmetric(horizontal: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.4,
-
-                            padding: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: theme.cardColor,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(color: Colors.black12, blurRadius: 4),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.place, color: Colors.blue),
-                                SizedBox(height: 5),
-                                Text(
-                                  place['name'],
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              // Fin de la liste horizontale des lieux
-            ],
-          ),
-        );
-      },
-    );
-
-    // Fin de la zone BottomShee
   }
 
   //Étapes pour animer l'icône du chauffeur
@@ -1389,7 +1195,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
 
     return LatLng(avgLat, avgLng);
   }
-  
+
   void analyserPassagers() async {
     // print(chauffeurPosition);
     if (passagers.isEmpty || chauffeurPosition == LatLng(-1.6708, 29.2218))
@@ -1427,6 +1233,128 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
 
   /*
   *
+  *============================================================================================
+  * vérification de la position si le chauffeurest dans la ville que l'application fonctionne
+  *============================================================================================
+  *
+  */
+  bool estDansKinshasa(LatLng position) {
+    const kinshasaCenter = LatLng(-4.325, 15.3222);
+    double distance = Geolocator.distanceBetween(
+      position.latitude,
+      position.longitude,
+      kinshasaCenter.latitude,
+      kinshasaCenter.longitude,
+    );
+    return distance <= 20000; // 20 km
+  }
+
+  void verifierPositionChauffeur() async {
+    // Suppose que chauffeurPosition est déjà défini
+    if (!estDansKinshasa(chauffeurPosition)) {
+      // Affiche une boîte de dialogue ou un snack
+      showDialog(
+        context: context,
+        builder:
+            (ctx) => AlertDialog(
+              title: Text("Hors de Kinshasa"),
+              content: Text(
+                "Vous êtes en dehors de Kinshasa. Veuillez choisir un lieu manuellement.",
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _selectLocationManually();
+                  },
+                  child: Text("Choisir sur carte"),
+                ),
+              ],
+            ),
+      );
+    }
+  }
+
+  void _selectLocationManually() async {
+    LatLng? positionSelectionnee = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CarteSelectionPosition()),
+    );
+
+    if (positionSelectionnee != null) {
+      setState(() {
+        chauffeurPosition = positionSelectionnee;
+      });
+
+      print("positionSelectionnee: $positionSelectionnee");
+
+      // 🔁 Envoi vers l'API
+      await envoyerPositionServeur(positionSelectionnee);
+
+      setState(() {
+        markers.add(
+          Marker(
+            markerId: MarkerId('chauffeur'),
+            position: positionSelectionnee,
+            infoWindow: InfoWindow(title: 'Chauffeur'),
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor
+                  .hueGreen, // Icône par défaut si le chargement échoue
+            ),
+          ),
+        );
+      });
+    }
+  }
+
+  Future<void> envoyerPositionServeur(LatLng pos) async {
+    int? userId =
+        await CallApi.getUserId(); // Récupérer l'ID de l'utilisateur connecté
+    if (userId == null) {
+      throw Exception('Utilisateur non connecté');
+    }
+    Map<String, dynamic> svData = {
+      "latUser": pos.latitude.toString(),
+      "lonUser": pos.longitude.toString(),
+      "id": userId.toString(),
+    };
+    await CallApi.postData("chauffeur_mobilechangePosition", svData);
+
+    setState(() {
+      markers.clear();
+      circles.clear();
+      polylines.clear();
+      passagers.clear();
+      showHotspotCard = false;
+    });
+
+    fetchNotifications();
+  }
+
+  LatLng centerGoma = LatLng(-1.6708, 29.2218);
+  LatLng centerKinshasa = LatLng(-4.325, 15.3222);
+  bool estDansZoneKinshasa(LatLng positionActuelle) {
+    double distance = Geolocator.distanceBetween(
+      positionActuelle.latitude,
+      positionActuelle.longitude,
+      centerGoma.latitude,
+      centerGoma.longitude,
+    );
+
+    return distance <= 20000; // 20 km autour du centre
+  }
+
+  /*
+  *
+  *============================================================
+  * Fin vérification de la position si 
+  * le chauffeurest dans la ville que l'application fonctionne
+  *============================================================
+  *
+  */
+
+  /*
+  *
   *==========================================
   * Fin de la recherche automatique
   *==========================================
@@ -1457,6 +1385,15 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
         title: Text("Map-Chauffeur", style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
+            icon: Icon(Icons.my_location_sharp, color: Colors.white),
+            tooltip: "Voir ma position",
+            onPressed: () {
+              _getCurrentPosition();
+              changeMyPosition();
+              fetchNotifications();
+            },
+          ),
+          IconButton(
             icon: Icon(Icons.chat, color: Colors.white),
             tooltip: "Discussion instantanée",
             onPressed: () {
@@ -1465,22 +1402,6 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                 context,
                 MaterialPageRoute(builder: (context) => CorrespondentsPage()),
               );
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.search, color: Colors.white),
-            tooltip: "Rechercher un lieu",
-            onPressed: () {
-              callBottomSheetSearch();
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.my_location_sharp, color: Colors.white),
-            tooltip: "Voir ma position",
-            onPressed: () {
-              _getCurrentPosition();
-              changeMyPosition();
-              fetchNotifications();
             },
           ),
         ],
@@ -1671,6 +1592,9 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                                               color: Colors.grey,
                                             ),
                                             onTap: () {
+                                              setState(() {
+                                                searchEtat = false;
+                                              });
                                               goToPlace(
                                                 LatLng(
                                                   place['latitude'],
@@ -1733,6 +1657,9 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                                 ),
                                 label: Text(place['name']),
                                 onPressed: () {
+                                  setState(() {
+                                    searchEtat = false;
+                                  });
                                   goToPlace(
                                     LatLng(
                                       place['latitude'],
@@ -1853,7 +1780,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                                   ),
                                   onPressed: () {
                                     // Fonction pour que le chauffeur sélectionne un lieu s’il n’est pas à Goma
-                                    // _selectLocationManually();
+                                    _selectLocationManually();
                                   },
                                   icon: Icon(
                                     Icons.my_location,
@@ -1872,10 +1799,57 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
 
           // Center(child: Text(passagers.toString())),
 
+          // Tester le message du lieu
+          Positioned(
+            bottom: 20,
+            left: 20,
+            right: 20,
+            child:
+                chauffeurPosition == null
+                    ? CircularProgressIndicator()
+                    : !estDansZoneKinshasa(chauffeurPosition!)
+                    ? Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        "🚫 L’application Lifti ne supporte pas votre localisation actuelle.",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                    : searchEtat || showHotspotCard
+                    ? SizedBox()
+                    : ElevatedButton.icon(
+                      onPressed: () {
+                        // Naviguer vers sélection destination
+                        setState(() {
+                          searchEtat = true;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: EdgeInsets.symmetric(
+                          vertical: 14,
+                          horizontal: 20,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      icon: Icon(Icons.location_on),
+                      label: Text("Où allez-vous ?"),
+                    ),
+          ),
+          // fin test du message du lieu
+
           // BottomSheet pour la recherche
-          isSearchingBottom
-              ? showSearchBottomShhet(context)
-              : Column(children: []),
+
           // Fin de la zone BottomSheet
         ],
       ),
