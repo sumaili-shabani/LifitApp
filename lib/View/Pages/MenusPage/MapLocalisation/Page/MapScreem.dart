@@ -92,7 +92,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
       setState(() {
         circles.clear();
         filteredPlaces.clear();
-       
+
         // markers.removeWhere(
         //   (marker) => marker.markerId.value == "demandeurPassager",
         // );
@@ -808,6 +808,8 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
 
     setState(() {
       circles.clear(); // Efface les anciens cercles
+      markers.removeWhere((m) => m.markerId.value == "placeName");
+
       markers.add(
         Marker(
           onTap: () {
@@ -817,7 +819,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
               place, // Passer les informations de la places la fonction
             );
           },
-          markerId: MarkerId(placeName),
+          markerId: MarkerId("placeName"),
           position: location,
           infoWindow: InfoWindow(title: placeName),
           icon:
@@ -849,6 +851,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
 
     setState(() {
       isLoading = true;
+      searchEtat = true;
     });
 
     // Filtrage des lieux prédéfinis (placesJson)
@@ -1332,11 +1335,61 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
     }
   }
 
-
+  /*
+  *
+  *===========================================
+  * Bloc archavage de demandeur de taxi
+  *===========================================
+  *
+  */
+  LatLng? hotspot; // Point central de forte demande
+  LatLng? positionChauffeur; // Position actuelle du chauffeur
+  double? distanceKm;
+  double? estimatedTime;
+  bool showHotspotCard = false;
   //bon maintenant là, je veux  l'archivage de cercle pour voir là où il y'a beaucoup de demainde
-  
+  LatLng findHotspot(List<dynamic> demandeurs) {
+    double avgLat =
+        demandeurs.map((p) => p["latitude"] as double).reduce((a, b) => a + b) /
+        demandeurs.length;
+    double avgLng =
+        demandeurs
+            .map((p) => p["longitude"] as double)
+            .reduce((a, b) => a + b) /
+        demandeurs.length;
+    return LatLng(avgLat, avgLng);
+  }
 
+  void analyserPassagers() async {
+    // print(chauffeurPosition);
+    if (passagers.isEmpty) return;
+    hotspot = findHotspot(passagers);
+    await _getMarkers();
+    circles = {
+      Circle(
+        circleId: CircleId('zone_hotspot'),
+        center: hotspot!,
+        radius: 1000,
+        fillColor: Colors.orangeAccent.withOpacity(0.3),
+        strokeColor: Colors.orangeAccent,
+        strokeWidth: 2,
+      ),
+    };
 
+    double distance = Geolocator.distanceBetween(
+      chauffeurPosition.latitude,
+      chauffeurPosition.longitude,
+      hotspot!.latitude,
+      hotspot!.longitude,
+    );
+
+    distanceKm = distance / 1000;
+    estimatedTime = (distanceKm! / 40) * 60;
+
+    setState(() {
+      showHotspotCard = true;
+    });
+  }
 
   /*
   *
@@ -1450,7 +1503,6 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                     children: [
                       IconButton(
                         onPressed: () {
-                          print("clic recherche");
                           searchPlace2();
                         },
                         icon: Icon(Icons.search, color: Colors.white),
@@ -1479,8 +1531,8 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                       IconButton(
                         icon: Icon(Icons.front_hand, color: Colors.green),
                         onPressed: () {
-                          // searchPlace2();
-                          _getMarkers();
+                          // Ici, appelle après que les passagers soient bien chargés
+                          analyserPassagers();
                         },
                         tooltip: "Voir les demandeurs de taxi",
                       ),
@@ -1669,6 +1721,120 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
             ),
           ),
           //fin bare de recherche
+
+          //information du lieu
+          if (hotspot != null && distanceKm != null && estimatedTime != null)
+            Positioned(
+              bottom: 20,
+              left: 16,
+              right: 16,
+              child: AnimatedOpacity(
+                duration: Duration(milliseconds: 300),
+                opacity: showHotspotCard ? 1.0 : 0.0,
+                child:
+                    showHotspotCard
+                        ? Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          elevation: 6,
+                          color: Colors.white,
+                          shadowColor: Colors.black54,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.place, color: Colors.green),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        "Zone de forte demande",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.close,
+                                        color: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          showHotspotCard = false;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                Divider(),
+                                Row(
+                                  children: [
+                                    Icon(Icons.people, color: Colors.orange),
+                                    SizedBox(width: 8),
+                                    Text("Passagers : ${passagers.length}"),
+                                  ],
+                                ),
+                                SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.directions_car,
+                                      color: Colors.blue,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      "Distance : ${distanceKm!.toStringAsFixed(2)} km",
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.access_time,
+                                      color: Colors.purple,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      "Temps estimé : ${estimatedTime!.toStringAsFixed(0)} min",
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 12),
+                                ElevatedButton.icon(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.green,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 20,
+                                      vertical: 12,
+                                    ),
+                                  ),
+                                  onPressed: () {
+                                    // Fonction pour que le chauffeur sélectionne un lieu s’il n’est pas à Goma
+                                    // _selectLocationManually();
+                                  },
+                                  icon: Icon(
+                                    Icons.my_location,
+                                    color: Colors.white,
+                                  ),
+                                  label: Text("Sélectionner ma position"),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                        : SizedBox.shrink(),
+              ),
+            ),
+          // fin information du lieu
 
           // Center(child: Text(passagers.toString())),
 
