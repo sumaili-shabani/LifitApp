@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -17,7 +18,12 @@ import 'dart:typed_data';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
+import 'package:lifti_app/Controller/NotificationService.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
+import 'package:lifti_app/View/Pages/MenusPage/CoursesEnCoursChauffeur.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/CarteSelectionPosition.dart';
+import 'package:lifti_app/View/Pages/MenusPage/NotificationBottom.dart';
+import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 
 class MapScreemChauffeur extends StatefulWidget {
   const MapScreemChauffeur({super.key});
@@ -27,8 +33,7 @@ class MapScreemChauffeur extends StatefulWidget {
 }
 
 class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
-  static const String apikeyOpenrouteservice =
-      "5b3ce3597851110001cf62484e660c3aa019470d8ac388d12b974480";
+  static String apikeyOpenrouteservice = CallApi.apikeyOpenrouteservice;
   bool isBottomSheetOpen = false;
   late GoogleMapController mapController;
   late LatLng chauffeurPosition; // Position actuelle du chauffeur
@@ -72,15 +77,14 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
       polylines.clear();
       // Ajout du cercle de 1 km
 
-     
       circles.add(
         Circle(
           circleId: CircleId("chauffeur-placeName"),
           center: chauffeurPosition,
           radius: 1000, // 1 km en mètres
           strokeWidth: 2,
-          strokeColor: Colors.blue,
-          fillColor: Colors.blue.withOpacity(0.2),
+          strokeColor: Colors.green,
+          fillColor: Colors.green.withOpacity(0.2),
         ),
       );
     });
@@ -88,46 +92,46 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
 
   // Fonction pour récupérer l'itinéraire entre chauffeur et passager via l'API Google Directions
 
-  Set<Marker> _getMarkers() {
-    Set<Marker> markers = {};
-
+  _getMarkers() async {
     // Ajoute les markers des passagers
     for (var passager in passagers) {
-      markers.add(
-        Marker(
-          markerId: MarkerId(passager['code'].toString()),
-          position: LatLng(passager['latitude'], passager['longitude']),
-          infoWindow: InfoWindow(title: passager['name']),
-          icon:
-              customPassagerIcon ??
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-          onTap: () async {
-            // Dessiner la route ici avant de lancer l'animation
-            // _getRoute(
-            //   chauffeurPosition,
-            //   LatLng(passager['latitude'], passager['longitude']),
-            //   passager,
-            // );
+      setState(() {
+        circles.clear();
+        filteredPlaces.clear();
 
-            LatLng passagerPosition = LatLng(
-              passager['latitude'],
-              passager['longitude'],
-            );
+        // markers.removeWhere(
+        //   (marker) => marker.markerId.value == "demandeurPassager",
+        // );
+      });
+      // print(passager);
+      setState(() {
+        markers.add(
+          Marker(
+            markerId: MarkerId("${passager['code']}"),
+            position: LatLng(passager['latitude'], passager['longitude']),
+            infoWindow: InfoWindow(title: passager['name']),
+            icon:
+                customPassagerIcon ??
+                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+            onTap: () async {
+              // Dessiner la route ici avant de lancer l'animation
+              // _getRoute(
+              //   chauffeurPosition,
+              //   LatLng(passager['latitude'], passager['longitude']),
+              //   passager,
+              // );
 
-            // 🔹 Obtenir la route et animer le chauffeur en suivant la route
-            await _getRoute(
-              chauffeurPosition,
-              passagerPosition,
-              passager,
-            );
+              LatLng passagerPosition = LatLng(
+                passager['latitude'],
+                passager['longitude'],
+              );
 
-            setState(() {
-              circles.clear();
-              filteredPlaces.clear();
-            });
-          },
-        ),
-      );
+              // 🔹 Obtenir la route et animer le chauffeur en suivant la route
+              await _getRoute(chauffeurPosition, passagerPosition, passager);
+            },
+          ),
+        );
+      });
     }
 
     // Ajoute les markers des lieux prédéfinis de placesJson
@@ -158,7 +162,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
     }
 
     // Ajoute le marker du chauffeur
- 
+
     markers.add(
       Marker(
         markerId: MarkerId("chauffeur"),
@@ -169,7 +173,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
             BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
       ),
     );
-  
+
     setState(() {
       markers = markers;
     });
@@ -217,7 +221,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                 polylineId: PolylineId('route'),
                 visible: true,
                 points: routeCoords,
-                color: Colors.blue,
+                color: Colors.green,
                 width: 5,
               ),
             );
@@ -313,8 +317,6 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
       final response = await CallApi.fetchData(
         "checkEtat_chauffeur_mobile_demande_taxi/${id.toInt()}/${statut.toInt()}/${refPassager.toInt()}",
       );
-
-    
 
       final Map<String, dynamic> responseData = response;
       String message = responseData['data'] ?? "J'arrive!!!";
@@ -432,13 +434,13 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                               ); // 🔥 Lancer l'animation du chauffeur avec rotation
                             }
 
-                            reponseDemande(
-                              passager['id'],
-                              passager['statut'],
-                              passager['idPassager'],
-                            );
+                            // reponseDemande(
+                            //   passager['id'],
+                            //   passager['statut'],
+                            //   passager['idPassager'],
+                            // );
                           },
-                          child: Text("Accepter la demande de la course"),
+                          child: Text("Allez vers le passager"),
                         ),
                       ],
                     ),
@@ -466,114 +468,136 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        return SizedBox(
+          child: Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Informations du lieu",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+            child: Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 50,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.close,
-                        color: ConfigurationApp.dangerColor,
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        setState(() {
-                          isBottomSheetOpen = false;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                Divider(),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.map, color: Colors.blue),
-                        SizedBox(width: 5),
+                  ),
+                  SizedBox(height: 5),
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.map, size: 18),
+                          SizedBox(width: 3),
 
-                        SizedBox(
-                          width: 300,
-                          child: Text("Adresse: ${place["name"]}", maxLines: 4),
-                        ),
-                      ],
-                    ),
-                    Divider(),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          color: ConfigurationApp.warningColor,
-                        ),
-                        SizedBox(width: 5),
-                        SizedBox(
-                          width: 300,
-                          child: Text(
-                            "Description: ${place["description"]}",
-                            maxLines: 4,
+                          Text(
+                            "Informations du lieu",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Divider(),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.pin_drop_outlined,
+                        ],
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.close,
                           color: ConfigurationApp.dangerColor,
                         ),
-                        SizedBox(width: 5),
-                        Text(
-                          "Lat-Lon: ${place['latitude'].toStringAsFixed(4)} - ${place['longitude'].toStringAsFixed(4)} km",
-                        ),
-                      ],
-                    ),
-                    Divider(),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.directions_car,
-                          color: ConfigurationApp.dangerColor,
-                        ),
-                        SizedBox(width: 5),
-                        Text("Distance: ${distance.toStringAsFixed(2)} km"),
-                      ],
-                    ),
+                        onPressed: () {
+                          Navigator.pop(context);
+                          setState(() {
+                            isBottomSheetOpen = false;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  Divider(color: Colors.grey[400]),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.map, color: Colors.blue),
+                          SizedBox(width: 5),
 
-                    Divider(),
-                    Row(
-                      children: [
-                        Icon(Icons.timer, color: Colors.purple),
-                        SizedBox(width: 5),
-                        Text(
-                          "Temps estimé: ${duration.toStringAsFixed(2)} min",
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                  ],
-                ),
-              ],
+                          SizedBox(
+                            width: 300,
+                            child: Text(
+                              "Adresse: ${place["name"]}",
+                              maxLines: 4,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Divider(color: Colors.grey[400]),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            color: ConfigurationApp.warningColor,
+                          ),
+                          SizedBox(width: 5),
+                          SizedBox(
+                            width: 300,
+                            child: Text(
+                              "Description: ${place["description"]}",
+                              maxLines: 4,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Divider(color: Colors.grey[400]),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.pin_drop_outlined,
+                            color: ConfigurationApp.dangerColor,
+                          ),
+                          SizedBox(width: 5),
+                          Text(
+                            "Lat-Lon: ${place['latitude'].toStringAsFixed(4)} - ${place['longitude'].toStringAsFixed(4)} ",
+                          ),
+                        ],
+                      ),
+                      Divider(color: Colors.grey[400]),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.directions_car,
+                            color: ConfigurationApp.dangerColor,
+                          ),
+                          SizedBox(width: 5),
+                          Text("Distance: ${distance.toStringAsFixed(2)} km"),
+                        ],
+                      ),
+
+                      Divider(color: Colors.grey[400]),
+                      Row(
+                        children: [
+                          Icon(Icons.timer, color: Colors.purple),
+                          SizedBox(width: 5),
+                          Text(
+                            "Temps estimé: ${duration.toStringAsFixed(2)} min",
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -680,7 +704,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
   }
 
   Future<void> _loadIcons() async {
-    customChauffeurIcon = await getCustomIcon("assets/images/taxi_icon.png");
+    customChauffeurIcon = await getCustomIcon("assets/images/taxi_icon2.png");
     customPassagerIcon = await getCustomIcon("assets/images/person_icon.png");
     customPlaceIcon = await getCustomIcon("assets/images/center-pin.png");
     setState(() {}); // Rafraîchir l'affichage après le chargement
@@ -790,6 +814,8 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
 
     setState(() {
       circles.clear(); // Efface les anciens cercles
+      markers.removeWhere((m) => m.markerId.value == "placeName");
+
       markers.add(
         Marker(
           onTap: () {
@@ -799,7 +825,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
               place, // Passer les informations de la places la fonction
             );
           },
-          markerId: MarkerId(placeName),
+          markerId: MarkerId("placeName"),
           position: location,
           infoWindow: InfoWindow(title: placeName),
           icon:
@@ -817,8 +843,8 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
           center: location,
           radius: 1000, // 1 km en mètres
           strokeWidth: 2,
-          strokeColor: Colors.blue,
-          fillColor: Colors.blue.withOpacity(0.2),
+          strokeColor: Colors.green,
+          fillColor: Colors.green.withOpacity(0.2),
         ),
       );
     });
@@ -831,6 +857,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
 
     setState(() {
       isLoading = true;
+      searchEtat = true;
     });
 
     // Filtrage des lieux prédéfinis (placesJson)
@@ -885,201 +912,6 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
     setState(() {
       isSearchingBottom = !isSearchingBottom;
     });
-  }
-
-  Widget showSearchBottomShhet(context) {
-    final theme = Theme.of(context);
-    return
-    // BottomSheet pour la recherche
-    DraggableScrollableSheet(
-      initialChildSize: 0.5,
-      minChildSize: 0.5,
-      maxChildSize: 0.8,
-      builder: (context, scrollController) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-            boxShadow: [
-              BoxShadow(color: Colors.black26, blurRadius: 10, spreadRadius: 2),
-            ],
-          ),
-          padding: EdgeInsets.all(16),
-          child: Column(
-            children: [
-              Container(
-                width: 50,
-                height: 5,
-                decoration: BoxDecoration(
-                  color: Colors.grey[400],
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              SizedBox(height: 10),
-
-              // Barre de recherche
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: searchController,
-                      decoration: InputDecoration(
-                        label: Text("Où voulez-vous partir?"),
-                        hintText: "Entrez un lieu...",
-                        prefixIcon: Icon(Icons.search),
-                        filled: true,
-                        fillColor: theme.cardColor,
-
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                          borderSide: BorderSide.none,
-                        ),
-                      ),
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  // Bouton de recherche
-                  Row(
-                    children: [
-                      ElevatedButton(
-                        onPressed: searchPlace2,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: ConfigurationApp.successColor,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                        ),
-                        child: Icon(Icons.search, color: Colors.white),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-
-              SizedBox(height: 20),
-
-              // Affichage des résultats
-              Expanded(
-                child:
-                    isLoading
-                        ? Center(child: CircularProgressIndicator())
-                        : listfilteredPlaces.isEmpty
-                        ? Center(
-                          child: Text(
-                            "Aucun résultat trouvé",
-                            style: TextStyle(color: Colors.grey),
-                          ),
-                        )
-                        : ListView.builder(
-                          controller: scrollController,
-                          itemCount: listfilteredPlaces.length,
-                          itemBuilder: (context, index) {
-                            var place = listfilteredPlaces[index];
-                            return Card(
-                              margin: EdgeInsets.symmetric(vertical: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: ListTile(
-                                leading: Icon(Icons.place, color: Colors.red),
-                                title: Text(
-                                  place['name'],
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: Text("${place['description']}"),
-                                trailing: Icon(
-                                  Icons.arrow_forward_ios,
-                                  size: 16,
-                                ),
-                                onTap: () {
-                                  // print(
-                                  //   "Lieu sélectionné: ${place['name']} (latitude: ${place['latitude']}, longitude: ${place['longitude']})",
-                                  // );
-
-                                  goToPlace(
-                                    LatLng(
-                                      place['latitude'],
-                                      place['longitude'],
-                                    ),
-                                    place['name'],
-                                    place,
-                                  );
-                                },
-                              ),
-                            );
-                          },
-                        ),
-              ),
-
-              SizedBox(height: 20),
-              // liste horizontale
-              // Liste horizontale des lieux
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  scrollDirection: Axis.horizontal,
-                  itemCount: placesJson.length,
-                  itemBuilder: (context, index) {
-                    var place = placesJson[index];
-                    return GestureDetector(
-                      onTap: () {
-                        goToPlace(
-                          LatLng(place['latitude'], place['longitude']),
-                          place['name'],
-                          place,
-                        );
-                      },
-                      child: SizedBox(
-                        height: MediaQuery.of(context).size.height * 100,
-                        child: Card(
-                          margin: EdgeInsets.symmetric(horizontal: 8),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.4,
-
-                            padding: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: theme.cardColor,
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: [
-                                BoxShadow(color: Colors.black12, blurRadius: 4),
-                              ],
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.place, color: Colors.blue),
-                                SizedBox(height: 5),
-                                Text(
-                                  place['name'],
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-
-              // Fin de la liste horizontale des lieux
-            ],
-          ),
-        );
-      },
-    );
-
-    // Fin de la zone BottomShee
   }
 
   //Étapes pour animer l'icône du chauffeur
@@ -1137,9 +969,579 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
     return start + (end - start) * t;
   }
 
+  /*
+  *
+  *===========================================
+  * recherche automatique
+  *===========================================
+  */
+  bool searchEtat = false;
+  List<Map<String, dynamic>> categories = [
+    {
+      'label': 'Hôpital',
+      'icon': Icons.local_hospital,
+      'category_ids': [206], // Corrected ID for hospital
+    },
+    {
+      'label': 'École',
+      'icon': Icons.school,
+      'category_ids': [156], // Correct ID for school
+    },
+    {
+      'label': 'Police',
+      'icon': Icons.local_police,
+      'category_ids': [237], // Correct ID for police station
+    },
+    {
+      'label': 'Pharmacie',
+      'icon': Icons.local_pharmacy,
+      'category_ids': [208], // Correct ID for pharmacy
+    },
+    {
+      'label': 'Banque',
+      'icon': Icons.account_balance,
+      'category_ids': [419], // Correct ID for bank
+    },
+    {
+      'label': 'Hôtel',
+      'icon': Icons.hotel,
+      'category_ids': [108], // Correct ID for hotel
+    },
+    {
+      'label': 'Auberge',
+      'icon': Icons.business_center,
+      'category_ids': [107], // Correct ID for hostel
+    },
+    {
+      'label': 'Station-service',
+      'icon': Icons.local_gas_station,
+      'category_ids': [596], // Correct ID for gas station
+    },
+    {
+      'label': 'Cinéma',
+      'icon': Icons.movie,
+      'category_ids': [299], // Correct ID for cinema
+    },
+    {
+      'label': 'Parc',
+      'icon': Icons.park,
+      'category_ids': [280], // Correct ID for park
+    },
+    {
+      'label': 'Restaurant',
+      'icon': Icons.restaurant,
+      'category_ids': [560], // Correct ID for restaurant
+    },
+    {
+      'label': 'Supermarché',
+      'icon': Icons.store,
+      'category_ids': [420], // Correct ID for supermarket
+    },
+    {
+      'label': 'Zoo',
+      'icon': Icons.pets,
+      'category_ids': [310], // Correct ID for zoo
+    },
+    {
+      'label': 'Église',
+      'icon': Icons.church,
+      'category_ids': [161], // Correct ID for church
+    },
+    {
+      'label': 'Musée',
+      'icon': Icons.museum,
+      'category_ids': [130], // Correct ID for museum
+    },
+  ];
+
+  Future<void> fetchPOIsByCategory(
+    List<int> categoryIds,
+    double lat,
+    double lon, {
+    int buffer = 2000, // Rayon en mètres (par défaut 1 km)
+  }) async {
+    String apikeyOpenrouteservice =
+        CallApi.apikeyOpenrouteservice; // Remplacer par la clé API
+
+    final body = jsonEncode({
+      "request": "pois",
+      "geometry": {
+        "geojson": {
+          "type": "Point",
+          "coordinates": [lon, lat],
+        },
+        "buffer": buffer, // Rayon dynamique passé en paramètre
+      },
+      "filters": {"category_ids": categoryIds},
+    });
+
+    final response = await http.post(
+      Uri.parse('https://api.openrouteservice.org/pois'),
+      headers: {
+        'Authorization': apikeyOpenrouteservice,
+        'Content-Type': 'application/json',
+      },
+      body: body,
+    );
+
+    print("response: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final features = data['features'] as List;
+
+      setState(() {
+        // markers.clear();
+        for (var feature in features) {
+          final coords = feature['geometry']['coordinates'];
+          final properties = feature['properties'];
+          final name =
+              properties['osm_tags']['name'] ?? 'Lieu inconnu'; // Nom du lieu
+
+          // Extraction du nom de la catégorie à partir de 'category_ids'
+          String categoryName = '';
+          if (properties['category_ids'] != null) {
+            properties['category_ids'].forEach((key, value) {
+              categoryName =
+                  value['category_name']; // Extraire le nom de la catégorie
+            });
+          }
+
+          Map<String, dynamic> place = {
+            "name": name,
+            "latitude": coords[1],
+            "longitude": coords[0],
+            "description": categoryName,
+          };
+
+          // Ajout du marqueur avec la catégorie
+          markers.add(
+            Marker(
+              markerId: MarkerId(feature['id'].toString()),
+              position: LatLng(coords[1], coords[0]),
+              infoWindow: InfoWindow(
+                title: name,
+                snippet:
+                    'Catégorie: $categoryName', // Afficher la catégorie dans l'info window
+              ),
+              icon:
+                  customPlaceIcon ??
+                  BitmapDescriptor.defaultMarkerWithHue(
+                    BitmapDescriptor
+                        .hueRed, // Icône par défaut si le chargement échoue
+                  ),
+              onTap: () {
+                _getRoutePlace(
+                  chauffeurPosition,
+                  LatLng(coords[1], coords[0]),
+                  place, // Passer les informations de la places la fonction
+                );
+              },
+            ),
+          );
+        }
+      });
+    } else {
+      print('Erreur OpenRouteService: ${response.statusCode}');
+    }
+  }
+
+  /*
+  *
+  *===========================================
+  * Bloc archavage de demandeur de taxi
+  *===========================================
+  *
+  */
+  LatLng? hotspot; // Point central de forte demande
+  LatLng? positionChauffeur; // Position actuelle du chauffeur
+  double? distanceKm;
+  double? estimatedTime;
+  bool showHotspotCard = false;
+  //bon maintenant là, je veux  l'archivage de cercle pour voir là où il y'a beaucoup de demainde
+  LatLng findClusterHotspot(List<dynamic> passagers) {
+    List<List<dynamic>> clusters = [];
+
+    for (var p in passagers) {
+      bool added = false;
+      for (var cluster in clusters) {
+        for (var q in cluster) {
+          double dist = Geolocator.distanceBetween(
+            p["latitude"],
+            p["longitude"],
+            q["latitude"],
+            q["longitude"],
+          );
+          if (dist < 1000) {
+            // Moins de 1 km
+            cluster.add(p);
+            added = true;
+            break;
+          }
+        }
+        if (added) break;
+      }
+      if (!added) {
+        clusters.add([p]);
+      }
+    }
+
+    // Trouver le plus grand groupe
+    clusters.sort((a, b) => b.length.compareTo(a.length));
+    var bestCluster = clusters.first;
+
+    // Calculer le centroïde de ce groupe
+    double avgLat =
+        bestCluster.map((p) => p["latitude"]).reduce((a, b) => a + b) /
+        bestCluster.length;
+    double avgLng =
+        bestCluster.map((p) => p["longitude"]).reduce((a, b) => a + b) /
+        bestCluster.length;
+
+    return LatLng(avgLat, avgLng);
+  }
+
+  void analyserPassagers() async {
+    // print(chauffeurPosition);
+    if (passagers.isEmpty || chauffeurPosition == LatLng(-1.6708, 29.2218))
+      return;
+    await _getMarkers();
+    hotspot = findClusterHotspot(passagers);
+
+    print("hotspot:$hotspot");
+
+    circles = {
+      Circle(
+        circleId: CircleId('zone_hotspot'),
+        center: hotspot!,
+        radius: 1000,
+        fillColor: Colors.orangeAccent.withOpacity(0.3),
+        strokeColor: Colors.orangeAccent,
+        strokeWidth: 2,
+      ),
+    };
+
+    double distance = Geolocator.distanceBetween(
+      chauffeurPosition.latitude,
+      chauffeurPosition.longitude,
+      hotspot!.latitude,
+      hotspot!.longitude,
+    );
+
+    distanceKm = distance / 1000;
+    estimatedTime = (distanceKm! / 40) * 60;
+
+    setState(() {
+      showHotspotCard = true;
+    });
+  }
+
+  /*
+  *
+  *============================================================================================
+  * vérification de la position si le chauffeurest dans la ville que l'application fonctionne
+  *============================================================================================
+  *
+  */
+  bool estDansKinshasa(LatLng position) {
+    const kinshasaCenter = LatLng(-4.325, 15.3222);
+    double distance = Geolocator.distanceBetween(
+      position.latitude,
+      position.longitude,
+      kinshasaCenter.latitude,
+      kinshasaCenter.longitude,
+    );
+    return distance <= 20000; // 20 km
+  }
+
+  void verifierPositionChauffeur() async {
+    // Suppose que chauffeurPosition est déjà défini
+    if (!estDansKinshasa(chauffeurPosition)) {
+      // Affiche une boîte de dialogue ou un snack
+      showDialog(
+        context: context,
+        builder:
+            (ctx) => AlertDialog(
+              title: Text("Hors de Kinshasa"),
+              content: Text(
+                "Vous êtes en dehors de Kinshasa. Veuillez choisir un lieu manuellement.",
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _selectLocationManually();
+                  },
+                  child: Text("Choisir sur carte"),
+                ),
+              ],
+            ),
+      );
+    }
+  }
+
+  void _selectLocationManually() async {
+    LatLng? positionSelectionnee = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CarteSelectionPosition()),
+    );
+
+    if (positionSelectionnee != null) {
+      setState(() {
+        chauffeurPosition = positionSelectionnee;
+      });
+
+      print("positionSelectionnee: $positionSelectionnee");
+
+      // 🔁 Envoi vers l'API
+      await envoyerPositionServeur(positionSelectionnee);
+
+      setState(() {
+        markers.add(
+          Marker(
+            markerId: MarkerId('chauffeur'),
+            position: positionSelectionnee,
+            infoWindow: InfoWindow(title: 'Chauffeur'),
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor
+                  .hueGreen, // Icône par défaut si le chargement échoue
+            ),
+          ),
+        );
+      });
+    }
+  }
+
+  Future<void> envoyerPositionServeur(LatLng pos) async {
+    int? userId =
+        await CallApi.getUserId(); // Récupérer l'ID de l'utilisateur connecté
+    if (userId == null) {
+      throw Exception('Utilisateur non connecté');
+    }
+    Map<String, dynamic> svData = {
+      "latUser": pos.latitude.toString(),
+      "lonUser": pos.longitude.toString(),
+      "id": userId.toString(),
+    };
+    await CallApi.postData("chauffeur_mobilechangePosition", svData);
+
+    setState(() {
+      markers.clear();
+      circles.clear();
+      polylines.clear();
+      passagers.clear();
+      showHotspotCard = false;
+    });
+
+    fetchNotifications();
+  }
+
+  LatLng centerGoma = LatLng(-1.6708, 29.2218);
+  LatLng centerKinshasa = LatLng(-4.325, 15.3222);
+  bool estDansZoneKinshasa(LatLng positionActuelle) {
+    double distance = Geolocator.distanceBetween(
+      positionActuelle.latitude,
+      positionActuelle.longitude,
+      centerGoma.latitude,
+      centerGoma.longitude,
+    );
+
+    return distance <= 20000; // 20 km autour du centre
+  }
+
+  /*
+  *
+  *============================================================
+  * Fin vérification de la position si 
+  * le chauffeurest dans la ville que l'application fonctionne
+  *============================================================
+  *
+  */
+
+  bool isNotify = false;
+
+  /*
+  *
+  *==========================================
+  * Fin de la recherche automatique
+  *==========================================
+  */
+
+  /*
+  *
+  *==========================
+  *utilisation de push
+  *==========================
+  */
+
+  late PusherChannelsFlutter pusher;
+
+  void _connectToPusher() async {
+    pusher = PusherChannelsFlutter.getInstance();
+    int? passagerId = await CallApi.getUserId();
+    // final token = await CallApi.getToken();
+    debugPrint("🔌 Initialisation Pusher pour l'utilisateur $passagerId");
+
+    await pusher.init(
+      apiKey: CallApi.pusherAppKey,
+      cluster: "mt1",
+      onConnectionStateChange: (currentState, previousState) async {
+        debugPrint("🔌 État Pusher: $previousState → $currentState");
+
+        if (currentState == 'CONNECTED') {
+          _subscribeToChannel(passagerId!);
+        }
+
+        // 🔁 Reconnexion automatique si déconnecté
+        if (currentState == 'DISCONNECTED' || currentState == 'FAILED') {
+          debugPrint("🔁 Reconnexion dans 3 secondes...");
+          await Future.delayed(Duration(seconds: 3));
+          await pusher.connect();
+        }
+      },
+      onError: (message, code, e) {
+        debugPrint("❌ Erreur Pusher: $message (code: $code) | exception: $e");
+      },
+    );
+
+    await pusher.connect();
+  }
+
+  void _subscribeToChannel(int passagerId) async {
+    final channelName = 'chauffeur.$passagerId';
+
+    debugPrint("🔗 Abonnement au canal: $channelName");
+
+    try {
+      await pusher.unsubscribe(channelName: channelName);
+      await pusher.subscribe(
+        channelName: channelName,
+        onEvent: (event) {
+          debugPrint("\n📡 Événement reçu:");
+          debugPrint("Canal: ${event.channelName}");
+          debugPrint("Type: ${event.eventName}");
+          debugPrint("Données: ${event.data}\n");
+
+          if (event.eventName == 'passager.response') {
+            _handleDriverResponse(event);
+          }
+        },
+      );
+
+      debugPrint("✅ Abonnement réussi à $channelName");
+    } catch (e) {
+      debugPrint("❌ Erreur d'abonnement: $e");
+    }
+  }
+
+  void _handleDriverResponse(PusherEvent event) {
+    try {
+      debugPrint("📡 Traitement de l'événement: ${event.eventName}");
+      debugPrint("📦 Données brutes: ${event.data}");
+
+      final Map<String, dynamic> data = jsonDecode(event.data ?? '{}');
+
+      debugPrint("🔍 Données décodées: $data");
+
+      if (data['statut'] == '2') {
+        debugPrint("✅ Nouvelle demande de taxi - Affichage de la notification");
+
+        final driverName = data['passager_name'] ?? 'Passager';
+        final rideId = data['ride_id']?.toString() ?? '0';
+
+        // 1. Afficher un SnackBar
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("🚕 $driverName a envoyé une demande de taxi!"),
+              duration: Duration(seconds: 5),
+            ),
+          );
+
+          // 2. Rafraîchir l’interface avec setState
+          setState(() {
+            // mettez à jour vos variables si besoin ici
+            isNotify = true;
+          });
+        }
+
+        // 3. Jouer le son de notification
+        NotificationService.paddingRideSaundNotification();
+
+        // 4. Afficher la notification système
+        NotificationService.showDriverNotification(
+          passengerName: driverName,
+          pickupAddress: data['car_details'] ?? 'Véhicule en approche',
+          rideId: rideId,
+        );
+
+        // 5. Naviguer vers le suivi si nécessaire
+        if (mounted) {
+          showCourseBottomSheet(context);
+        }
+      } else if (data['statut'] == '1') {
+        final driverName = data['passager_name'] ?? 'Passager';
+        final rideId = data['ride_id']?.toString() ?? '0';
+        // 1. Afficher un SnackBar
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "🚕 Destination complète, Paiement reçu avec succès!!!",
+              ),
+              duration: Duration(seconds: 5),
+            ),
+          );
+
+          // 2. Rafraîchir l’interface avec setState
+          setState(() {
+            // mettez à jour vos variables si besoin ici
+            isNotify = true;
+          });
+        }
+        // 3. Jouer le son de notification
+        NotificationService.finishedSoundNotification();
+        // 4. Afficher la notification système
+        NotificationService.showPaiementAcceptedNotification(
+          rideId: rideId,
+          driverName: driverName,
+          carDetails: data['car_details'] ?? 'Véhicule en approche',
+        );
+        // 5. Naviguer vers le suivi si nécessaire
+        if (mounted) {
+          showCourseBottomSheet(context);
+        }
+      } else {
+        if (mounted) {
+          showCourseBottomSheet(context);
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Erreur traitement événement: $e');
+    }
+  }
+
+  void testDnsLookup() async {
+    try {
+      print('🔍 Résolution DNS pour ws-mt1.pusher.com...');
+      final result = await InternetAddress.lookup('ws-mt1.pusher.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        print('✅ DNS OK : ${result.first.address}');
+      } else {
+        print('❌ Aucun résultat DNS');
+      }
+    } catch (e) {
+      print('⚠️ Erreur de résolution DNS: $e');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+
+    testDnsLookup();
+
+    _connectToPusher();
 
     changeMyPosition();
     fetchNotifications();
@@ -1155,35 +1557,20 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
   }
 
   @override
+  void dispose() {
+    pusher.disconnect();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: CustomAppBar(
-        title: Text("Map-Chauffeur", style: TextStyle(color: Colors.white),),
+        title: Text("Map-Chauffeur", style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
-            icon: Icon(Icons.chat, color: Colors.white),
-            tooltip: "Discussion instantanée",
-            onPressed: () {
-              // Naviguer vers la page de détails de la conversation
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder:
-                      (context) => CorrespondentsPage(),
-                ),
-              );
-              
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.search, color: Colors.white),
-            tooltip: "Rechercher un lieu",
-            onPressed: () {
-              callBottomSheetSearch();
-            },
-          ),
-          IconButton(
-            icon: Icon(Icons.my_location_sharp, color: Colors.white,),
+            icon: Icon(Icons.my_location_sharp, color: Colors.white),
             tooltip: "Voir ma position",
             onPressed: () {
               _getCurrentPosition();
@@ -1191,13 +1578,23 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
               fetchNotifications();
             },
           ),
+          IconButton(
+            icon: Icon(Icons.chat, color: Colors.white),
+            tooltip: "Discussion instantanée",
+            onPressed: () {
+              // Naviguer vers la page de détails de la conversation
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CorrespondentsPage()),
+              );
+            },
+          ),
         ],
       ),
-      
 
       body: Stack(
         children: [
-          SizedBox(height: 10,),
+          SizedBox(height: 10),
           //la carte ici
           SizedBox(
             height:
@@ -1212,7 +1609,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                 mapController = controller;
               },
               markers:
-                  _getMarkers(), // Affichage des marqueurs (chauffeur et passagers)
+                  markers, // Affichage des marqueurs (chauffeur et passagers)
               polylines:
                   polylines, // Affichage des polylines pour les itinéraires
               circles: circles, // Ajout des cercles
@@ -1220,15 +1617,601 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
           ),
           //fin integration map
 
+          // bare de recherche
+          // ✅ 2. BARRE DE RECHERCHE + SUGGESTIONS (en haut)
+          Positioned(
+            top: 10,
+            left: 12,
+            right: 12,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: theme.canvasColor,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.shade300,
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          searchPlace2();
+                        },
+                        icon: Icon(Icons.search, color: Colors.white),
+                        iconSize: 24.0,
+                        splashRadius: 24.0,
+                        padding: EdgeInsets.all(8),
+                        constraints: BoxConstraints(),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(
+                            ConfigurationApp.successColor,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Où allez-vous?',
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Container(width: 1, height: 30, color: Colors.grey),
+                      IconButton(
+                        icon: Icon(Icons.front_hand, color: Colors.green),
+                        onPressed: () {
+                          // Ici, appelle après que les passagers soient bien chargés
+                          analyserPassagers();
+                        },
+                        tooltip: "Voir les demandeurs de taxi",
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 5),
+                SizedBox(
+                  height: 40,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(horizontal: 0),
+                    itemCount: categories.length,
+                    separatorBuilder: (_, __) => SizedBox(width: 4),
+                    itemBuilder: (context, index) {
+                      final cat = categories[index];
+                      return ActionChip(
+                        avatar: Icon(cat['icon'], size: 20),
+                        label: Text(cat['label']),
+                        onPressed: () {
+                          fetchPOIsByCategory(
+                            List<int>.from(cat['category_ids']),
+                            chauffeurPosition.latitude,
+                            chauffeurPosition.longitude,
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(height: 5),
+
+                if (searchEtat)
+                  Container(
+                    height: MediaQuery.of(context).size.height * 0.4,
+                    decoration: BoxDecoration(
+                      color: theme.canvasColor,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade300,
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Résultats de recherche (liste verticale)
+                        Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child:
+                                isLoading
+                                    ? Center(child: CircularProgressIndicator())
+                                    : listfilteredPlaces.isEmpty
+                                    ? Center(
+                                      child: Text(
+                                        "Aucun résultat trouvé",
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    )
+                                    : ListView.builder(
+                                      itemCount: listfilteredPlaces.length,
+                                      itemBuilder: (context, index) {
+                                        var place = listfilteredPlaces[index];
+                                        return Card(
+                                          margin: const EdgeInsets.symmetric(
+                                            vertical: 8,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                          ),
+                                          elevation: 3,
+                                          child: ListTile(
+                                            leading: Icon(
+                                              Icons.location_on,
+                                              color: Colors.redAccent,
+                                            ),
+                                            title: Text(
+                                              place['name'],
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            subtitle: Text(
+                                              place['description'],
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            trailing: Icon(
+                                              Icons.chevron_right,
+                                              size: 20,
+                                              color: Colors.grey,
+                                            ),
+                                            onTap: () {
+                                              setState(() {
+                                                searchEtat = false;
+                                              });
+                                              goToPlace(
+                                                LatLng(
+                                                  place['latitude'],
+                                                  place['longitude'],
+                                                ),
+                                                place['name'],
+                                                place,
+                                              );
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Liste horizontale des lieux favoris ou suggérés
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16, bottom: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Suggestions de lieux",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    searchEtat = false;
+                                  });
+                                },
+                                icon: Icon(Icons.close, color: Colors.red),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // liste des lieux suggerés
+                        SizedBox(
+                          height: 40,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            itemCount: placesJson.length,
+                            separatorBuilder: (_, __) => SizedBox(width: 4),
+                            itemBuilder: (context, index) {
+                              var place = placesJson[index];
+                              return ActionChip(
+                                avatar: Icon(
+                                  Icons.location_on,
+                                  color: Colors.green,
+                                  size: 20,
+                                ),
+                                label: Text(place['name']),
+                                onPressed: () {
+                                  setState(() {
+                                    searchEtat = false;
+                                  });
+                                  goToPlace(
+                                    LatLng(
+                                      place['latitude'],
+                                      place['longitude'],
+                                    ),
+                                    place['name'],
+                                    place,
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        // fin liste
+                        SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          //fin bare de recherche
+
+          //information du lieu
+          if (hotspot != null && distanceKm != null && estimatedTime != null)
+            Positioned(
+              bottom: 20,
+              left: 16,
+              right: 16,
+              child: AnimatedOpacity(
+                duration: Duration(milliseconds: 300),
+                opacity: showHotspotCard ? 1.0 : 0.0,
+                child:
+                    showHotspotCard
+                        ? Card(
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          elevation: 6,
+                          color: Colors.white,
+                          shadowColor: Colors.black54,
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.place, color: Colors.green),
+                                    SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        "Zone de forte demande",
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    ),
+                                    IconButton(
+                                      icon: Icon(
+                                        Icons.close,
+                                        color: Colors.red,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          showHotspotCard = false;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                Divider(),
+                                Row(
+                                  children: [
+                                    Icon(Icons.people, color: Colors.orange),
+                                    SizedBox(width: 8),
+                                    Text("Passagers : ${passagers.length}"),
+                                  ],
+                                ),
+                                SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.directions_car,
+                                      color: Colors.blue,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      "Distance : ${distanceKm!.toStringAsFixed(2)} km",
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 6),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.access_time,
+                                      color: Colors.purple,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      "Temps estimé : ${estimatedTime!.toStringAsFixed(0)} min",
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 12),
+                                !estDansZoneKinshasa(chauffeurPosition!)
+                                    ? ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.green,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 12,
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        // Fonction pour que le chauffeur sélectionne un lieu s’il n’est pas à Goma
+                                        _selectLocationManually();
+                                      },
+                                      icon: Icon(
+                                        Icons.my_location,
+                                        color: Colors.white,
+                                      ),
+                                      label: Text("Sélectionner ma position"),
+                                    )
+                                    : SizedBox(),
+                              ],
+                            ),
+                          ),
+                        )
+                        : SizedBox.shrink(),
+              ),
+            ),
+          // fin information du lieu
+
           // Center(child: Text(passagers.toString())),
 
-          // BottomSheet pour la recherche
-          isSearchingBottom
-              ? showSearchBottomShhet(context)
-              : Column(children: []),
-          // Fin de la zone BottomSheet
+          // Tester le message du lieu
+          Positioned(
+            bottom: 20,
+            left: 55,
+            right: 55,
+            child:
+                chauffeurPosition == null
+                    ? CircularProgressIndicator()
+                    : !estDansZoneKinshasa(chauffeurPosition!)
+                    ? Container(
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.redAccent.withOpacity(0.8),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        "🚫 L’application Lifti ne supporte pas votre localisation actuelle.",
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    )
+                    : searchEtat || showHotspotCard
+                    ? SizedBox()
+                    : ElevatedButton.icon(
+                      onPressed: () {
+                        // Naviguer vers sélection destination
+                        setState(() {
+                          searchEtat = true;
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        padding: EdgeInsets.symmetric(
+                          vertical: 14,
+                          horizontal: 20,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                      icon: Icon(Icons.location_on),
+                      label: Text("Où allez-vous ?"),
+                    ),
+          ),
+          // fin test du message du lieu
+
+          // Les bouttons d'actions
+          // 🔘 Les boutons avec badges
+          Positioned(
+            bottom: 100,
+            right: 7,
+            child: Column(
+              children: [
+                // 🔔 Bouton notification avec badge
+                Stack(
+                  children: [
+                    FloatingActionButton(
+                      heroTag: "btn1",
+                      mini: true,
+                      backgroundColor: Colors.white,
+                      onPressed: () {
+                        setState(() {
+                          isNotify = false;
+                        });
+                        showNotificationBottomSheet(context);
+                      },
+                      child: Icon(Icons.notifications, color: Colors.black),
+                    ),
+                    if (isNotify)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 1.0, end: 1.2),
+                          duration: Duration(milliseconds: 500),
+                          curve: Curves.easeInOut,
+                          builder: (context, scale, child) {
+                            return Transform.scale(scale: scale, child: child);
+                          },
+                          onEnd: () {
+                            // Boucle l'animation
+                            if (mounted && isNotify) setState(() {});
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.red,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.red.withOpacity(0.6),
+                                  blurRadius: 6,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                SizedBox(height: 5),
+
+                // 📜 Bouton historique avec badge aussi (optionnel)
+                Stack(
+                  children: [
+                    FloatingActionButton(
+                      heroTag: "btn2",
+                      mini: true,
+                      backgroundColor: Colors.white,
+                      onPressed: () {
+                        setState(() {
+                          isNotify = false;
+                        });
+
+                        showCourseBottomSheet(context);
+                      },
+                      child: Icon(Icons.history, color: Colors.black),
+                    ),
+                    if (isNotify)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.red,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.red.withOpacity(0.6),
+                                blurRadius: 6,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          //fin boutton
+
+          // Fin de boutton action
         ],
       ),
     );
   }
+
+  /*
+*
+*===============================
+*Affichage de notification
+*===============================
+*/
+
+  // Fonction pour afficher le BottomSheet
+  void showCourseBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        final theme = Theme.of(context);
+        final screenHeight = MediaQuery.of(context).size.height;
+        return Container(
+          height: screenHeight * 0.65, // 50% de l'écran
+          width: double.infinity,
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 50,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+
+              SizedBox(height: 10),
+              // Course en cours dans une hauteur dynamique
+              SizedBox(
+                height: screenHeight * 0.57, // ajustable selon ton contenu
+                child: CoursesEnCoursChauffeur(),
+              ),
+
+              SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Fonction pour afficher le BottomSheet
+  void showNotificationBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Plein écran
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return NotificationBottom();
+      },
+    );
+  }
+
+  /*
+*
+*===============================
+* Fin Affichage de notification
+*===============================
+*/
 }

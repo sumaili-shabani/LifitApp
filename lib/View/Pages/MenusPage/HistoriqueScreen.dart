@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
-import 'package:lifti_app/Controller/ApiService.dart';
 import 'package:lifti_app/Model/ChauffeurDashBoardModel.dart';
 import 'package:lifti_app/Model/HistoriqueCourseModel.dart';
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
 
 class HistoriqueScreen extends StatefulWidget {
   const HistoriqueScreen({super.key});
@@ -379,142 +380,6 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
 
   //fin
 
-  void _showCommissionBottomSheet(BuildContext context, int refPaiement) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      builder: (BuildContext context) {
-        return isLoadingCommission
-            ? Center(
-              child: CircularProgressIndicator(),
-            ) // Affiche un loader en attendant l'API
-            : SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Chauffeur Info
-                    Text(
-                      "Chauffeur Info",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    ...infoCommission[0]["data"]["chauffeurInfo"].map<Widget>((
-                      chauffeur,
-                    ) {
-                      return _buildCard(chauffeur, Icons.directions_car);
-                    }).toList(),
-
-                    // Lifti Info
-                    SizedBox(height: 16),
-                    Text(
-                      "Lifti Info",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    ...infoCommission[0]["data"]["liftiInfo"].map<Widget>((
-                      lifti,
-                    ) {
-                      return _buildCard(lifti, Icons.access_time);
-                    }).toList(),
-
-                    // Partenaire Info
-                    SizedBox(height: 16),
-                    Text(
-                      "Partenaires Info",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    ...infoCommission[0]["data"]["partenaireInfo"].map<Widget>((
-                      partenaire,
-                    ) {
-                      return _buildCard(partenaire, Icons.local_taxi);
-                    }).toList(),
-                  ],
-                ),
-              ),
-            );
-      },
-    );
-  }
-
-  // Function to build each card with the data
-  Widget _buildCard(Map<String, dynamic> data, IconData icon) {
-    return Card(
-      margin: EdgeInsets.only(bottom: 10),
-      elevation: 5,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            CircleAvatar(
-              radius: 30,
-              backgroundImage: NetworkImage(
-                '${CallApi.fileUrl}/images/${data['avatar']}',
-              ), // Change with actual avatar URL
-            ),
-            SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    data['name'],
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.work, color: Colors.grey, size: 15),
-                      SizedBox(width: 5),
-                      Text(
-                        data['roleName'],
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.account_balance_wallet,
-                        color: Colors.grey,
-                        size: 15,
-                      ),
-                      SizedBox(width: 5),
-                      Text(
-                        "Montant: ${data['montant_paie']} ${data['devise']}",
-                        style: TextStyle(fontSize: 14),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Icon(Icons.calendar_today, color: Colors.grey, size: 15),
-                      SizedBox(width: 5),
-                      Text(
-                        "Date: ${data['date_paie']}",
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Icon(icon, size: 30, color: Colors.blue),
-          ],
-        ),
-      ),
-    );
-  }
-
   /*
   *
   *==================================
@@ -547,6 +412,15 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
             color: Colors.white,
             onPressed: () {
               fetchNotifications();
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.chat, color: Colors.white),
+            tooltip: "Discussion instantanée",
+            onPressed: () {
+              Navigator.of(
+                context,
+              ).push(AnimatedPageRoute(page: CorrespondentsPage()));
             },
           ),
         ],
@@ -624,7 +498,7 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
                                              "${course.calculate == 1 ? 'Distance:' : 'Location:'}${course.distance!.toStringAsFixed(2)} ${course.calculate == 1 ? 'Km ➡️${course.timeEst!}' : 'J/H'}",
                                             style: TextStyle(
                                               color: Colors.grey,
-                                              fontSize: 12,
+                                              fontSize: 10,
                                             ),
                                           ),
                                         ],
