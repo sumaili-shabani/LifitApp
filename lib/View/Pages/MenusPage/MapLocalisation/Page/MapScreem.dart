@@ -27,8 +27,7 @@ class MapScreemChauffeur extends StatefulWidget {
 }
 
 class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
-  static const String apikeyOpenrouteservice =
-      "5b3ce3597851110001cf62484e660c3aa019470d8ac388d12b974480";
+  static  String apikeyOpenrouteservice =CallApi.apikeyOpenrouteservice;
   bool isBottomSheetOpen = false;
   late GoogleMapController mapController;
   late LatLng chauffeurPosition; // Position actuelle du chauffeur
@@ -79,8 +78,8 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
           center: chauffeurPosition,
           radius: 1000, // 1 km en mètres
           strokeWidth: 2,
-          strokeColor: Colors.blue,
-          fillColor: Colors.blue.withOpacity(0.2),
+          strokeColor: Colors.green,
+          fillColor: Colors.green.withOpacity(0.2),
         ),
       );
     });
@@ -89,8 +88,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
   // Fonction pour récupérer l'itinéraire entre chauffeur et passager via l'API Google Directions
 
   Set<Marker> _getMarkers() {
-    Set<Marker> markers = {};
-
+    
     // Ajoute les markers des passagers
     for (var passager in passagers) {
       markers.add(
@@ -217,7 +215,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                 polylineId: PolylineId('route'),
                 visible: true,
                 points: routeCoords,
-                color: Colors.blue,
+                color: Colors.green,
                 width: 5,
               ),
             );
@@ -466,114 +464,135 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        return SizedBox(
+          
+          child: Padding(
+            
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "Informations du lieu",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+            child: Container(
+              padding: EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 50,
+                    height: 5,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[400],
+                      borderRadius: BorderRadius.circular(10),
                     ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.close,
-                        color: ConfigurationApp.dangerColor,
-                      ),
-                      onPressed: () {
-                        Navigator.pop(context);
-                        setState(() {
-                          isBottomSheetOpen = false;
-                        });
-                      },
-                    ),
-                  ],
-                ),
-                Divider(),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Icon(Icons.map, color: Colors.blue),
-                        SizedBox(width: 5),
-
-                        SizedBox(
-                          width: 300,
-                          child: Text("Adresse: ${place["name"]}", maxLines: 4),
-                        ),
-                      ],
-                    ),
-                    Divider(),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.info_outline_rounded,
-                          color: ConfigurationApp.warningColor,
-                        ),
-                        SizedBox(width: 5),
-                        SizedBox(
-                          width: 300,
-                          child: Text(
-                            "Description: ${place["description"]}",
-                            maxLines: 4,
+                  ),
+                  SizedBox(height: 5),
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.map, size: 18),
+                          SizedBox(width: 3),
+          
+                          Text(
+                            "Informations du lieu",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    Divider(),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.pin_drop_outlined,
+                        ],
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          Icons.close,
                           color: ConfigurationApp.dangerColor,
                         ),
-                        SizedBox(width: 5),
-                        Text(
-                          "Lat-Lon: ${place['latitude'].toStringAsFixed(4)} - ${place['longitude'].toStringAsFixed(4)} km",
-                        ),
-                      ],
-                    ),
-                    Divider(),
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.directions_car,
-                          color: ConfigurationApp.dangerColor,
-                        ),
-                        SizedBox(width: 5),
-                        Text("Distance: ${distance.toStringAsFixed(2)} km"),
-                      ],
-                    ),
-
-                    Divider(),
-                    Row(
-                      children: [
-                        Icon(Icons.timer, color: Colors.purple),
-                        SizedBox(width: 5),
-                        Text(
-                          "Temps estimé: ${duration.toStringAsFixed(2)} min",
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                  ],
-                ),
-              ],
+                        onPressed: () {
+                          Navigator.pop(context);
+                          setState(() {
+                            isBottomSheetOpen = false;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                  Divider(color: Colors.grey[400]),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(Icons.map, color: Colors.blue),
+                          SizedBox(width: 5),
+          
+                          SizedBox(
+                            width: 300,
+                            child: Text("Adresse: ${place["name"]}", maxLines: 4),
+                          ),
+                        ],
+                      ),
+                      Divider(color: Colors.grey[400]),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.info_outline_rounded,
+                            color: ConfigurationApp.warningColor,
+                          ),
+                          SizedBox(width: 5),
+                          SizedBox(
+                            width: 300,
+                            child: Text(
+                              "Description: ${place["description"]}",
+                              maxLines: 4,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Divider(color: Colors.grey[400]),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.pin_drop_outlined,
+                            color: ConfigurationApp.dangerColor,
+                          ),
+                          SizedBox(width: 5),
+                          Text(
+                            "Lat-Lon: ${place['latitude'].toStringAsFixed(4)} - ${place['longitude'].toStringAsFixed(4)} ",
+                          ),
+                        ],
+                      ),
+                      Divider(color: Colors.grey[400]),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.directions_car,
+                            color: ConfigurationApp.dangerColor,
+                          ),
+                          SizedBox(width: 5),
+                          Text("Distance: ${distance.toStringAsFixed(2)} km"),
+                        ],
+                      ),
+          
+                      Divider(color: Colors.grey[400]),
+                      Row(
+                        children: [
+                          Icon(Icons.timer, color: Colors.purple),
+                          SizedBox(width: 5),
+                          Text(
+                            "Temps estimé: ${duration.toStringAsFixed(2)} min",
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20),
+                    ],
+                  ),
+                ],
+              ),
             ),
           ),
         );
@@ -817,8 +836,8 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
           center: location,
           radius: 1000, // 1 km en mètres
           strokeWidth: 2,
-          strokeColor: Colors.blue,
-          fillColor: Colors.blue.withOpacity(0.2),
+          strokeColor: Colors.green,
+          fillColor: Colors.green.withOpacity(0.2),
         ),
       );
     });
@@ -1137,6 +1156,197 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
     return start + (end - start) * t;
   }
 
+  /*
+  *
+  *===========================================
+  * recherche automatique
+  *===========================================
+  */
+  bool searchEtat = false;
+  List<Map<String, dynamic>> categories = [
+    {
+      'label': 'Hôpital',
+      'icon': Icons.local_hospital,
+      'category_ids': [206], // Corrected ID for hospital
+    },
+    {
+      'label': 'École',
+      'icon': Icons.school,
+      'category_ids': [156], // Correct ID for school
+    },
+    {
+      'label': 'Police',
+      'icon': Icons.local_police,
+      'category_ids': [237], // Correct ID for police station
+    },
+    {
+      'label': 'Pharmacie',
+      'icon': Icons.local_pharmacy,
+      'category_ids': [208], // Correct ID for pharmacy
+    },
+    {
+      'label': 'Banque',
+      'icon': Icons.account_balance,
+      'category_ids': [419], // Correct ID for bank
+    },
+    {
+      'label': 'Hôtel',
+      'icon': Icons.hotel,
+      'category_ids': [108], // Correct ID for hotel
+    },
+    {
+      'label': 'Auberge',
+      'icon': Icons.business_center,
+      'category_ids': [107], // Correct ID for hostel
+    },
+    {
+      'label': 'Station-service',
+      'icon': Icons.local_gas_station,
+      'category_ids': [596], // Correct ID for gas station
+    },
+    {
+      'label': 'Cinéma',
+      'icon': Icons.movie,
+      'category_ids': [299], // Correct ID for cinema
+    },
+    {
+      'label': 'Parc',
+      'icon': Icons.park,
+      'category_ids': [280], // Correct ID for park
+    },
+    {
+      'label': 'Restaurant',
+      'icon': Icons.restaurant,
+      'category_ids': [560], // Correct ID for restaurant
+    },
+    {
+      'label': 'Supermarché',
+      'icon': Icons.store,
+      'category_ids': [420], // Correct ID for supermarket
+    },
+    {
+      'label': 'Zoo',
+      'icon': Icons.pets,
+      'category_ids': [310], // Correct ID for zoo
+    },
+    {
+      'label': 'Église',
+      'icon': Icons.church,
+      'category_ids': [161], // Correct ID for church
+    },
+    {
+      'label': 'Musée',
+      'icon': Icons.museum,
+      'category_ids': [130], // Correct ID for museum
+    },
+  ];
+
+  Future<void> fetchPOIsByCategory(
+    List<int> categoryIds,
+    double lat,
+    double lon, {
+    int buffer = 2000, // Rayon en mètres (par défaut 1 km)
+  }) async {
+    String apikeyOpenrouteservice =
+        CallApi.apikeyOpenrouteservice; // Remplacer par la clé API
+
+    final body = jsonEncode({
+      "request": "pois",
+      "geometry": {
+        "geojson": {
+          "type": "Point",
+          "coordinates": [lon, lat],
+        },
+        "buffer": buffer, // Rayon dynamique passé en paramètre
+      },
+      "filters": {"category_ids": categoryIds},
+    });
+
+    final response = await http.post(
+      Uri.parse('https://api.openrouteservice.org/pois'),
+      headers: {
+        'Authorization': apikeyOpenrouteservice,
+        'Content-Type': 'application/json',
+      },
+      body: body,
+    );
+
+    print("response: ${response.body}");
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      final features = data['features'] as List;
+
+      setState(() {
+        // markers.clear();
+        for (var feature in features) {
+          final coords = feature['geometry']['coordinates'];
+          final properties = feature['properties'];
+          final name =
+              properties['osm_tags']['name'] ?? 'Lieu inconnu'; // Nom du lieu
+
+          // Extraction du nom de la catégorie à partir de 'category_ids'
+          String categoryName = '';
+          if (properties['category_ids'] != null) {
+            properties['category_ids'].forEach((key, value) {
+              categoryName =
+                  value['category_name']; // Extraire le nom de la catégorie
+            });
+          }
+
+          Map<String, dynamic> place = {
+            "name": name,
+            "latitude": coords[1],
+            "longitude": coords[0],
+            "description": categoryName,
+          };
+
+          // Ajout du marqueur avec la catégorie
+          markers.add(
+            Marker(
+              markerId: MarkerId(feature['id'].toString()),
+              position: LatLng(coords[1], coords[0]),
+              infoWindow: InfoWindow(
+                title: name,
+                snippet:
+                    'Catégorie: $categoryName', // Afficher la catégorie dans l'info window
+              ),
+              icon:
+                  customPlaceIcon ??
+                  BitmapDescriptor.defaultMarkerWithHue(
+                    BitmapDescriptor
+                        .hueRed, // Icône par défaut si le chargement échoue
+                  ),
+              onTap: () {
+                _getRoutePlace(
+                  chauffeurPosition,
+                  LatLng(coords[1], coords[0]),
+                  place, // Passer les informations de la places la fonction
+                );
+              },
+            ),
+          );
+        }
+      });
+    } else {
+      print('Erreur OpenRouteService: ${response.statusCode}');
+    }
+  }
+
+
+
+
+  /*
+  *
+  *==========================================
+  * Fin de la recherche automatique
+  *==========================================
+  */
+
+
+
+
+
   @override
   void initState() {
     super.initState();
@@ -1156,6 +1366,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       appBar: CustomAppBar(
         title: Text("Map-Chauffeur", style: TextStyle(color: Colors.white),),
@@ -1219,6 +1430,250 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
             ),
           ),
           //fin integration map
+
+          // bare de recherche
+          // ✅ 2. BARRE DE RECHERCHE + SUGGESTIONS (en haut)
+          Positioned(
+            top: 10,
+            left: 12,
+            right: 12,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Container(
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: theme.canvasColor,
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.shade300,
+                        blurRadius: 6,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        onPressed: () {
+                          print("clic recherche");
+                          searchPlace2();
+                        },
+                        icon: Icon(Icons.search, color: Colors.white),
+                        iconSize: 24.0,
+                        splashRadius: 24.0,
+                        padding: EdgeInsets.all(8),
+                        constraints: BoxConstraints(),
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all(
+                            ConfigurationApp.successColor,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Expanded(
+                        child: TextField(
+                          controller: searchController,
+                          decoration: InputDecoration(
+                            hintText: 'Où allez-vous?',
+                            border: InputBorder.none,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Container(width: 1, height: 30, color: Colors.grey),
+                      IconButton(
+                        icon: Icon(Icons.calendar_month, color: Colors.green),
+                        onPressed: () {
+                          // searchPlace2();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 5),
+                SizedBox(
+                  height: 40,
+                  child: ListView.separated(
+                    scrollDirection: Axis.horizontal,
+                    padding: EdgeInsets.symmetric(horizontal: 0),
+                    itemCount: categories.length,
+                    separatorBuilder: (_, __) => SizedBox(width: 4),
+                    itemBuilder: (context, index) {
+                      final cat = categories[index];
+                      return ActionChip(
+                        avatar: Icon(cat['icon'], size: 20),
+                        label: Text(cat['label']),
+                        onPressed: () {
+                          fetchPOIsByCategory(
+                            List<int>.from(cat['category_ids']),
+                            chauffeurPosition.latitude,
+                            chauffeurPosition.longitude,
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(height: 5),
+
+                if (searchEtat)
+                  Container(
+                    height: MediaQuery.of(context).size.height * 0.4,
+                    decoration: BoxDecoration(
+                      color: theme.canvasColor,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.shade300,
+                          blurRadius: 6,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Résultats de recherche (liste verticale)
+                        Expanded(
+                          flex: 1,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child:
+                                isLoading
+                                    ? Center(child: CircularProgressIndicator())
+                                    : listfilteredPlaces.isEmpty
+                                    ? Center(
+                                      child: Text(
+                                        "Aucun résultat trouvé",
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                    )
+                                    : ListView.builder(
+                                      itemCount: listfilteredPlaces.length,
+                                      itemBuilder: (context, index) {
+                                        var place = listfilteredPlaces[index];
+                                        return Card(
+                                          margin: const EdgeInsets.symmetric(
+                                            vertical: 8,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
+                                          ),
+                                          elevation: 3,
+                                          child: ListTile(
+                                            leading: Icon(
+                                              Icons.location_on,
+                                              color: Colors.redAccent,
+                                            ),
+                                            title: Text(
+                                              place['name'],
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 16,
+                                              ),
+                                            ),
+                                            subtitle: Text(
+                                              place['description'],
+                                              maxLines: 2,
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            trailing: Icon(
+                                              Icons.chevron_right,
+                                              size: 20,
+                                              color: Colors.grey,
+                                            ),
+                                            onTap: () {
+                                              goToPlace(
+                                                LatLng(
+                                                  place['latitude'],
+                                                  place['longitude'],
+                                                ),
+                                                place['name'],
+                                                place,
+                                              );
+                                            },
+                                          ),
+                                        );
+                                      },
+                                    ),
+                          ),
+                        ),
+
+                        const SizedBox(height: 20),
+
+                        // Liste horizontale des lieux favoris ou suggérés
+                        Padding(
+                          padding: const EdgeInsets.only(left: 16, bottom: 8),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                "Suggestions de lieux",
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+
+                              IconButton(
+                                onPressed: () {
+                                  setState(() {
+                                    searchEtat = false;
+                                  });
+                                },
+                                icon: Icon(Icons.close, color: Colors.red),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        // liste des lieux suggerés
+                        SizedBox(
+                          height: 40,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            padding: EdgeInsets.symmetric(horizontal: 12),
+                            itemCount: placesJson.length,
+                            separatorBuilder: (_, __) => SizedBox(width: 4),
+                            itemBuilder: (context, index) {
+                              var place = placesJson[index];
+                              return ActionChip(
+                                avatar: Icon(
+                                  Icons.location_on,
+                                  color: Colors.green,
+                                  size: 20,
+                                ),
+                                label: Text(place['name']),
+                                onPressed: () {
+                                  goToPlace(
+                                    LatLng(
+                                      place['latitude'],
+                                      place['longitude'],
+                                    ),
+                                    place['name'],
+                                    place,
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        // fin liste
+                        SizedBox(height: 20),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          //fin bare de recherche
 
           // Center(child: Text(passagers.toString())),
 

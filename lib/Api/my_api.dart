@@ -34,8 +34,8 @@ class CallApi {
   //     "https://lifti.e-serv.org/api"; // Remplace par ton URL
 
   // par defaut en locale
-  static const String fileUrl = "http://10.70.56.127:8000"; // Pour le fichier
-  static const String baseUrl = "http://10.70.56.127:8000/api"; // pour ton URL
+  static const String fileUrl = "http://10.209.42.127:8000"; // Pour le fichier
+  static const String baseUrl = "http://10.209.42.127:8000/api"; // pour ton URL
 
   /*
   *
