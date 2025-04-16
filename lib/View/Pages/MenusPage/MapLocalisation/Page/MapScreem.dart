@@ -1348,23 +1348,57 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
   double? estimatedTime;
   bool showHotspotCard = false;
   //bon maintenant là, je veux  l'archivage de cercle pour voir là où il y'a beaucoup de demainde
-  LatLng findHotspot(List<dynamic> demandeurs) {
+  LatLng findClusterHotspot(List<dynamic> passagers) {
+    List<List<dynamic>> clusters = [];
+
+    for (var p in passagers) {
+      bool added = false;
+      for (var cluster in clusters) {
+        for (var q in cluster) {
+          double dist = Geolocator.distanceBetween(
+            p["latitude"],
+            p["longitude"],
+            q["latitude"],
+            q["longitude"],
+          );
+          if (dist < 1000) {
+            // Moins de 1 km
+            cluster.add(p);
+            added = true;
+            break;
+          }
+        }
+        if (added) break;
+      }
+      if (!added) {
+        clusters.add([p]);
+      }
+    }
+
+    // Trouver le plus grand groupe
+    clusters.sort((a, b) => b.length.compareTo(a.length));
+    var bestCluster = clusters.first;
+
+    // Calculer le centroïde de ce groupe
     double avgLat =
-        demandeurs.map((p) => p["latitude"] as double).reduce((a, b) => a + b) /
-        demandeurs.length;
+        bestCluster.map((p) => p["latitude"]).reduce((a, b) => a + b) /
+        bestCluster.length;
     double avgLng =
-        demandeurs
-            .map((p) => p["longitude"] as double)
-            .reduce((a, b) => a + b) /
-        demandeurs.length;
+        bestCluster.map((p) => p["longitude"]).reduce((a, b) => a + b) /
+        bestCluster.length;
+
     return LatLng(avgLat, avgLng);
   }
-
+  
   void analyserPassagers() async {
     // print(chauffeurPosition);
-    if (passagers.isEmpty) return;
-    hotspot = findHotspot(passagers);
+    if (passagers.isEmpty || chauffeurPosition == LatLng(-1.6708, 29.2218))
+      return;
     await _getMarkers();
+    hotspot = findClusterHotspot(passagers);
+
+    print("hotspot:$hotspot");
+
     circles = {
       Circle(
         circleId: CircleId('zone_hotspot'),
