@@ -149,7 +149,7 @@ class NotificationService {
             ),
             AndroidNotificationAction(
               'reject_action',
-              'Refuser',
+              'No disponible',
               cancelNotification: true,
             ),
           ],
@@ -162,7 +162,7 @@ class NotificationService {
     await _notificationsPlugin.show(
       rideId.hashCode, // ID unique basé sur l'ID de course
       'Nouvelle demande de course',
-      '$passengerName à $pickupAddress',
+      '($passengerName)  $pickupAddress',
       details,
       payload: jsonEncode({
         'type': 'ride_request',
@@ -401,7 +401,7 @@ class NotificationService {
     await _notificationsPlugin.show(
       rideId.hashCode,
       'Course Terminée!',
-      "Félicitation course vient d'arriver à la destination!!! $driverName ($carDetails)",
+      "$carDetails ",
       details,
       payload: jsonEncode({
         'type': 'ride_accepted',
@@ -410,6 +410,46 @@ class NotificationService {
       }),
     );
   }
+
+   /*
+  *
+  *============================
+  * Les réponses du chauffeur
+  *============================
+  */
+
+  //  Notification d'Acceptation (Pour le Passager)
+  static Future<void> showPaiementAcceptedNotification({
+    required String driverName,
+    required String carDetails,
+    required String rideId,
+  }) async {
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+          'driver_channel',
+          'Paiement de course',
+          importance: Importance.high,
+          priority: Priority.defaultPriority,
+          category: AndroidNotificationCategory.status,
+        );
+
+    final NotificationDetails details = NotificationDetails(
+      android: androidDetails,
+    );
+
+    await _notificationsPlugin.show(
+      rideId.hashCode,
+      'Paiement reussi!',
+      '($driverName) $carDetails',
+      details,
+      payload: jsonEncode({
+        'type': 'ride_accepted',
+        'ride_id': rideId,
+        'driver_name': driverName,
+      }),
+    );
+  }
+
 
   
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -17,10 +18,12 @@ import 'dart:typed_data';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
+import 'package:lifti_app/Controller/NotificationService.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
 import 'package:lifti_app/View/Pages/MenusPage/CoursesEnCoursChauffeur.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/CarteSelectionPosition.dart';
 import 'package:lifti_app/View/Pages/MenusPage/NotificationBottom.dart';
+import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
 
 class MapScreemChauffeur extends StatefulWidget {
   const MapScreemChauffeur({super.key});
@@ -1364,9 +1367,181 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
   *==========================================
   */
 
+  /*
+  *
+  *==========================
+  *utilisation de push
+  *==========================
+  */
+
+  late PusherChannelsFlutter pusher;
+
+  void _connectToPusher() async {
+    pusher = PusherChannelsFlutter.getInstance();
+    int? passagerId = await CallApi.getUserId();
+    // final token = await CallApi.getToken();
+    debugPrint("🔌 Initialisation Pusher pour l'utilisateur $passagerId");
+
+    await pusher.init(
+      apiKey: CallApi.pusherAppKey,
+      cluster: "mt1",
+      onConnectionStateChange: (currentState, previousState) async {
+        debugPrint("🔌 État Pusher: $previousState → $currentState");
+
+        if (currentState == 'CONNECTED') {
+          _subscribeToChannel(passagerId!);
+        }
+
+        // 🔁 Reconnexion automatique si déconnecté
+        if (currentState == 'DISCONNECTED' || currentState == 'FAILED') {
+          debugPrint("🔁 Reconnexion dans 3 secondes...");
+          await Future.delayed(Duration(seconds: 3));
+          await pusher.connect();
+        }
+      },
+      onError: (message, code, e) {
+        debugPrint("❌ Erreur Pusher: $message (code: $code) | exception: $e");
+      },
+    );
+
+    await pusher.connect();
+  }
+
+  void _subscribeToChannel(int passagerId) async {
+    final channelName = 'chauffeur.$passagerId';
+
+    debugPrint("🔗 Abonnement au canal: $channelName");
+
+    try {
+      await pusher.unsubscribe(channelName: channelName);
+      await pusher.subscribe(
+        channelName: channelName,
+        onEvent: (event) {
+          debugPrint("\n📡 Événement reçu:");
+          debugPrint("Canal: ${event.channelName}");
+          debugPrint("Type: ${event.eventName}");
+          debugPrint("Données: ${event.data}\n");
+
+          if (event.eventName == 'passager.response') {
+            _handleDriverResponse(event);
+          }
+        },
+      );
+
+      debugPrint("✅ Abonnement réussi à $channelName");
+    } catch (e) {
+      debugPrint("❌ Erreur d'abonnement: $e");
+    }
+  }
+
+  void _handleDriverResponse(PusherEvent event) {
+    try {
+      debugPrint("📡 Traitement de l'événement: ${event.eventName}");
+      debugPrint("📦 Données brutes: ${event.data}");
+
+      final Map<String, dynamic> data = jsonDecode(event.data ?? '{}');
+
+      debugPrint("🔍 Données décodées: $data");
+
+      if (data['statut'] == '2') {
+        debugPrint("✅ Nouvelle demande de taxi - Affichage de la notification");
+
+        final driverName = data['passager_name'] ?? 'Passager';
+        final rideId = data['ride_id']?.toString() ?? '0';
+
+        // 1. Afficher un SnackBar
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("🚕 $driverName a envoyé une demande de taxi!"),
+              duration: Duration(seconds: 5),
+            ),
+          );
+
+          // 2. Rafraîchir l’interface avec setState
+          setState(() {
+            // mettez à jour vos variables si besoin ici
+            isNotify = true;
+          });
+        }
+
+        // 3. Jouer le son de notification
+        NotificationService.paddingRideSaundNotification();
+
+        // 4. Afficher la notification système
+        NotificationService.showDriverNotification(
+          passengerName: driverName,
+          pickupAddress: data['car_details'] ?? 'Véhicule en approche',
+          rideId: rideId,
+        );
+
+        // 5. Naviguer vers le suivi si nécessaire
+        if (mounted) {
+          showCourseBottomSheet(context);
+        }
+      } else if (data['statut'] == '1') {
+        final driverName = data['passager_name'] ?? 'Passager';
+        final rideId = data['ride_id']?.toString() ?? '0';
+        // 1. Afficher un SnackBar
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                "🚕 Destination complète, Paiement reçu avec succès!!!",
+              ),
+              duration: Duration(seconds: 5),
+            ),
+          );
+
+          // 2. Rafraîchir l’interface avec setState
+          setState(() {
+            // mettez à jour vos variables si besoin ici
+            isNotify = true;
+          });
+        }
+        // 3. Jouer le son de notification
+        NotificationService.finishedSoundNotification();
+        // 4. Afficher la notification système
+        NotificationService.showPaiementAcceptedNotification(
+          rideId: rideId,
+          driverName: driverName,
+          carDetails: data['car_details'] ?? 'Véhicule en approche',
+        );
+        // 5. Naviguer vers le suivi si nécessaire
+        if (mounted) {
+          showCourseBottomSheet(context);
+        }
+      } else {
+        if (mounted) {
+          showCourseBottomSheet(context);
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Erreur traitement événement: $e');
+    }
+  }
+
+  void testDnsLookup() async {
+    try {
+      print('🔍 Résolution DNS pour ws-mt1.pusher.com...');
+      final result = await InternetAddress.lookup('ws-mt1.pusher.com');
+      if (result.isNotEmpty && result[0].rawAddress.isNotEmpty) {
+        print('✅ DNS OK : ${result.first.address}');
+      } else {
+        print('❌ Aucun résultat DNS');
+      }
+    } catch (e) {
+      print('⚠️ Erreur de résolution DNS: $e');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+
+    testDnsLookup();
+
+    _connectToPusher();
 
     changeMyPosition();
     fetchNotifications();
@@ -1379,6 +1554,12 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
 
     //chargement des icons
     _loadIcons();
+  }
+
+  @override
+  void dispose() {
+    pusher.disconnect();
+    super.dispose();
   }
 
   @override
@@ -1950,9 +2131,6 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                       ),
                   ],
                 ),
-                
-
-               
               ],
             ),
           ),
@@ -2002,7 +2180,6 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
               ),
 
               SizedBox(height: 10),
-
               // Course en cours dans une hauteur dynamique
               SizedBox(
                 height: screenHeight * 0.57, // ajustable selon ton contenu

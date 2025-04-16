@@ -8,6 +8,7 @@ import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Controller/ApiService.dart';
 import 'package:lifti_app/Model/ChauffeurDashBoardModel.dart';
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/DestinationCourseOnMap.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/PositionPassagerOnMap.dart';
 import 'package:lifti_app/core/theme/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -249,6 +250,31 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
   }
   //fin position actuelle to map
 
+   
+  //position actuelle to map
+  void showDestinationMapBottomSheet(
+    BuildContext context,
+    CourseInfoPassagerModel course,
+  ) {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (context) => Destinationcourseonmap(
+            course: course,
+            onSubmitComment: (course) {
+              // print("idcourse: ${course.id}");
+              Navigator.pop(context); // Ferme le BottomSheet
+            },
+          ),
+    );
+  }
+
+  //fin destination de la course
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -351,7 +377,9 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 5),
+                          // Divider(color: Colors.grey,),
+                          SizedBox(height: 5),
 
                           // mes ajouts
                           Row(
@@ -426,21 +454,40 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
+                                  SizedBox(
+                                    width: MediaQuery.of(context).size.width * 0.45,
+                                    child: Text(
                                     _getStatusMessage(course.status!),
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: _getStatusColor(course.status!),
                                     ),
                                   ),
+                                  ),
                                   SizedBox(width: 10),
 
-                                  course.status.toString() == '3'
+                                  course.status.toString() == '2'
                                       ? TextButton(
                                         onPressed: () {
                                           showMapBottomSheet(context, course);
                                         },
                                         child: Text("| Voir sa position"),
+                                      )
+                                      : course.status.toString() == '0' ||
+                                          course.status.toString() == '1' ||
+                                          course.status.toString() == '3' ||
+                                          course.status.toString() == '4'
+                                      ? TextButton(
+                                        onPressed: () {
+                                          showDestinationMapBottomSheet(
+                                            context,
+                                            course,
+                                          );
+                                        },
+                                        child: Text(
+                                          "| Voir le trajet",
+                                          style: TextStyle(color: Colors.blue),
+                                        ),
                                       )
                                       : SizedBox(),
                                 ],
@@ -754,4 +801,6 @@ class StatCard extends StatelessWidget {
       ),
     );
   }
+
+ 
 }
