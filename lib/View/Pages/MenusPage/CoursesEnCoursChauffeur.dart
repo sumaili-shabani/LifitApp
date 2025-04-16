@@ -378,7 +378,7 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
                             ],
                           ),
                           SizedBox(height: 5),
-                          // Divider(color: Colors.grey,),
+                          Divider(color: Colors.grey,),
                           SizedBox(height: 5),
 
                           // mes ajouts
