@@ -27,7 +27,7 @@ class MapScreemChauffeur extends StatefulWidget {
 }
 
 class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
-  static  String apikeyOpenrouteservice =CallApi.apikeyOpenrouteservice;
+  static String apikeyOpenrouteservice = CallApi.apikeyOpenrouteservice;
   bool isBottomSheetOpen = false;
   late GoogleMapController mapController;
   late LatLng chauffeurPosition; // Position actuelle du chauffeur
@@ -71,7 +71,6 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
       polylines.clear();
       // Ajout du cercle de 1 km
 
-     
       circles.add(
         Circle(
           circleId: CircleId("chauffeur-placeName"),
@@ -87,45 +86,46 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
 
   // Fonction pour récupérer l'itinéraire entre chauffeur et passager via l'API Google Directions
 
-  Set<Marker> _getMarkers() {
-    
+  _getMarkers() async {
     // Ajoute les markers des passagers
     for (var passager in passagers) {
-      markers.add(
-        Marker(
-          markerId: MarkerId(passager['code'].toString()),
-          position: LatLng(passager['latitude'], passager['longitude']),
-          infoWindow: InfoWindow(title: passager['name']),
-          icon:
-              customPassagerIcon ??
-              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-          onTap: () async {
-            // Dessiner la route ici avant de lancer l'animation
-            // _getRoute(
-            //   chauffeurPosition,
-            //   LatLng(passager['latitude'], passager['longitude']),
-            //   passager,
-            // );
+      setState(() {
+        circles.clear();
+        filteredPlaces.clear();
+       
+        // markers.removeWhere(
+        //   (marker) => marker.markerId.value == "demandeurPassager",
+        // );
+      });
+      // print(passager);
+      setState(() {
+        markers.add(
+          Marker(
+            markerId: MarkerId("${passager['code']}"),
+            position: LatLng(passager['latitude'], passager['longitude']),
+            infoWindow: InfoWindow(title: passager['name']),
+            icon:
+                customPassagerIcon ??
+                BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+            onTap: () async {
+              // Dessiner la route ici avant de lancer l'animation
+              // _getRoute(
+              //   chauffeurPosition,
+              //   LatLng(passager['latitude'], passager['longitude']),
+              //   passager,
+              // );
 
-            LatLng passagerPosition = LatLng(
-              passager['latitude'],
-              passager['longitude'],
-            );
+              LatLng passagerPosition = LatLng(
+                passager['latitude'],
+                passager['longitude'],
+              );
 
-            // 🔹 Obtenir la route et animer le chauffeur en suivant la route
-            await _getRoute(
-              chauffeurPosition,
-              passagerPosition,
-              passager,
-            );
-
-            setState(() {
-              circles.clear();
-              filteredPlaces.clear();
-            });
-          },
-        ),
-      );
+              // 🔹 Obtenir la route et animer le chauffeur en suivant la route
+              await _getRoute(chauffeurPosition, passagerPosition, passager);
+            },
+          ),
+        );
+      });
     }
 
     // Ajoute les markers des lieux prédéfinis de placesJson
@@ -156,7 +156,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
     }
 
     // Ajoute le marker du chauffeur
- 
+
     markers.add(
       Marker(
         markerId: MarkerId("chauffeur"),
@@ -167,7 +167,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
             BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
       ),
     );
-  
+
     setState(() {
       markers = markers;
     });
@@ -311,8 +311,6 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
       final response = await CallApi.fetchData(
         "checkEtat_chauffeur_mobile_demande_taxi/${id.toInt()}/${statut.toInt()}/${refPassager.toInt()}",
       );
-
-    
 
       final Map<String, dynamic> responseData = response;
       String message = responseData['data'] ?? "J'arrive!!!";
@@ -465,9 +463,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
       ),
       builder: (BuildContext context) {
         return SizedBox(
-          
           child: Padding(
-            
             padding: EdgeInsets.only(
               bottom: MediaQuery.of(context).viewInsets.bottom,
             ),
@@ -497,7 +493,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                         children: [
                           Icon(Icons.map, size: 18),
                           SizedBox(width: 3),
-          
+
                           Text(
                             "Informations du lieu",
                             style: TextStyle(
@@ -529,10 +525,13 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                         children: [
                           Icon(Icons.map, color: Colors.blue),
                           SizedBox(width: 5),
-          
+
                           SizedBox(
                             width: 300,
-                            child: Text("Adresse: ${place["name"]}", maxLines: 4),
+                            child: Text(
+                              "Adresse: ${place["name"]}",
+                              maxLines: 4,
+                            ),
                           ),
                         ],
                       ),
@@ -577,7 +576,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                           Text("Distance: ${distance.toStringAsFixed(2)} km"),
                         ],
                       ),
-          
+
                       Divider(color: Colors.grey[400]),
                       Row(
                         children: [
@@ -1334,6 +1333,9 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
   }
 
 
+  //bon maintenant là, je veux  l'archivage de cercle pour voir là où il y'a beaucoup de demainde
+  
+
 
 
   /*
@@ -1342,10 +1344,6 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
   * Fin de la recherche automatique
   *==========================================
   */
-
-
-
-
 
   @override
   void initState() {
@@ -1369,7 +1367,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: CustomAppBar(
-        title: Text("Map-Chauffeur", style: TextStyle(color: Colors.white),),
+        title: Text("Map-Chauffeur", style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
             icon: Icon(Icons.chat, color: Colors.white),
@@ -1378,12 +1376,8 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
               // Naviguer vers la page de détails de la conversation
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder:
-                      (context) => CorrespondentsPage(),
-                ),
+                MaterialPageRoute(builder: (context) => CorrespondentsPage()),
               );
-              
             },
           ),
           IconButton(
@@ -1394,7 +1388,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
             },
           ),
           IconButton(
-            icon: Icon(Icons.my_location_sharp, color: Colors.white,),
+            icon: Icon(Icons.my_location_sharp, color: Colors.white),
             tooltip: "Voir ma position",
             onPressed: () {
               _getCurrentPosition();
@@ -1404,11 +1398,10 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
           ),
         ],
       ),
-      
 
       body: Stack(
         children: [
-          SizedBox(height: 10,),
+          SizedBox(height: 10),
           //la carte ici
           SizedBox(
             height:
@@ -1423,7 +1416,7 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                 mapController = controller;
               },
               markers:
-                  _getMarkers(), // Affichage des marqueurs (chauffeur et passagers)
+                  markers, // Affichage des marqueurs (chauffeur et passagers)
               polylines:
                   polylines, // Affichage des polylines pour les itinéraires
               circles: circles, // Ajout des cercles
@@ -1484,10 +1477,12 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                       SizedBox(width: 8),
                       Container(width: 1, height: 30, color: Colors.grey),
                       IconButton(
-                        icon: Icon(Icons.calendar_month, color: Colors.green),
+                        icon: Icon(Icons.front_hand, color: Colors.green),
                         onPressed: () {
                           // searchPlace2();
+                          _getMarkers();
                         },
+                        tooltip: "Voir les demandeurs de taxi",
                       ),
                     ],
                   ),
