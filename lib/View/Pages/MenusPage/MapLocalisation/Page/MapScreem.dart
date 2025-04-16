@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -12,15 +15,18 @@ import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Components/CustomAppBar.dart';
+import 'package:lifti_app/Components/showSnackBar.dart';
+import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
 
-class MapScreemExercerci extends StatefulWidget {
-  const MapScreemExercerci({super.key});
+class MapScreemChauffeur extends StatefulWidget {
+  const MapScreemChauffeur({super.key});
 
   @override
-  State<MapScreemExercerci> createState() => _MapScreemExercerciState();
+  State<MapScreemChauffeur> createState() => _MapScreemChauffeurState();
 }
 
-class _MapScreemExercerciState extends State<MapScreemExercerci> {
+class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
   static const String apikeyOpenrouteservice =
       "5b3ce3597851110001cf62484e660c3aa019470d8ac388d12b974480";
   bool isBottomSheetOpen = false;
@@ -60,43 +66,118 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
               ),
         ),
       );
+
+      //meettre à jour le circle
+      circles.clear();
+      polylines.clear();
+      // Ajout du cercle de 1 km
+
+     
+      circles.add(
+        Circle(
+          circleId: CircleId("chauffeur-placeName"),
+          center: chauffeurPosition,
+          radius: 1000, // 1 km en mètres
+          strokeWidth: 2,
+          strokeColor: Colors.blue,
+          fillColor: Colors.blue.withOpacity(0.2),
+        ),
+      );
     });
   }
 
-  // Fonction pour ajouter les marqueurs des passagers sur la carte
-  void _addPassengerMarkers() {
-    for (var passager in passagers) {
-      final marker = Marker(
-        markerId: MarkerId(passager['code'].toString()),
-        position: LatLng(passager['latitude'], passager['longitude']),
-        infoWindow: InfoWindow(
-          title: passager['name'],
-          snippet: 'Tel: ${passager['telephone']}',
-        ),
-        icon:
-            customPassagerIcon ??
-            BitmapDescriptor.defaultMarkerWithHue(
-              BitmapDescriptor
-                  .hueGreen, // Icône par défaut si le chargement échoue
-            ), // Marqueur vert pour le passager
-        onTap: () {
-          _getRoute(
-            chauffeurPosition,
-            LatLng(passager['latitude'], passager['longitude']),
-            passager, // Passer les informations du passager à la fonction
-          );
-        },
-      );
-
-      setState(() {
-        markers.add(marker);
-      });
-    }
-  }
   // Fonction pour récupérer l'itinéraire entre chauffeur et passager via l'API Google Directions
 
-  // Fonction pour obtenir et tracer l'itinéraire
-  Future<void> _getRoute(
+  Set<Marker> _getMarkers() {
+    Set<Marker> markers = {};
+
+    // Ajoute les markers des passagers
+    for (var passager in passagers) {
+      markers.add(
+        Marker(
+          markerId: MarkerId(passager['code'].toString()),
+          position: LatLng(passager['latitude'], passager['longitude']),
+          infoWindow: InfoWindow(title: passager['name']),
+          icon:
+              customPassagerIcon ??
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          onTap: () async {
+            // Dessiner la route ici avant de lancer l'animation
+            // _getRoute(
+            //   chauffeurPosition,
+            //   LatLng(passager['latitude'], passager['longitude']),
+            //   passager,
+            // );
+
+            LatLng passagerPosition = LatLng(
+              passager['latitude'],
+              passager['longitude'],
+            );
+
+            // 🔹 Obtenir la route et animer le chauffeur en suivant la route
+            await _getRoute(
+              chauffeurPosition,
+              passagerPosition,
+              passager,
+            );
+
+            setState(() {
+              circles.clear();
+              filteredPlaces.clear();
+            });
+          },
+        ),
+      );
+    }
+
+    // Ajoute les markers des lieux prédéfinis de placesJson
+    for (var place in listfilteredPlaces) {
+      markers.add(
+        Marker(
+          markerId: MarkerId(place['id'].toString()),
+          position: LatLng(place['latitude'], place['longitude']),
+          infoWindow: InfoWindow(title: place['name']),
+          icon:
+              customPlaceIcon ??
+              BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          onTap: () {
+            goToPlace(
+              LatLng(place['latitude'], place['longitude']),
+              place['name'],
+              place,
+            );
+
+            _getRoutePlace(
+              chauffeurPosition,
+              LatLng(place['latitude'], place['longitude']),
+              place, // Passer les informations de la places la fonction
+            );
+          },
+        ),
+      );
+    }
+
+    // Ajoute le marker du chauffeur
+ 
+    markers.add(
+      Marker(
+        markerId: MarkerId("chauffeur"),
+        infoWindow: InfoWindow(title: "chauffeur"),
+        position: chauffeurPosition!,
+        icon:
+            customChauffeurIcon ??
+            BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueGreen),
+      ),
+    );
+  
+    setState(() {
+      markers = markers;
+    });
+
+    return markers;
+  }
+
+  Future<List<LatLng>> _getRoute(
     LatLng start,
     LatLng end,
     Map<String, dynamic> passager,
@@ -105,38 +186,30 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
         'https://api.openrouteservice.org/v2/directions/driving-car?api_key=$apikeyOpenrouteservice&start=${start.longitude},${start.latitude}&end=${end.longitude},${end.latitude}';
 
     try {
-      // Appel à l'API OpenRouteService
+      // 🔹 Appel à l'API OpenRouteService
       final response = await http.get(Uri.parse(url));
 
-      // Vérifier le statut de la réponse
+      // 🔹 Vérifier le statut de la réponse
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        // Vérifier si des routes ont été trouvées
         if (data['features'] != null && data['features'].isNotEmpty) {
-          // Liste des coordonnées de la route
           List<LatLng> routeCoords = [];
           var coordinates = data['features'][0]['geometry']['coordinates'];
 
-          // Extraire les coordonnées et les convertir en LatLng
+          // 🔹 Extraire les coordonnées et les convertir en LatLng
           for (var coordinate in coordinates) {
-            routeCoords.add(
-              LatLng(
-                coordinate[1], // Latitude
-                coordinate[0], // Longitude
-              ),
-            );
+            routeCoords.add(LatLng(coordinate[1], coordinate[0]));
           }
 
-          // Calculer la distance et la durée du trajet
+          // 🔹 Calcul de la distance et de la durée
           double distance =
               data['features'][0]['properties']['segments'][0]['distance'] /
-              1000; // en kilomètres
+              1000;
           double duration =
-              data['features'][0]['properties']['segments'][0]['duration'] /
-              60; // en minutes
+              data['features'][0]['properties']['segments'][0]['duration'] / 60;
 
-          // Ajout de la polyline à la carte pour afficher l'itinéraire
+          // 🔹 Ajout de la polyline à la carte
           setState(() {
             polylines.clear();
             polylines.add(
@@ -150,24 +223,25 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
             );
           });
 
-          // Afficher le BottomSheet avec les informations du passager
-          // ignore: unnecessary_null_comparison
-          if (distance != null || distance != "") {
-            _showPassengerInfo(passager, distance, duration);
-          } else {}
+          // 🔹 Affichage du BottomSheet avec les infos du passager
+          _showPassengerInfo(passager, distance, duration, routeCoords);
+
+          return routeCoords; // 🔥 Retourne la liste des coordonnées
         } else {
           print("Aucun itinéraire trouvé.");
         }
       } else {
-        print("Erreur lors de l'appel de l'API: ${response.statusCode}");
+        print("Erreur API: ${response.statusCode}");
       }
     } catch (e) {
       print('Erreur lors de la récupération de l\'itinéraire: $e');
     }
+
+    return []; // 🔥 Retourne une liste vide en cas d'échec
   }
 
   // Fonction pour obtenir et tracer l'itinéraire
-  Future<void> _getRoutePlace(
+  Future<List<LatLng>> _getRoutePlace(
     LatLng start,
     LatLng end,
     Map<String, dynamic> place,
@@ -176,64 +250,82 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
         'https://api.openrouteservice.org/v2/directions/driving-car?api_key=$apikeyOpenrouteservice&start=${start.longitude},${start.latitude}&end=${end.longitude},${end.latitude}';
 
     try {
-      // Appel à l'API OpenRouteService
+      // 🔹 Appel à l'API OpenRouteService
       final response = await http.get(Uri.parse(url));
 
-      // Vérifier le statut de la réponse
+      // 🔹 Vérifier le statut de la réponse
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
 
-        // Vérifier si des routes ont été trouvées
         if (data['features'] != null && data['features'].isNotEmpty) {
-          // Liste des coordonnées de la route
           List<LatLng> routeCoords = [];
           var coordinates = data['features'][0]['geometry']['coordinates'];
 
-          // Extraire les coordonnées et les convertir en LatLng
+          // 🔹 Extraire les coordonnées et les convertir en LatLng
           for (var coordinate in coordinates) {
-            routeCoords.add(
-              LatLng(
-                coordinate[1], // Latitude
-                coordinate[0], // Longitude
-              ),
-            );
+            routeCoords.add(LatLng(coordinate[1], coordinate[0]));
           }
 
-          // Calculer la distance et la durée du trajet
+          // 🔹 Calcul de la distance et de la durée
           double distance =
               data['features'][0]['properties']['segments'][0]['distance'] /
-              1000; // en kilomètres
+              1000;
           double duration =
-              data['features'][0]['properties']['segments'][0]['duration'] /
-              60; // en minutes
+              data['features'][0]['properties']['segments'][0]['duration'] / 60;
 
-          // Ajout de la polyline à la carte pour afficher l'itinéraire
+          // 🔹 Ajout de la polyline à la carte
           setState(() {
             polylines.clear();
             polylines.add(
               Polyline(
-                polylineId: PolylineId('route'),
+                polylineId: PolylineId('route_place'),
                 visible: true,
                 points: routeCoords,
-                color: Colors.blue,
+                color: Colors.green, // Couleur différente pour distinguer
                 width: 5,
               ),
             );
           });
 
-          // Afficher le BottomSheet avec les informations du passager
-          // ignore: unnecessary_null_comparison
-          if (distance != null || distance != "") {
-            _showPlaceInfo(place, distance, duration);
-          } else {}
+          // 🔹 Affichage du BottomSheet avec les infos du lieu
+          _showPlaceInfo(place, distance, duration);
+
+          return routeCoords; // 🔥 Retourne la liste des coordonnées
         } else {
           print("Aucun itinéraire trouvé.");
         }
       } else {
-        print("Erreur lors de l'appel de l'API: ${response.statusCode}");
+        print("Erreur API: ${response.statusCode}");
       }
     } catch (e) {
       print('Erreur lors de la récupération de l\'itinéraire: $e');
+    }
+
+    return []; // 🔥 Retourne une liste vide en cas d'échec
+  }
+
+  Future reponseDemande(int id, int statut, int refPassager) async {
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      final response = await CallApi.fetchData(
+        "checkEtat_chauffeur_mobile_demande_taxi/${id.toInt()}/${statut.toInt()}/${refPassager.toInt()}",
+      );
+
+    
+
+      final Map<String, dynamic> responseData = response;
+      String message = responseData['data'] ?? "J'arrive!!!";
+      showSnackBar(context, message, 'success');
+
+      //appelle de la fonction demande
+      setState(() {
+        isLoading = false;
+      });
+    } catch (e) {
+      showSnackBar(context, e.toString(), 'danger');
     }
   }
 
@@ -241,6 +333,7 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
     Map<String, dynamic> passager,
     double distance,
     double duration,
+    List<LatLng> routeCoords,
   ) {
     showModalBottomSheet(
       context: context,
@@ -294,14 +387,14 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
                         Text("Nom: ${passager["name"]}"),
                       ],
                     ),
-                    Divider(),
-                    Row(
-                      children: [
-                        Icon(Icons.phone, color: Colors.orange),
-                        SizedBox(width: 5),
-                        Text("Téléphone: ${passager["telephone"]}"),
-                      ],
-                    ),
+                    // Divider(),
+                    // Row(
+                    //   children: [
+                    //     Icon(Icons.phone, color: Colors.orange),
+                    //     SizedBox(width: 5),
+                    //     Text("Téléphone: ${passager["telephone"]}"),
+                    //   ],
+                    // ),
                     Divider(),
                     Row(
                       children: [
@@ -320,6 +413,36 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
                         ),
                       ],
                     ),
+                    SizedBox(height: 20),
+                    Divider(),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.playlist_add_check_circle_outlined,
+                          color: ConfigurationApp.successColor,
+                        ),
+
+                        TextButton(
+                          onPressed: () {
+                            Navigator.pop(context);
+
+                            if (routeCoords.isNotEmpty) {
+                              animateChauffeur(
+                                routeCoords,
+                              ); // 🔥 Lancer l'animation du chauffeur avec rotation
+                            }
+
+                            reponseDemande(
+                              passager['id'],
+                              passager['statut'],
+                              passager['idPassager'],
+                            );
+                          },
+                          child: Text("Accepter la demande de la course"),
+                        ),
+                      ],
+                    ),
+                    Divider(),
                     SizedBox(height: 20),
                   ],
                 ),
@@ -577,16 +700,13 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
         'chauffeur_mobile_map_city',
       );
 
-      print(cities);
+      // print(cities);
 
       setState(() {
         passagers = clients;
         placesJson = cities;
         isLoading = false;
       });
-
-      // Ajouter les marqueurs pour chaque passager
-      _addPassengerMarkers();
     } catch (e) {
       print("Erreur: $e");
       setState(() => isLoading = false);
@@ -651,25 +771,6 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
     };
 
     await CallApi.postData("chauffeur_mobilechangePosition", svData);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    changeMyPosition();
-    fetchNotifications();
-
-    chauffeurPosition = LatLng(
-      -1.6708,
-      29.2218,
-    ); // Position par défaut du chauffeur (ex: Goma)
-    _getCurrentPosition(); // Récupère la position actuelle du chauffeur
-
-    //ajout des places
-    // loadPlaces();
-
-    _loadIcons();
   }
 
   //pour la recherche
@@ -743,6 +844,9 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
 
     if (listfilteredPlaces.isEmpty) {
       // Si aucun lieu trouvé dans la liste, appeler l'API Nominatim
+      setState(() {
+        listfilteredPlaces.clear();
+      });
       try {
         const String nominatimBaseUrl = 'https://nominatim.openstreetmap.org';
         final Uri url = Uri.parse(
@@ -781,12 +885,6 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
     setState(() {
       isSearchingBottom = !isSearchingBottom;
     });
-    // if (isSearchingBottom) {
-    //   return showSearchBottomShhet(context);
-    // }
-    // else{
-    //   return;
-    // }
   }
 
   Widget showSearchBottomShhet(context) {
@@ -901,7 +999,6 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
                                   // print(
                                   //   "Lieu sélectionné: ${place['name']} (latitude: ${place['latitude']}, longitude: ${place['longitude']})",
                                   // );
-                                  // Navigator.pop(context);
 
                                   goToPlace(
                                     LatLng(
@@ -911,8 +1008,6 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
                                     place['name'],
                                     place,
                                   );
-
-                                  // Navigator.pop(context);
                                 },
                               ),
                             );
@@ -987,21 +1082,109 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
     // Fin de la zone BottomShee
   }
 
+  //Étapes pour animer l'icône du chauffeur
+  Marker? chauffeurMarker; // Marqueur du chauffeur
+
+  double _calculateBearing(LatLng start, LatLng end) {
+    double lat1 = start.latitude * pi / 180;
+    double lat2 = end.latitude * pi / 180;
+    double deltaLon = (end.longitude - start.longitude) * pi / 180;
+
+    double y = sin(deltaLon) * cos(lat2);
+    double x = cos(lat1) * sin(lat2) - sin(lat1) * cos(lat2) * cos(deltaLon);
+    double bearing = atan2(y, x) * 180 / pi;
+
+    return (bearing + 360) %
+        360; // Assure que l'angle est compris entre 0 et 360°
+  }
+
+  void animateChauffeur(List<LatLng> route) async {
+    for (int i = 0; i < route.length - 1; i++) {
+      LatLng current = route[i];
+      LatLng next = route[i + 1];
+
+      // 🔥 Calcul de l'angle entre deux points
+      double angle = _calculateBearing(current, next);
+
+      // 🔹 Mettre à jour la position et la rotation du chauffeur
+      setState(() {
+        chauffeurPosition = current;
+        markers.removeWhere((m) => m.markerId.value == "chauffeur");
+        markers.add(
+          Marker(
+            markerId: MarkerId("chauffeur"),
+            infoWindow: InfoWindow(title: 'Chauffeur en deplacement'),
+            position: current,
+            icon:
+                customChauffeurIcon ??
+                BitmapDescriptor.defaultMarkerWithHue(
+                  BitmapDescriptor.hueGreen,
+                ), // Icône personnalisée de la voiture
+            rotation: angle, // 🔥 Appliquer l'angle ici
+            anchor: Offset(0.5, 0.5), // Ajuste l'ancrage de l'icône
+          ),
+        );
+      });
+
+      await Future.delayed(
+        Duration(milliseconds: 1000),
+      ); // Pause entre chaque déplacement
+    }
+  }
+
+  /// Fonction pour interpoler entre deux valeurs
+  double lerp(double start, double end, double t) {
+    return start + (end - start) * t;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    changeMyPosition();
+    fetchNotifications();
+
+    chauffeurPosition = LatLng(
+      -1.6708,
+      29.2218,
+    ); // Position par défaut du chauffeur (ex: Goma)
+    _getCurrentPosition(); // Récupère la position actuelle du chauffeur
+
+    //chargement des icons
+    _loadIcons();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: Icon(Icons.car_crash),
-        title: Text('Lifti App - Chauffeur'),
+      appBar: CustomAppBar(
+        title: Text("Map-Chauffeur", style: TextStyle(color: Colors.white),),
         actions: [
           IconButton(
-            icon: Icon(Icons.search),
+            icon: Icon(Icons.chat, color: Colors.white),
+            tooltip: "Discussion instantanée",
+            onPressed: () {
+              // Naviguer vers la page de détails de la conversation
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (context) => CorrespondentsPage(),
+                ),
+              );
+              
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.search, color: Colors.white),
+            tooltip: "Rechercher un lieu",
             onPressed: () {
               callBottomSheetSearch();
             },
           ),
           IconButton(
-            icon: Icon(Icons.my_location_sharp),
+            icon: Icon(Icons.my_location_sharp, color: Colors.white,),
+            tooltip: "Voir ma position",
             onPressed: () {
               _getCurrentPosition();
               changeMyPosition();
@@ -1010,9 +1193,11 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
           ),
         ],
       ),
+      
 
       body: Stack(
         children: [
+          SizedBox(height: 10,),
           //la carte ici
           SizedBox(
             height:
@@ -1027,7 +1212,7 @@ class _MapScreemExercerciState extends State<MapScreemExercerci> {
                 mapController = controller;
               },
               markers:
-                  markers, // Affichage des marqueurs (chauffeur et passagers)
+                  _getMarkers(), // Affichage des marqueurs (chauffeur et passagers)
               polylines:
                   polylines, // Affichage des polylines pour les itinéraires
               circles: circles, // Ajout des cercles

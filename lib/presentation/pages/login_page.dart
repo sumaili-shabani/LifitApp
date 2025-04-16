@@ -3,10 +3,14 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/ConfigurationApp.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 import 'package:lifti_app/Components/ButtonComponent.dart';
 import 'package:lifti_app/Components/TextFildComponent.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
+import 'package:lifti_app/View/Pages/AmbassadeurApp.dart';
 import 'package:lifti_app/View/Pages/ChauffeurApp.dart';
+import 'package:lifti_app/View/Pages/PassagerApp.dart';
+import 'package:lifti_app/presentation/pages/Otp/PhoneNumberPage.dart';
 
 import 'package:lifti_app/presentation/pages/forgot_password_page.dart';
 import 'package:lifti_app/presentation/pages/signup_page.dart';
@@ -28,6 +32,7 @@ class _LoginPageState extends State<LoginPage> {
 
   bool isChecked = false;
   bool isLoginTrue = false;
+  bool _obscurePassword = true;
 
   //Login Method
   //We will take the value of text fields using controllers in order to verify whether details are correct or not
@@ -76,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
           SharedPreferences localStorage =
               await SharedPreferences.getInstance();
           localStorage.setInt('idConnected', data['user']['id']);
-          localStorage.setString('nameConnected', data['user']['email']);
+          localStorage.setString('nameConnected', data['user']['name']);
           localStorage.setInt('idRoleConnected', data['user']['id_role']);
           localStorage.setString('emailConnected', data['user']['email']);
           localStorage.setString('avatarConnected', data['user']['avatar']);
@@ -88,10 +93,68 @@ class _LoginPageState extends State<LoginPage> {
           ); // Convertir le Map en String
           await localStorage.setString('userData', jsonString);
 
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) => const ChauffeurApp()),
-            (route) => false,
-          );
+          //test de role
+          if (data['user']['id_role'] == 3) {
+            Navigator.of(context).pushAndRemoveUntil(
+              PageRouteBuilder(
+                pageBuilder:
+                    (context, animation, secondaryAnimation) =>
+                        const ChauffeurApp(),
+                transitionsBuilder: (
+                  context,
+                  animation,
+                  secondaryAnimation,
+                  child,
+                ) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                transitionDuration: const Duration(
+                  milliseconds: 500,
+                ), // Durée de l'animation
+              ),
+              (route) => false, // Supprime toutes les pages précédentes
+            );
+          } else if (data['user']['id_role'] == 4) {
+            Navigator.of(context).pushAndRemoveUntil(
+              PageRouteBuilder(
+                pageBuilder:
+                    (context, animation, secondaryAnimation) =>
+                        const PassagerApp(),
+                transitionsBuilder: (
+                  context,
+                  animation,
+                  secondaryAnimation,
+                  child,
+                ) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                transitionDuration: const Duration(
+                  milliseconds: 500,
+                ), // Durée de l'animation
+              ),
+              (route) => false, // Supprime toutes les pages précédentes
+            );
+          } else if (data['user']['id_role'] == 2) {
+            Navigator.of(context).pushAndRemoveUntil(
+              PageRouteBuilder(
+                pageBuilder:
+                    (context, animation, secondaryAnimation) =>
+                        const AmbassadeurApp(),
+                transitionsBuilder: (
+                  context,
+                  animation,
+                  secondaryAnimation,
+                  child,
+                ) {
+                  return FadeTransition(opacity: animation, child: child);
+                },
+                transitionDuration: const Duration(
+                  milliseconds: 500,
+                ), // Durée de l'animation
+              ),
+              (route) => false, // Supprime toutes les pages précédentes
+            );
+          } else {}
         }
       } catch (e) {
         ScaffoldMessenger.of(
@@ -105,143 +168,220 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    Size size = MediaQuery.of(context).size;
     bool _rememberMe = false;
     return Scaffold(
-      body: Center(
-        child: SingleChildScrollView(
-          child: Form(
-            key: formKey,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: SafeArea(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset("assets/images/logo.png", width: 210),
-
-                        Padding(
-                          padding: EdgeInsets.all(5),
-                          child: Column(
+      // backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+      // extendBodyBehindAppBar: true,
+      body: Stack(
+        children: [
+          // Background gradient animation
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  theme.colorScheme.primary.withOpacity(0.1),
+                  theme.colorScheme.surface,
+                ],
+                stops: [0.0, 0.8],
+              ),
+            ),
+          ),
+          Center(
+            child: SingleChildScrollView(
+              child: Container(
+                child: Form(
+                  key: formKey,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: SafeArea(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Text(
-                                "🚦Plus qu’un login… un trajet rapide et sécurisé! Prêt pour le départ ? Connectez-vous ! 🚖",
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
+                              Image.asset("assets/images/logo.png", width: 210),
+
+                              Padding(
+                                padding: EdgeInsets.all(5),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "🚦Plus qu’un login… un trajet rapide et sécurisé! Prêt pour le départ ? Connectez-vous ! 🚖",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
+                          const SizedBox(height: 10),
 
-                    TextFildComponent(
-                      labeltext: "Email et N° Téléphone",
-                      hint: "Entrer Email  ou N° Téléphone",
-                      icon: Icons.email,
-                      controller: usrName,
-                      validatorInput: true,
-                    ),
+                          TextFildComponent(
+                            labeltext: "Email et N° Téléphone",
+                            hint: "Entrer Email  ou N° Téléphone",
+                            icon: Icons.email,
+                            controller: usrName,
+                            validatorInput: true,
+                          ),
 
-                    const SizedBox(height: 10),
-                    TextFildComponent(
-                      labeltext: "Mot de passe",
-                      hint: "Entre votre mot de passe",
-                      icon: Icons.lock,
-                      controller: password,
-                      validatorInput: true,
-                    ),
+                          const SizedBox(height: 10),
+                          // TextFildComponent(
+                          //   labeltext: "Mot de passe",
+                          //   hint: "Entre votre mot de passe",
+                          //   icon: Icons.lock,
+                          //   controller: password,
+                          //   validatorInput: true,
+                          // ),
 
-                    const SizedBox(height: 8),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Row(
-                          children: [
-                            Checkbox(
-                              value: _rememberMe,
-                              onChanged: (value) {
-                                setState(() {
-                                  _rememberMe = value ?? false;
-                                });
-                              },
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(4),
-                              ),
+                          // Password field
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 1),
+                            margin: const EdgeInsets.symmetric(vertical: 1),
+                            width: size.width * .9,
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(8),
                             ),
-                            Text(
-                              "Souviens-toi de moi",
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurface.withOpacity(
-                                  0.7,
+                            child: Center(
+                              child: TextFormField(
+                                controller: password,
+
+                                decoration: InputDecoration(
+                                  labelText: "Mot de passe",
+                                  hintText: "Entre votre mot de passe",
+
+                                  prefixIcon: const Icon(Icons.lock_outline),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
                                 ),
+                                obscureText: _obscurePassword,
+
+                                textInputAction: TextInputAction.next,
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return "Veillez completer ce champs";
+                                  }
+                                  if (value.length < 4) {
+                                    return "Veillez saisir au moins 4 Caractères";
+                                  }
+                                  return null;
+                                },
                               ),
-                            ),
-                          ],
-                        ),
-                        AnimatedButton(
-                          onPressed:
-                              () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (_) => const ForgotPasswordPage(),
-                                ),
-                              ),
-                          backgroundColor: Colors.transparent,
-                          foregroundColor: theme.colorScheme.primary,
-                          elevation: 0,
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Text(
-                            "Mot de passe oublié?",
-                            style: TextStyle(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.bold,
                             ),
                           ),
-                        ),
-                      ],
-                    ),
+                          const SizedBox(height: 16),
 
-                    const SizedBox(height: 10),
-                    ButtonComponent(
-                      icon: Icons.login,
-                      label: "SE CONNECTER",
-                      press: () {
-                        signIn();
-                      },
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text(
-                          "Vous n'avez pas de compte ?",
-                          style: TextStyle(color: Colors.grey),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            //
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => const SignupPage(),
+                          const SizedBox(height: 8),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Checkbox(
+                                    value: _rememberMe,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _rememberMe = value ?? false;
+                                      });
+                                    },
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  ),
+                                  Text(
+                                    "Souviens-toi de moi",
+                                    style: theme.textTheme.bodyMedium?.copyWith(
+                                      color: theme.colorScheme.onSurface
+                                          .withOpacity(0.7),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            );
-                          },
-                          child: const Text("S'inscrire"),
-                        ),
-                      ],
+                              AnimatedButton(
+                                onPressed:
+                                    () => Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder:
+                                            (_) => const ForgotPasswordPage(),
+                                      ),
+                                    ),
+                                backgroundColor: Colors.transparent,
+                                foregroundColor: theme.colorScheme.primary,
+                                elevation: 0,
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                ),
+                                child: Text(
+                                  "Mot de passe oublié?",
+                                  style: TextStyle(
+                                    color: theme.colorScheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 10),
+                          ButtonComponent(
+                            icon: Icons.login,
+                            label: "SE CONNECTER",
+                            press: () {
+                              signIn();
+                            },
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              const Text(
+                                "Vous n'avez pas de compte ?",
+                                style: TextStyle(color: Colors.grey),
+                              ),
+                              TextButton(
+                                onPressed: () {
+                                  //
+                                  // Navigator.of(
+                                  //   context,
+                                  // ).push(AnimatedPageRoute(page: SignupPage()));
+
+                                  Navigator.of(
+                                    context,
+                                  ).push(AnimatedPageRoute(page: PhoneNumberPage()));
+
+                                  
+                                },
+                                child: const Text("S'inscrire"),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

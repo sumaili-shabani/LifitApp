@@ -93,7 +93,6 @@ class _InfoDashBoardPageState extends State<InfoDashBoardPage> {
     IconData icon,
     Color color,
   ) {
-    final theme = Theme.of(context);
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       elevation: 4,

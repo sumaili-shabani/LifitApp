@@ -34,41 +34,64 @@ dependencies:
     sdk: flutter
   intl: ^0.19.0
 
-  fl_chart: ^0.63.0  # Pour les graphiques
+  fl_chart: ^0.70.2  # Pour les graphiques
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
 
   # mes ajouts
-  http: ^1.2.1 
+  http: ^1.2.1
   supabase_flutter: ^2.5.9
-  duration: ^3.0.13
-  flutter_map: ^6.1.0
-  geolocator: ^10.1.0
+  duration: ^4.0.3
+  flutter_map: ^8.1.1
+  geolocator: ^13.0.3
   latlong2: ^0.9.0
-  permission_handler: ^11.0.1
+  permission_handler: ^12.0.0+1
+  # autres ajouts
+  image_picker: ^1.0.7
+  file_picker: ^10.0.0
+  path_provider: ^2.0.3
+  http_parser: ^4.0.2
+  buttons_tabbar: ^1.3.15
+  flutter_easyloading: ^3.0.5
+  flutter_rating_bar: ^4.0.1
+  flutter_stripe: ^11.4.0
+  flutter_paypal: ^0.2.1
+  lucide_icons: ^0.257.0
+  flutter_launcher_icons: ^0.14.3
+  mapbox_search: ^4.2.0
+  audioplayers: ^6.4.0
+  flutter_datetime_picker: ^1.5.1
+  flutter_local_notifications: ^17.0.0
+  pusher_channels_flutter: ^2.2.2
+  pin_code_fields: ^8.0.0
+  intl_phone_field: ^3.1.0
+  # laravel_echo_null: ^0.1.1
+  # laravel_flutter_pusher: ^0.0.4
+  
 
+  
   
   # Maps et Location
   google_maps_flutter: ^2.5.3
   flutter_polyline_points: ^2.0.0
-  location: ^5.0.3
+  location: ^8.0.0
   
   # State Management
   flutter_riverpod: ^2.4.9
   shared_preferences: ^2.2.3
-  flutter_bloc: ^8.1.1
+  flutter_bloc: ^9.1.0
   equatable: ^2.0.7
   
   # Dependency Injection
-  get_it: ^7.6.4
+  get_it: ^8.0.3
   get: ^4.6.6
   get_storage: ^2.1.1
   
   # Network
-  dio: ^5.4.0
-  connectivity_plus: ^5.0.2
+  dio: ^5.8.0+1
+  connectivity_plus: ^6.1.3
   
   # Storage
   hive: ^2.2.3
@@ -78,7 +101,7 @@ dependencies:
   logger: ^2.0.2+1
   url_launcher: ^6.2.2
   package_info_plus: 8.3.0
-  device_info_plus: ^9.1.1
+  device_info_plus: ^11.3.3
   
   # UI
   google_fonts: ^6.1.0
@@ -87,8 +110,9 @@ dependencies:
   shimmer: ^3.0.0
   
   # Map
-  geocoding: ^2.1.1
-
+  geocoding: ^3.0.0
+  
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -102,13 +126,20 @@ dev_dependencies:
 
   # Testing
   mocktail: ^1.0.2
-  bloc_test: ^9.1.5
+  bloc_test: ^10.0.0
   
   # Code Generation
   build_runner: ^2.4.7
   json_serializable: ^6.7.1
-  freezed: ^2.4.6
-
+  #freezed: ^3.0.4
+  freezed: ^2.5.8
+# pour les icones   #
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/icon/app_icon.png"
+  adaptive_icon_background: "#ffffff" # Couleur de fond
+  adaptive_icon_foreground: "assets/icon/app_icon.png"
 
 
 # For information on the generic Dart part of this file, see the
@@ -135,6 +166,10 @@ flutter:
     - assets/images/center-pin.png 
     - assets/map_style.json
     - assets/map_style_dark.json
+    - assets/notification_sound.mp3
+    - assets/sounds/notification.mp3
+    - assets/sounds/notification1.mp3
+    - assets/sounds/notification2.mp3
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

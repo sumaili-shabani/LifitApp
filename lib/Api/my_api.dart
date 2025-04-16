@@ -10,18 +10,32 @@ class CallApi {
   final String _imgUrl = 'https://www.swiftride.tech/';
   static String apiUrl = "https://www.swiftride.tech/api/";
 
-  static String apiKey = "AIzaSyBgSz7TPCEIkEHw9CbO93tZQqFSa2pz1ZE";
+  static String apiKey = "AIzaSyCCF6II62n7-ZB-ooj5M4PCr1v50SKxK-s";
   static String apikeyOpenrouteservice =
       "5b3ce3597851110001cf62484e660c3aa019470d8ac388d12b974480";
+  static String pusherAppKey = "50a88f66ba9024781e33";
+  static String stripePublicKey =
+      "pk_test_51GzffmHcKfZ3B3C9QaTVyo3LLihTTvxeIB664wbvnFtpKks4ylxc4WmvEA6mcru78pEiiON2jaWhoAPCrDjBkOho004cS9mB9n";
+
+  //paypal
+  static String clientIDPaypal =
+      "ARrOsUcRXDJbnsY-H421KnsJVMq-shlnw-jshSUOUhY7xWPPuAXMKavFcN_s5YRoLIHBPXbYErhPS3q0";
+  static String secretkeyPaypal =
+      "EMQwmfqdSwgHcspmS-V-jpweCEPbkNYXfp5O88MBa7N1tZSXK3DH2KF8bl_DXz_jXXz_-I9mbGB1Ynf6";
+  static bool sandboxModePaypal = true;
 
   //par defaut en ligne
   // static const String fileUrl = "https://www.swiftride.tech/"; // Pour le fichier
   // static const String baseUrl ="https://www.swiftride.tech/api"; // Remplace par ton URL
 
-  //par defaut en locale
-  static const String fileUrl = "http://10.52.50.127:8000"; // Pour le fichier
-  static const String baseUrl =
-      "http://10.52.50.127:8000/api"; // Remplace par ton URL
+  //  static const String fileUrl =
+  //     "https://lifti.e-serv.org/"; // Pour le fichier
+  // static const String baseUrl =
+  //     "https://lifti.e-serv.org/api"; // Remplace par ton URL
+
+  // par defaut en locale
+  static const String fileUrl = "http://10.70.56.127:8000"; // Pour le fichier
+  static const String baseUrl = "http://10.70.56.127:8000/api"; // pour ton URL
 
   /*
   *
@@ -32,11 +46,13 @@ class CallApi {
   */
   /// 🔹 **Méthode GET**
   static Future<Map<String, dynamic>> fetchData(String endpoint) async {
+    String? token = await getToken();
     final response = await http.get(
       Uri.parse("$baseUrl/$endpoint"),
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
       },
     );
 
@@ -48,11 +64,13 @@ class CallApi {
   }
 
   static Future<List<dynamic>> fetchListData(String endpoint) async {
+    String? token = await getToken();
     final response = await http.get(
       Uri.parse("$baseUrl/$endpoint"),
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
       },
     );
 
@@ -63,18 +81,18 @@ class CallApi {
     }
   }
 
- 
-
   /// 🔹 **Méthode POST**
   static Future<Map<String, dynamic>> postData(
     String endpoint,
     Map<String, dynamic> data,
   ) async {
+    String? token = await getToken();
     final response = await http.post(
       Uri.parse("$baseUrl/$endpoint"),
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
       },
       body: json.encode(data),
     );
@@ -87,11 +105,13 @@ class CallApi {
   }
 
   static Future<Map<String, dynamic>> deleteData(String endpoint) async {
+    String? token = await getToken();
     final response = await http.get(
       Uri.parse("$baseUrl/$endpoint"),
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
       },
     );
 
@@ -107,11 +127,13 @@ class CallApi {
     String endpoint,
     Map<String, dynamic> data,
   ) async {
+    String? token = await getToken();
     final response = await http.put(
       Uri.parse("$baseUrl/$endpoint"),
       headers: {
         "Content-Type": "application/json; charset=UTF-8",
         'Accept': 'application/json',
+        if (token != null) 'Authorization': 'Bearer $token',
       },
       body: json.encode(data),
     );
@@ -123,13 +145,46 @@ class CallApi {
     }
   }
 
+  static Future<Map<String, dynamic>> insertData({
+    required String endpoint,
+    required Map<String, dynamic> data,
+    // required String token, // Passer le token ici
+  }) async {
+    String? token = await getToken();
+    final String baseUrl = CallApi.baseUrl; // Remplace par ton URL
+
+    try {
+      final response = await http.post(
+        Uri.parse("$baseUrl/$endpoint"),
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token", // Token ajouté ici
+        },
+        body: json.encode(data),
+      );
+
+      // Vérification du statut de la réponse
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return json.decode(response.body); // Retourne les données de l'API
+      } else {
+        throw Exception("Erreur API ${response.statusCode} - ${response.body}");
+      }
+    } catch (e) {
+      print("❌ Erreur d'insertion : $e");
+      throw Exception("Erreur lors de l'insertion des données : $e");
+    }
+  }
+
   /// 🔹 **Méthode DELETE**
   // static Future<void> deleteData(String endpoint) async {
+  //  String? token = await getToken();
   //   final response = await http.delete(
   //     Uri.parse("$baseUrl/$endpoint"),
   //     headers: {
   //       "Content-Type": "application/json; charset=UTF-8",
   //       'Accept': 'application/json',
+  //        if (token != null) 'Authorization': 'Bearer $token',
   //     },
   //   );
 
@@ -193,19 +248,35 @@ class CallApi {
     );
   }
 
-  // postData(data, apiUrl) async {
-  //   // var fullUrl = _url + apiUrl + await getToken();
-  //   var fullUrl = _url + apiUrl;
-  //   return await http.post(
-  //     Uri.parse(fullUrl),
-  //     body: jsonEncode(data),
-  //     headers: _setHeaders(),
-  //   );
-  // }
+  //le jour
+  static String getCurrentDateTime() {
+    DateTime now = DateTime.now();
+    String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+    return formattedDate;
+  }
 
-  getData(apiUrl) async {
-    // var fullUrl = _url + apiUrl + await getToken();
-    var fullUrl = _url + apiUrl;
+  static String getCurrentDateTimeWithOffset(double minutesToAdd) {
+    DateTime now = DateTime.now().add(
+      Duration(seconds: (minutesToAdd * 60).toInt()),
+    );
+    String formattedDate = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+    return formattedDate;
+  }
+
+  static String formatDateString(String dateString) {
+    // Convertir la chaîne en DateTime
+    DateTime date = DateTime.parse(dateString);
+
+    // Créer un formatteur pour le format désiré
+    final DateFormat formatter = DateFormat('d MMMM yyyy à HH:mm:ss');
+
+    // Retourner la date formatée
+    return formatter.format(date);
+  }
+
+  getData(baseUrl) async {
+    // var fullUrl = _url + baseUrl + await getToken();
+    var fullUrl = _url + baseUrl;
     return await http.get(Uri.parse(fullUrl), headers: _setHeaders());
   }
 
@@ -214,16 +285,27 @@ class CallApi {
     'Accept': 'application/json',
   };
 
-  getToken() async {
+  static Future<String?> getToken() async {
     SharedPreferences localStorage = await SharedPreferences.getInstance();
-    var token = localStorage.getString('token');
-    return token;
+    return localStorage.getString('token');
+  }
+
+  static Future<String?> getNameConnected() async {
+    SharedPreferences localStorage = await SharedPreferences.getInstance();
+    return localStorage.getString('nameConnected');
   }
 
   static Future<int?> getUserId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getInt(
       'idConnected',
+    ); // Supposons que l'ID est stocké sous 'user_id'
+  }
+
+  static Future<int?> getUserRole() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(
+      'idRoleConnected',
     ); // Supposons que l'ID est stocké sous 'user_id'
   }
 
@@ -249,9 +331,6 @@ class CallApi {
     }
   }
 
-  // getArticles(apiUrl) async {}
-  // getPublicData(apiUrl) async {}
-
   /*
   *
   * =======================
@@ -260,119 +339,63 @@ class CallApi {
   *
   */
 
-  static showMsg(String text) {
-    // Fluttertoast.showToast(
-    //   msg: text,
-    //   toastLength: Toast.LENGTH_SHORT,
-    //   gravity: ToastGravity.BOTTOM, // Position at bottom
-    //   backgroundColor: Colors.green,
-    //   textColor: Colors.white,
-    // );
-  }
-
-  static showErrorMsg(String text) {
-    // Fluttertoast.showToast(
-    //   msg: text,
-    //   toastLength: Toast.LENGTH_SHORT,
-    //   gravity: ToastGravity.BOTTOM, // Position at bottom
-    //   backgroundColor: Colors.red,
-    //   textColor: Colors.white,
-    // );
-  }
-
   static insertOrUpdateData(url, Map pdata) async {
     try {
-      final res = await http.post(
-        Uri.parse("${apiUrl.toString()}${url.toString()}"),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
+      String? token = await getToken();
+      var res = await http.post(
+        Uri.parse("${baseUrl.toString()}/${url.toString()}"),
+        headers: {
+          "Content-Type": "application/json; charset=UTF-8",
+          'Accept': 'application/json',
+          if (token != null) 'Authorization': 'Bearer $token',
         },
         body: jsonEncode(pdata),
       );
 
-      if (res.statusCode == 200) {
-        var data = jsonDecode(res.body)['data'];
-        showMsg(data.toString());
-      } else {
-        showErrorMsg("Erreur de modification des données!!!");
-        return res;
-      }
+      return res;
+
+      // if (res.statusCode == 200) {
+      //   // var data = json.decode(res.body)['data'];
+      //   var data = json.decode(res.body);
+      //   return data;
+      // } else {
+      //   // var data = json.decode(res.body)['data'];
+      //   var data = json.decode(res.body);
+      //   return data;
+      // }
     } catch (e) {
-      showErrorMsg(e.toString());
+      throw Exception("Erreur lors de l'opération insert or update data: $e ");
     }
   }
 
-  // static deleteData(url, int id) async {
-  //   try {
-  //     final res = await http.get(
-  //       Uri.parse("${apiUrl.toString()}${url.toString()}/${id.toInt()}"),
-  //       headers: <String, String>{
-  //         'Content-Type': 'application/json; charset=UTF-8',
-  //       },
-  //     );
-
-  //     if (res.statusCode == 200) {
-  //       var data = jsonDecode(res.body)['data'];
-  //       showMsg(data.toString());
-  //     } else {
-  //       showErrorMsg("Erreur de supprimer les données!!!");
-  //     }
-  //   } catch (e) {
-  //     showErrorMsg(e.toString());
-  //   }
-  // }
-
-  static postArticle(Map pdata) async {
-    try {
-      final res = await http.post(
-        Uri.parse("${apiUrl}insert_article"),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-        },
-        body: pdata,
-      );
-
-      if (res.statusCode == 200) {
-        var data = jsonDecode(res.body)['data'];
-        showMsg(data.toString());
-        // print(data);
-      } else {
-        showErrorMsg("Erreur de charger les données!!!");
-      }
-    } catch (e) {
-      showErrorMsg(e.toString());
-    }
+  static getHeaders() async {
+    String? token = await getToken();
+    var headers = {
+      'Content-type': 'application/json',
+      'Accept': 'application/json',
+      if (token != null) 'Authorization': 'Bearer $token',
+    };
+    return headers;
   }
 
-  // static getArticle() async {
-  //   List<Article> article = [];
-  //   try {
-  //     final res = await http.get(
-  //       Uri.parse("${apiUrl}fetch_article_mobile"),
-  //       headers: <String, String>{
-  //         'Content-Type': 'application/json; charset=UTF-8',
-  //       },
-  //     );
+  static dynamic getValidDropdownValue(
+    List<Map<String, dynamic>> items,
+    dynamic value,
+    String valueKey,
+  ) {
+    return items.any((item) => item[valueKey] == value) ? value : null;
+  }
 
-  //     if (res.statusCode == 200) {
-  //       var data = jsonDecode(res.body);
+  static String generateEmail(String name) {
+    // Nettoyage du nom : suppression des espaces, accents, mise en minuscule
+    final cleanedName = name
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s+'), '-') // espaces remplacés par des points
+        .replaceAll(RegExp(r'[^a-z0-9.]'), ''); // supprime caractères spéciaux
 
-  //       data['data'].forEach((value) => {
-  //             article.add(
-  //               Article(
-  //                 value['id'],
-  //                 value['title'],
-  //                 value['description'],
-  //                 value['created_at'],
-  //               ),
-  //             )
-  //           });
-  //       return article;
-  //     } else {
-  //       return [];
-  //     }
-  //   } catch (e) {
-  //     showErrorMsg(e.toString());
-  //   }
-  // }
+    return "$cleanedName@demo.com";
+  }
+
+
 }

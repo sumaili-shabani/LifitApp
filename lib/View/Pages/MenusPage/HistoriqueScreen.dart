@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
+import 'package:lifti_app/Controller/ApiService.dart';
 import 'package:lifti_app/Model/ChauffeurDashBoardModel.dart';
 import 'package:lifti_app/Model/HistoriqueCourseModel.dart';
+
+import 'dart:convert';
+import 'package:http/http.dart' as http;
 
 class HistoriqueScreen extends StatefulWidget {
   const HistoriqueScreen({super.key});
@@ -70,6 +75,453 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
     }
   }
 
+  /*
+  *
+  *==================================
+  * BottomSheet commission Info
+  *==================================
+  *
+  */
+  bool isLoadingCommission = true;
+  List<dynamic> infoCommission = [
+    {
+      "chauffeurInfo": [
+        {
+          "name": "Drey Mukuka",
+          "sexe": "M",
+          "avatar": "1740654256.png",
+          "date_paie": "2025-03-03",
+          "montant_paie": 378,
+          "devise": "CDF",
+          "created_at": "2025-03-03 09:37:59",
+          "roleName": "Chauffeur",
+        },
+      ],
+      "liftiInfo": [
+        {
+          "name": "Commission lifti",
+          "sexe": "",
+          "avatar": "1737228898.png",
+          "date_paie": "2025-03-03",
+          "montant_paie": 907.2,
+          "devise": "CDF",
+          "created_at": "2025-03-03 09:37:59",
+          "roleName": "Lifti",
+        },
+      ],
+      "partenaireInfo": [
+        {
+          "name": "Gloria nehema",
+          "sexe": "F",
+          "avatar": "1692964850.jpg",
+          "date_paie": "2025-03-03",
+          "montant_paie": 151.2,
+          "devise": "CDF",
+          "created_at": "2025-03-03 09:37:59",
+          "roleName": "Partenaire",
+        },
+        {
+          "name": "Roger Admin",
+          "sexe": "M",
+          "avatar": "1737386203.png",
+          "date_paie": "2025-03-03",
+          "montant_paie": 75.6,
+          "devise": "CDF",
+          "created_at": "2025-03-03 09:37:59",
+          "roleName": "Admin",
+        },
+      ],
+    },
+  ];
+
+  // Fonction pour récupérer les données de l'API avec un ID dynamique
+  Future<void> fetchCommissionData(int idPaiement) async {
+    // L'URL de l'API avec l'ID dynamique
+    String? token = await CallApi.getToken();
+    final url =
+        '${CallApi.baseUrl.toString()}/mobile_chauffeur_show_repartition_commision/${idPaiement.toString()}';
+
+    try {
+      // Effectuer la requête HTTP GET avec l'ID dynamique
+      final response = await http.get(
+        Uri.parse(url),
+        headers: {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          if (token != null) 'Authorization': 'Bearer $token',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // Si la requête réussit, analyser le JSON et stocker dans infoCommission
+        final Map<String, dynamic> data = json.decode(response.body);
+
+        setState(() {
+          // Vérification de l'existence de la clé 'data' avant de l'utiliser
+          if (data.containsKey('data') &&
+              data['data'] is List &&
+              data['data'].isNotEmpty) {
+            infoCommission = data['data'];
+            isLoadingCommission = false;
+          } else {
+            // Si 'data' est vide ou absent, on peut ajouter une gestion d'erreur ici
+            infoCommission = [];
+            isLoadingCommission = true;
+          }
+        });
+      } else {
+        // Gérer les erreurs si la requête échoue
+        throw Exception('Échec de la récupération des données');
+      }
+    } catch (e) {
+      print('Erreur lors de la récupération des données: $e');
+      // Vérifiez également si le widget est encore monté avant de mettre à jour l'état
+      if (mounted) {
+        setState(() {
+          infoCommission = [];
+        });
+      }
+    }
+  }
+
+  // Function to show the BottomSheet
+  void showCommissionBottomSheet(BuildContext context, int refPaiement) async {
+    // Afficher un modal loading pendant que les données sont récupérées
+    setState(() {
+      isLoadingCommission =
+          true; // Assurez-vous que vous avez une variable isLoadingCommission dans votre état
+    });
+
+    // Attendre que les données soient chargées
+    await fetchCommissionData(refPaiement);
+
+    setState(() {
+      isLoadingCommission = false; // Les données sont maintenant chargées
+    });
+
+    // Vérifier si la liste infoCommission est vide ou non
+    if (infoCommission.isNotEmpty) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        builder: (context) {
+          final data =
+              infoCommission.isEmpty
+                  ? {}
+                  : infoCommission.first; // On récupère la première entrée
+
+          return infoCommission.isEmpty
+              ? Center(child: Text("Chargement commission..."))
+              : DraggableScrollableSheet(
+                expand: false,
+                initialChildSize: 0.6,
+                maxChildSize: 0.9,
+                minChildSize: 0.4,
+                builder: (context, scrollController) {
+                  return Container(
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(20),
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        // 🔹 Barre de drag noire au centre
+                        Container(
+                          width: 50,
+                          height: 5,
+                          margin: EdgeInsets.only(bottom: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.black87,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        // 🔹 Titre du BottomSheet
+                        Text(
+                          "Détails de la Commission",
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SizedBox(height: 10),
+                        Expanded(
+                          child:
+                              isLoadingCommission
+                                  ? Center(
+                                    child: CircularProgressIndicator(),
+                                  ) // Afficher un loader pendant le chargement
+                                  : ListView(
+                                    controller: scrollController,
+                                    children: [
+                                      buildCommissionCard(
+                                        "Chauffeur",
+                                        data['chauffeurInfo'],
+                                        Icons.directions_car,
+                                      ),
+                                      buildCommissionCard(
+                                        "Lifti",
+                                        data['liftiInfo'],
+                                        Icons.monetization_on,
+                                      ),
+                                      buildCommissionCard(
+                                        "Partenaire",
+                                        data['partenaireInfo'],
+                                        Icons.business,
+                                      ),
+                                    ],
+                                  ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+        },
+      );
+    } else {
+      // Si infoCommission est vide, afficher un message
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Aucune donnée de commission disponible.")),
+      );
+    }
+  }
+
+  Widget buildCommissionCard(String title, List<dynamic> items, IconData icon) {
+    return Card(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      elevation: 3,
+      margin: EdgeInsets.symmetric(vertical: 8),
+      child: Padding(
+        padding: EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(icon, size: 28, color: Colors.green),
+                SizedBox(width: 8),
+                Text(
+                  title,
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            Divider(),
+            Column(children: items.map((item) => buildUserTile(item)).toList()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget buildUserTile(Map<String, dynamic> item) {
+    return ListTile(
+      leading: CircleAvatar(
+        radius: 30,
+        backgroundImage: NetworkImage(
+          '${CallApi.fileUrl}/images/${item['avatar']}',
+        ), // Change with actual avatar URL
+      ),
+      title: Text(item['name'], style: TextStyle(fontWeight: FontWeight.bold)),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.account_balance_wallet, color: Colors.grey, size: 15),
+              SizedBox(width: 5),
+              Text(
+                "Montant: ${item['montant_paie']} ${item['devise']}",
+                style: TextStyle(fontSize: 14),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Icon(Icons.calendar_today, color: Colors.grey, size: 15),
+              SizedBox(width: 5),
+              Text(
+                "Date:${CallApi.getFormatedDate(item['date_paie'])}",
+                style: TextStyle(color: Colors.grey),
+              ),
+            ],
+          ),
+
+          Row(
+            children: [
+              Icon(Icons.info, color: Colors.green, size: 15),
+              SizedBox(width: 5),
+              Expanded(
+                child: Text(
+                  "Au compte de ${item['roleName']}",
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+      trailing: Icon(
+        Icons.account_balance_wallet,
+        color: Colors.grey,
+        size: 20,
+      ),
+    );
+  }
+
+  //fin
+
+  void _showCommissionBottomSheet(BuildContext context, int refPaiement) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (BuildContext context) {
+        return isLoadingCommission
+            ? Center(
+              child: CircularProgressIndicator(),
+            ) // Affiche un loader en attendant l'API
+            : SingleChildScrollView(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Chauffeur Info
+                    Text(
+                      "Chauffeur Info",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    ...infoCommission[0]["data"]["chauffeurInfo"].map<Widget>((
+                      chauffeur,
+                    ) {
+                      return _buildCard(chauffeur, Icons.directions_car);
+                    }).toList(),
+
+                    // Lifti Info
+                    SizedBox(height: 16),
+                    Text(
+                      "Lifti Info",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    ...infoCommission[0]["data"]["liftiInfo"].map<Widget>((
+                      lifti,
+                    ) {
+                      return _buildCard(lifti, Icons.access_time);
+                    }).toList(),
+
+                    // Partenaire Info
+                    SizedBox(height: 16),
+                    Text(
+                      "Partenaires Info",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    ...infoCommission[0]["data"]["partenaireInfo"].map<Widget>((
+                      partenaire,
+                    ) {
+                      return _buildCard(partenaire, Icons.local_taxi);
+                    }).toList(),
+                  ],
+                ),
+              ),
+            );
+      },
+    );
+  }
+
+  // Function to build each card with the data
+  Widget _buildCard(Map<String, dynamic> data, IconData icon) {
+    return Card(
+      margin: EdgeInsets.only(bottom: 10),
+      elevation: 5,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 30,
+              backgroundImage: NetworkImage(
+                '${CallApi.fileUrl}/images/${data['avatar']}',
+              ), // Change with actual avatar URL
+            ),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    data['name'],
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.work, color: Colors.grey, size: 15),
+                      SizedBox(width: 5),
+                      Text(
+                        data['roleName'],
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.account_balance_wallet,
+                        color: Colors.grey,
+                        size: 15,
+                      ),
+                      SizedBox(width: 5),
+                      Text(
+                        "Montant: ${data['montant_paie']} ${data['devise']}",
+                        style: TextStyle(fontSize: 14),
+                      ),
+                    ],
+                  ),
+                  Row(
+                    children: [
+                      Icon(Icons.calendar_today, color: Colors.grey, size: 15),
+                      SizedBox(width: 5),
+                      Text(
+                        "Date: ${data['date_paie']}",
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            Icon(icon, size: 30, color: Colors.blue),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /*
+  *
+  *==================================
+  * Fin BottomSheet commission Info
+  *==================================
+  *
+  */
   @override
   void initState() {
     super.initState();
@@ -77,16 +529,22 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+    // Nettoyer toute ressource si nécessaire ici
+    infoCommission.clear();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      appBar: AppBar(
-        leading: Icon(Icons.hail_sharp),
-        title: Text("Historique des courses"),
-        backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: CustomAppBar(
+        title: Text("Historique des courses", style: TextStyle(color: Colors.white),),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
+            color: Colors.white,
             onPressed: () {
               fetchNotifications();
             },
@@ -122,10 +580,12 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
                         itemCount: notifications.length,
                         itemBuilder: (context, index) {
                           var course = notifications[index];
-
                           if (!course.namePassager!.toLowerCase().contains(
-                            searchQuery,
-                          )) {
+                                searchQuery,
+                              ) &&
+                              !course.datePaie!.toLowerCase().contains(
+                                searchQuery,
+                              )) {
                             return Container();
                           }
 
@@ -161,10 +621,10 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
                                             ),
                                           ),
                                           Text(
-                                            "${course.distance!} Km",
+                                             "${course.calculate == 1 ? 'Distance:' : 'Location:'}${course.distance!.toStringAsFixed(2)} ${course.calculate == 1 ? 'Km ➡️${course.timeEst!}' : 'J/H'}",
                                             style: TextStyle(
                                               color: Colors.grey,
-                                              fontSize: 14,
+                                              fontSize: 12,
                                             ),
                                           ),
                                         ],
@@ -219,6 +679,8 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
                                         children: [
                                           Icon(
                                             Icons.calendar_today,
@@ -234,6 +696,22 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
                                               color: Colors.grey,
                                               fontSize: 14,
                                             ),
+                                          ),
+
+                                          SizedBox(width: 5),
+
+                                          TextButton.icon(
+                                            onPressed: () {
+                                              fetchCommissionData(course.id!);
+                                              showCommissionBottomSheet(
+                                                context,
+                                                int.parse(course.id.toString()),
+                                              );
+                                            },
+                                            label: Text(
+                                              "Détail Info Commission",
+                                            ),
+                                            icon: Icon(Icons.diversity_3_sharp),
                                           ),
                                         ],
                                       ),
@@ -287,72 +765,6 @@ class _HistoriqueScreenState extends State<HistoriqueScreen> {
           ),
         ),
       ],
-    );
-  }
-}
-
-// 📊 WIDGET DE STATISTIQUE
-class StatCard extends StatelessWidget {
-  final String label;
-  final String value;
-
-  const StatCard({required this.label, required this.value});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(10),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.shade300,
-            blurRadius: 5,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          Text(label, style: TextStyle(fontSize: 14, color: Colors.black54)),
-          SizedBox(height: 5),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: Colors.blue,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// 💳 WIDGET POUR LE MODE DE PAIEMENT
-class PaymentTag extends StatelessWidget {
-  final String paymentMode;
-
-  const PaymentTag({required this.paymentMode});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade50,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Text(
-        paymentMode,
-        style: TextStyle(
-          color: Colors.blue,
-          fontSize: 12,
-          fontWeight: FontWeight.bold,
-        ),
-      ),
     );
   }
 }

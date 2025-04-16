@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/View/Pages/AmbassadeurApp.dart';
 import 'package:lifti_app/View/Pages/ChauffeurApp.dart';
+import 'package:lifti_app/View/Pages/PassagerApp.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../widgets/settings_bottom_sheet.dart';
 import 'login_page.dart';
@@ -11,15 +13,11 @@ import 'login_page.dart';
 class IntroPage extends ConsumerStatefulWidget {
   const IntroPage({super.key});
 
-  
-
   @override
   ConsumerState<IntroPage> createState() => _IntroPageState();
 }
 
 class _IntroPageState extends ConsumerState<IntroPage>
-
-
     with SingleTickerProviderStateMixin {
   final PageController _pageController = PageController();
   int _currentPage = 0;
@@ -49,8 +47,7 @@ class _IntroPageState extends ConsumerState<IntroPage>
     print("connected $idRoleConnected");
   }
 
-
-   Future<Position> _determinePosition() async {
+  Future<Position> _determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
 
@@ -119,27 +116,22 @@ class _IntroPageState extends ConsumerState<IntroPage>
     getConnected();
 
     ChangeMyPosition();
-    
+
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 600),
     );
 
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeIn,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
 
     _slideAnimation = Tween<Offset>(
       begin: const Offset(0.0, 0.2),
       end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeOut,
-    ));
+    ).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
 
     _animationController.forward();
   }
@@ -173,14 +165,16 @@ class _IntroPageState extends ConsumerState<IntroPage>
   void _navigateToLogin() {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const LoginPage(),
+        pageBuilder:
+            (context, animation, secondaryAnimation) => const LoginPage(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(1.0, 0.0);
           const end = Offset.zero;
           const curve = Curves.easeInOut;
-          var tween =
-              Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
           var offsetAnimation = animation.drive(tween);
           return SlideTransition(position: offsetAnimation, child: child);
         },
@@ -196,56 +190,56 @@ class _IntroPageState extends ConsumerState<IntroPage>
 
     final pages = [
       _IntroPageItem(
-        icon: Icons.waving_hand,
+        imagePath: "assets/images/vip__jaune.png",
         title: l10n.introWelcomeTitle,
         description: l10n.introWelcomeDesc,
         fadeAnimation: _fadeAnimation,
         slideAnimation: _slideAnimation,
       ),
       _IntroPageItem(
-        icon: Icons.calendar_today,
+        imagePath: "assets/images/image_taxi_3.png",
         title: l10n.introBookingTitle,
         description: l10n.introBookingDesc,
         fadeAnimation: _fadeAnimation,
         slideAnimation: _slideAnimation,
       ),
       _IntroPageItem(
-        icon: Icons.location_on,
+        imagePath: "assets/images/tracking.png",
         title: l10n.introTrackingTitle,
         description: l10n.introTrackingDesc,
         fadeAnimation: _fadeAnimation,
         slideAnimation: _slideAnimation,
       ),
       _IntroPageItem(
-        icon: Icons.notifications,
+        imagePath: "assets/images/image_taxi_1.png",
         title: l10n.introNotifTitle,
         description: l10n.introNotifDesc,
         fadeAnimation: _fadeAnimation,
         slideAnimation: _slideAnimation,
       ),
       _IntroPageItem(
-        icon: Icons.payment,
+        imagePath: "assets/images/image_taxi_2.png",
         title: l10n.introPaymentTitle,
         description: l10n.introPaymentDesc,
         fadeAnimation: _fadeAnimation,
         slideAnimation: _slideAnimation,
       ),
       _IntroPageItem(
-        icon: Icons.star,
+        imagePath: "assets/images/icon_car_120.png",
         title: l10n.introReviewTitle,
         description: l10n.introReviewDesc,
         fadeAnimation: _fadeAnimation,
         slideAnimation: _slideAnimation,
       ),
       _IntroPageItem(
-        icon: Icons.support_agent,
+        imagePath: "assets/images/1.png",
         title: l10n.introSupportTitle,
         description: l10n.introSupportDesc,
         fadeAnimation: _fadeAnimation,
         slideAnimation: _slideAnimation,
       ),
       _IntroPageItem(
-        icon: Icons.card_giftcard,
+        imagePath: "assets/images/logo.png",
         title: l10n.introRewardsTitle,
         description: l10n.introRewardsDesc,
         fadeAnimation: _fadeAnimation,
@@ -253,150 +247,161 @@ class _IntroPageState extends ConsumerState<IntroPage>
       ),
     ];
 
-    return idRoleConnected==3? ChauffeurApp(): Scaffold(
-      extendBodyBehindAppBar: true,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          // Settings button with rotation animation
-          AnimatedBuilder(
-            animation: _animationController,
-            builder: (context, child) {
-              return Transform.rotate(
-                angle: _animationController.value * 2 * 3.14159,
-                child: IconButton(
-                  icon: const Icon(Icons.settings),
-                  onPressed: _showSettingsBottomSheet,
+    return idRoleConnected == 2
+        ? AmbassadeurApp()
+        : idRoleConnected == 3
+        ? ChauffeurApp()
+        : idRoleConnected == 4
+        ? PassagerApp()
+        : Scaffold(
+          extendBodyBehindAppBar: true,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            actions: [
+              // Settings button with rotation animation
+              AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return Transform.rotate(
+                    angle: _animationController.value * 2 * 3.14159,
+                    child: IconButton(
+                      icon: const Icon(Icons.settings),
+                      onPressed: _showSettingsBottomSheet,
+                    ),
+                  );
+                },
+              ),
+              // Skip button with fade animation
+              if (!_isLastPage)
+                FadeTransition(
+                  opacity: _fadeAnimation,
+                  child: TextButton(
+                    onPressed: _navigateToLogin,
+                    child: Text(l10n.introSkip),
+                  ),
                 ),
-              );
-            },
+            ],
           ),
-          // Skip button with fade animation
-          if (!_isLastPage)
-            FadeTransition(
-              opacity: _fadeAnimation,
-              child: TextButton(
-                onPressed: _navigateToLogin,
-                child: Text(l10n.introSkip),
-              ),
-            ),
-        ],
-      ),
-      body: Stack(
-        children: [
-          // Background gradient animation
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 500),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  theme.colorScheme.primary.withOpacity(0.1),
-                  theme.colorScheme.surface,
-                ],
-                stops: [0.0, 0.8],
-              ),
-            ),
-          ),
-          Column(
+          body: Stack(
             children: [
-              Expanded(
-                child: PageView(
-                  controller: _pageController,
-                  onPageChanged: _onPageChanged,
-                  children: pages,
+              // Background gradient animation
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      theme.colorScheme.primary.withOpacity(0.1),
+                      theme.colorScheme.surface,
+                    ],
+                    stops: [0.0, 0.8],
+                  ),
                 ),
               ),
-              // Bottom navigation with slide animation
-              SlideTransition(
-                position: _slideAnimation,
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      // Page indicator with scale animation
-                      Row(
-                        children: List.generate(
-                          pages.length,
-                          (index) => TweenAnimationBuilder<double>(
-                            duration: const Duration(milliseconds: 300),
-                            tween: Tween(
-                              begin: 0.0,
-                              end: _currentPage == index ? 1.0 : 0.5,
+              Column(
+                children: [
+                  Expanded(
+                    child: PageView(
+                      controller: _pageController,
+                      onPageChanged: _onPageChanged,
+                      children: pages,
+                    ),
+                  ),
+                  // Bottom navigation with slide animation
+                  SlideTransition(
+                    position: _slideAnimation,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Page indicator with scale animation
+                          Row(
+                            children: List.generate(
+                              pages.length,
+                              (index) => TweenAnimationBuilder<double>(
+                                duration: const Duration(milliseconds: 300),
+                                tween: Tween(
+                                  begin: 0.0,
+                                  end: _currentPage == index ? 1.0 : 0.5,
+                                ),
+                                builder: (context, value, child) {
+                                  return Container(
+                                    margin: const EdgeInsets.symmetric(
+                                      horizontal: 4,
+                                    ),
+                                    height: 8,
+                                    width: _currentPage == index ? 24 : 8,
+                                    decoration: BoxDecoration(
+                                      color: theme.colorScheme.primary
+                                          .withOpacity(value),
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
+                          ),
+                          // Next/Start button with scale animation
+                          TweenAnimationBuilder<double>(
+                            duration: const Duration(milliseconds: 300),
+                            tween: Tween(begin: 0.8, end: 1.0),
                             builder: (context, value, child) {
-                              return Container(
-                                margin:
-                                    const EdgeInsets.symmetric(horizontal: 4),
-                                height: 8,
-                                width: _currentPage == index ? 24 : 8,
-                                decoration: BoxDecoration(
-                                  color: theme.colorScheme.primary
-                                      .withOpacity(value),
-                                  borderRadius: BorderRadius.circular(4),
+                              return Transform.scale(
+                                scale: value,
+                                child: ElevatedButton(
+                                  onPressed:
+                                      _isLastPage
+                                          ? _navigateToLogin
+                                          : () {
+                                            _pageController.nextPage(
+                                              duration: const Duration(
+                                                milliseconds: 500,
+                                              ),
+                                              curve: Curves.easeInOut,
+                                            );
+                                          },
+                                  style: ElevatedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 24,
+                                      vertical: 12,
+                                    ),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(24),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    _isLastPage
+                                        ? l10n.introStart
+                                        : l10n.introNext,
+                                  ),
                                 ),
                               );
                             },
                           ),
-                        ),
+                        ],
                       ),
-                      // Next/Start button with scale animation
-                      TweenAnimationBuilder<double>(
-                        duration: const Duration(milliseconds: 300),
-                        tween: Tween(begin: 0.8, end: 1.0),
-                        builder: (context, value, child) {
-                          return Transform.scale(
-                            scale: value,
-                            child: ElevatedButton(
-                              onPressed: _isLastPage
-                                  ? _navigateToLogin
-                                  : () {
-                                      _pageController.nextPage(
-                                        duration:
-                                            const Duration(milliseconds: 500),
-                                        curve: Curves.easeInOut,
-                                      );
-                                    },
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                  vertical: 12,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(24),
-                                ),
-                              ),
-                              child: Text(
-                                _isLastPage ? l10n.introStart : l10n.introNext,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
             ],
           ),
-        ],
-      ),
-    );
+        );
   }
 }
 
 class _IntroPageItem extends StatelessWidget {
-  final IconData icon;
+  final String imagePath;
   final String title;
   final String description;
   final Animation<double> fadeAnimation;
   final Animation<Offset> slideAnimation;
 
   const _IntroPageItem({
-    required this.icon,
+    required this.imagePath,
     required this.title,
     required this.description,
     required this.fadeAnimation,
@@ -406,34 +411,37 @@ class _IntroPageItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final size = MediaQuery.of(context).size;
 
     return Padding(
       padding: const EdgeInsets.all(24.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Animated icon
-          FadeTransition(
-            opacity: fadeAnimation,
-            child: SlideTransition(
-              position: slideAnimation,
-              child: TweenAnimationBuilder<double>(
-                duration: const Duration(milliseconds: 500),
-                tween: Tween(begin: 0.5, end: 1.0),
-                builder: (context, value, child) {
-                  return Transform.scale(
-                    scale: value,
-                    child: Icon(
-                      icon,
-                      size: 100,
-                      color: theme.colorScheme.primary,
-                    ),
-                  );
-                },
+          Expanded(
+            child: Center(
+              child: FadeTransition(
+                opacity: fadeAnimation,
+                child: SlideTransition(
+                  position: slideAnimation,
+                  child: TweenAnimationBuilder<double>(
+                    duration: const Duration(milliseconds: 500),
+                    tween: Tween(begin: 0.5, end: 1.0),
+                    builder: (context, value, child) {
+                      return Transform.scale(
+                        scale: value,
+                        child: Image.asset(
+                          imagePath,
+                          width: size.width * 0.9,
+                          height: size.height * 0.5,
+                          fit: BoxFit.contain,
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
           ),
-          const SizedBox(height: 32),
           // Animated title
           FadeTransition(
             opacity: fadeAnimation,
@@ -464,6 +472,7 @@ class _IntroPageItem extends StatelessWidget {
               ),
             ),
           ),
+          const SizedBox(height: 32),
         ],
       ),
     );

@@ -1,0 +1,6 @@
+{
+    "dart.flutterHotRestartOnSave": false,
+    "dart.flutterHotReloadOnSave": true,
+    "dart.hotReloadOnSave": true,
+    "dart.hotRestartOnSave": false,
+}

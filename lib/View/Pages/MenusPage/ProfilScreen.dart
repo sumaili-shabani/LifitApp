@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/View/Pages/MenusPage/EditUserProfileScreen.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/EmergencyAlertSheet.dart';
 import 'package:lifti_app/View/Pages/MenusPage/NotificationScreem.dart';
 import 'package:lifti_app/View/Pages/MenusPage/UserProfileScreen.dart';
 import 'package:lifti_app/presentation/pages/change_password_page.dart';
@@ -17,15 +19,37 @@ class ProfilScreen extends StatefulWidget {
   State<ProfilScreen> createState() => _ProfilScreenState();
 }
 
+
 class _ProfilScreenState extends State<ProfilScreen> {
- 
+
+  int userId = 0;
+  //voir l'id de la personne connecté
+  getIdentifiant() async {
+    int? idConnected =
+        await CallApi.getUserId();
+    setState(() {
+      userId = idConnected!;
+    });
+  }
+
 
   @override
   void initState() {
     super.initState();
+    getIdentifiant();
   }
 
- 
+  void showEmergencyBottomSheet(BuildContext context, int userId) {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) => EmergencyAlertSheet(userId: userId),
+    );
+  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -33,42 +57,86 @@ class _ProfilScreenState extends State<ProfilScreen> {
     return DefaultTabController(
       length: 4,
       child: Scaffold(
-        appBar: AppBar(
-          title: Text("Profil du Chauffeur"),
+        appBar: CustomAppBar(
+          title: Text(
+            "Profil",
+            style: TextStyle(color: Colors.white),
+          ),
           actions: [
              IconButton(
-              onPressed: _showSettings,
-              icon: const Icon(Icons.settings_outlined),
+              icon: Icon(Icons.sos, color: Colors.white),
+              onPressed: () {
+                showEmergencyBottomSheet(context, userId);
+              },
+              tooltip: "Envoyer un sos de secour",
             ),
-            
+            IconButton(
+              onPressed: _showSettings,
+              icon: const Icon(Icons.settings_outlined, color: Colors.white),
+            ),
           ],
           bottom: TabBar(
-            tabs: [
-              Tab(icon: Icon(Icons.person), text: "Profil"),
-              Tab(icon: Icon(Icons.edit), text: "Editer"),
-              Tab(icon: Icon(Icons.notifications), text: "Notifications"),
-              Tab(icon: Icon(Icons.tune), text: "Paramètres"),
+            labelStyle: const TextStyle(
+              color: Colors.white,
+            ), // Couleur du texte
+            labelColor: Colors.white, // Couleur du texte sélectionné
+            unselectedLabelColor:
+                Colors.white, // Texte et icônes non sélectionnés en blanc ✅
+            dividerColor: Colors.transparent, // Supprime la ligne de séparation
+            indicatorColor: Colors.white, // Indicateur de sélection en blanc
+            tabs: const [
+              Tab(
+                icon: Icon(Icons.person, color: Colors.white),
+                text: "Profil",
+              ),
+              Tab(icon: Icon(Icons.edit, color: Colors.white), text: "Editer"),
+              Tab(
+                icon: Icon(Icons.notifications, color: Colors.white),
+                text: "Notifications",
+              ),
+              Tab(
+                icon: Icon(Icons.tune, color: Colors.white),
+                text: "Paramètres",
+              ),
             ],
-          ),
+          )
         ),
         body: TabBarView(
           children: [
             UserProfileScreen(),
             EditUserProfileScreen(),
-        
+
             NotificationsPage(),
+
             // buildNotificationsTab(),
             // buildAppSettingsTab(),
-
-             _buildPreferences(l10n),
+            _buildPreferences(l10n),
           ],
         ),
       ),
     );
   }
 
- 
-  
+  AppBar newMethod() {
+    return AppBar(
+      title: Text("Profil"),
+      actions: [
+        IconButton(
+          onPressed: _showSettings,
+          icon: const Icon(Icons.settings_outlined),
+        ),
+      ],
+      bottom: TabBar(
+        tabs: [
+          Tab(icon: Icon(Icons.person), text: "Profil"),
+          Tab(icon: Icon(Icons.edit), text: "Editer"),
+          Tab(icon: Icon(Icons.notifications), text: "Notifications"),
+          Tab(icon: Icon(Icons.tune), text: "Paramètres"),
+        ],
+      ),
+    );
+  }
+
   Widget buildNotificationsTab() {
     double _paddingValue = 10.0;
     return AnimatedContainer(
@@ -216,66 +284,36 @@ class _ProfilScreenState extends State<ProfilScreen> {
 *
 */
 
-void _showSettings() {
+  void _showSettings() {
     showModalBottomSheet(
       context: context,
       builder: (context) => const SettingsBottomSheet(),
     );
   }
 
-Widget _buildPreferences(AppLocalizations l10n) {
-   
+  Widget _buildPreferences(AppLocalizations l10n) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        
-        _buildPreferenceSection(
-          l10n.notifications,
-          [
-            _buildSwitchTile(
-              l10n.rideNotifications,
-              true,
-              (value) {},
-            ),
-            _buildSwitchTile(
-              l10n.promotionsAndOffers,
-              false,
-              (value) {},
-            ),
-            _buildSwitchTile(
-              l10n.news,
-              true,
-              (value) {},
-            ),
-          ],
-        ),
+        _buildPreferenceSection(l10n.notifications, [
+          _buildSwitchTile(l10n.rideNotifications, true, (value) {}),
+          _buildSwitchTile(l10n.promotionsAndOffers, false, (value) {}),
+          _buildSwitchTile(l10n.news, true, (value) {}),
+        ]),
         const Divider(),
-        _buildPreferenceSection(
-          l10n.privacy,
-          [
-            _buildSwitchTile(
-              l10n.shareLocation,
-              true,
-              (value) {},
-            ),
-            _buildSwitchTile(
-              l10n.rideHistory,
-              true,
-              (value) {},
-            ),
-          ],
-        ),
+        _buildPreferenceSection(l10n.privacy, [
+          _buildSwitchTile(l10n.shareLocation, true, (value) {}),
+          _buildSwitchTile(l10n.rideHistory, true, (value) {}),
+        ]),
         const Divider(),
-        _buildPreferenceSection(
-          l10n.payment,
-          [
-            ListTile(
-              leading: const Icon(Icons.payment),
-              title: Text(l10n.paymentMethods),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                // TODO: Gérer les méthodes de paiement
-                showDialog(
+        _buildPreferenceSection(l10n.payment, [
+          ListTile(
+            leading: const Icon(Icons.payment),
+            title: Text(l10n.paymentMethods),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              // TODO: Gérer les méthodes de paiement
+              showDialog(
                 context: context,
                 builder:
                     (context) => AlertDialog(
@@ -312,22 +350,19 @@ Widget _buildPreferences(AppLocalizations l10n) {
                       ],
                     ),
               );
-              },
-            ),
-            ListTile(
-              leading: const Icon(Icons.receipt),
-              title: Text(l10n.automaticBilling),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () {
-                // TODO: Gérer les factures
-              },
-            ),
-            
-          ],
-        ),
-         const Divider(),
-        _buildPreferenceSection(
-          "Confidentialité & Sécurité", [
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.receipt),
+            title: Text(l10n.automaticBilling),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              // TODO: Gérer les factures
+            },
+          ),
+        ]),
+        const Divider(),
+        _buildPreferenceSection("Confidentialité & Sécurité", [
           ListTile(
             leading: Icon(Icons.lock, color: Colors.red),
             title: Text("Changer le mot de passe"),
@@ -374,10 +409,7 @@ Widget _buildPreferences(AppLocalizations l10n) {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
+          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
         ),
         ...children,
       ],
@@ -395,5 +427,4 @@ Widget _buildPreferences(AppLocalizations l10n) {
       onChanged: onChanged,
     );
   }
-
 }

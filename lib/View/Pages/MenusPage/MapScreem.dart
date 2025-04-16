@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/MapScreem.dart';
 
 
+
 class MapChauffeurScreem extends StatefulWidget {
   const MapChauffeurScreem({super.key});
 
@@ -14,6 +15,6 @@ class MapChauffeurScreem extends StatefulWidget {
 class _MapChauffeurScreemState extends State<MapChauffeurScreem> {
   @override
   Widget build(BuildContext context) {
-    return MapScreemExercerci();
+    return MapScreemChauffeur();
   }
 }

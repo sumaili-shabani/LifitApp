@@ -3,10 +3,25 @@
 <plist version="1.0">
 <dict>
 	<!-- mes ajouts -->
+
 	<!-- <key>NSLocationWhenInUseUsageDescription</key>
 	<string>Nous utilisons votre position pour vous localiser.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Nous utilisons votre position même en arrière-plan.</string> -->
+
+	<!-- mes ajouts -->
+	<key>NSCameraUsageDescription</key>
+	<string>Nous avons besoin d'accéder à la caméra</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Nous avons besoin d'accéder à votre bibliothèque pour télécharger une image.</string>
+	<!-- fin ajout -->
+	<!-- pour les notification local -->
+	<key>flutter_local_notifications</key>
+	<true/>
+	<key>NSUserNotificationAlertStyle</key>
+	<string>alert</string>
+	<!-- fin notification local -->
 
 	<key>IOs</key>
 	<dict>

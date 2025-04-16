@@ -1,9 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:lifti_app/Api/ConfigurationApp.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
+import 'package:lifti_app/Controller/ApiService.dart';
 import 'package:lifti_app/Model/ChauffeurDashBoardModel.dart';
+import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
 import 'package:lifti_app/Model/CourseModel.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/PositionChaufeurOnMap.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/PositionPassagerOnMap.dart';
 import 'package:lifti_app/core/theme/app_theme.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class CoursesEnCoursScreen extends StatefulWidget {
   const CoursesEnCoursScreen({super.key});
@@ -15,11 +25,12 @@ class CoursesEnCoursScreen extends StatefulWidget {
 class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
   TextEditingController searchController = TextEditingController();
 
-  List<CourseModel> notifications = [];
+  List<CourseInfoPassagerModel> notifications = [];
   List<ChauffeurDashBoardModel> dashInfo = [];
 
   String searchQuery = "";
   bool isLoading = true;
+  bool partageWhatsapp = false;
 
   Future<void> fetchNotifications() async {
     int? userId =
@@ -38,7 +49,8 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
       // print(dataDash);
 
       setState(() {
-        notifications = data.map((item) => CourseModel.fromMap(item)).toList();
+        notifications =
+            data.map((item) => CourseInfoPassagerModel.fromMap(item)).toList();
         dashInfo =
             dataDash
                 .map((item) => ChauffeurDashBoardModel.fromMap(item))
@@ -52,11 +64,17 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
     }
   }
 
-  /// 🔹 **Méthode DELETE**
-  Future<void> checkStatutCourse(int id, String statut) async {
+  /// 🔹 **Méthode Changement de statut**
+  Future<void> checkStatutCourse(
+    int id,
+    String statut,
+    int refPassager,
+    int refChauffeur,
+    String url,
+  ) async {
     try {
       final response = await CallApi.deleteData(
-        "chauffeur_mobile_checkStatut_course_vehicule/${id.toInt()}/${statut.toString()}",
+        "$url/${id.toInt()}/${statut.toString()}/${refPassager.toString()}/${refChauffeur.toString()}",
       );
 
       final Map<String, dynamic> responseData = response;
@@ -70,24 +88,180 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
     }
   }
 
+  /// 🔹 **Méthode DELETE**
+  Future<void> deleteData(int id, int refChauffeur) async {
+    try {
+      final response = await CallApi.deleteData(
+        "chauffeur_mobile_anullation_course/${id.toInt()}/${refChauffeur.toInt()}",
+      );
+
+      final Map<String, dynamic> responseData = response;
+      String message = responseData['data'] ?? "Deleted!!!";
+      showSnackBar(context, message, 'success');
+
+      //appelle de la fonction demande
+      fetchNotifications();
+    } catch (e) {
+      print('Error fetching demandes: $e');
+    }
+  }
+
+  /// 🔹 **Méthode DELETE**
+  Future<void> deleteDataNoDisponible(int id, int refPassager) async {
+    try {
+      final response = await CallApi.deleteData(
+        "delete_courses_non_disponible/${id.toInt()}/${refPassager.toString()}",
+      );
+
+      final Map<String, dynamic> responseData = response;
+      String message = responseData['data'] ?? "Deleted!!!";
+      showSnackBar(context, message, 'success');
+
+      //appelle de la fonction demande
+      fetchNotifications();
+    } catch (e) {
+      print('Error fetching demandes: $e');
+    }
+  }
+
+  Timer? _timer;
   @override
   void initState() {
     super.initState();
     fetchNotifications();
+
+    _timer = Timer.periodic(Duration(seconds: 30), (timer) {
+      fetchNotifications();
+    });
   }
+
+  @override
+  void dispose() {
+    _timer?.cancel(); // Arrêter le timer pour éviter les fuites de mémoire
+    super.dispose();
+  }
+
+  // Fonction pour obtenir l'icône du status
+  IconData _getStatusIcon(String status) {
+    switch (status) {
+      case '0':
+        return Icons.directions_car; // "Course en cours" => icône voiture
+      case '1':
+        return Icons.check_circle; // "Course terminée" => icône check
+      case '2':
+        return Icons.timer; // "En attente" => icône de temporisation
+      case '3':
+        return Icons.directions_car; // "Voiture en route" => icône voiture
+      case '4':
+        return Icons.location_on; // "Arrivée à destination" => icône arrivée
+      default:
+        return Icons.error; // Si le status est inconnu
+    }
+  }
+
+  // Fonction pour obtenir le message du status
+  String _getStatusMessage(String status) {
+    switch (status) {
+      case '0':
+        return "Course en cours";
+      case '1':
+        return "Course terminée";
+      case '2':
+        return "En attente de réponse du chauffeur";
+      case '3':
+        return "Voiture en route vers vous";
+      case '4':
+        return "Course arrivée à destination";
+      default:
+        return "Status inconnu";
+    }
+  }
+
+  // Fonction pour obtenir la couleur du status
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case '0':
+        return Colors.orange; // "Course en cours" => couleur orange
+      case '1':
+        return Colors.green; // "Course terminée" => couleur verte
+      case '2':
+        return Colors.blue; // "En attente" => couleur bleue
+      case '3':
+        return Colors.amber; // "Voiture en route" => couleur ambre
+      case '4':
+        return Colors.green; // "Arrivée à destination" => couleur verte
+      default:
+        return Colors.black; // Couleur par défaut
+    }
+  }
+
+  // Fonction de partage sur WhatsApp
+  void shareOnWhatsApp(
+    double latitude,
+    double longitude,
+    String destination,
+  ) async {
+    String message =
+        "🚖 Chauffeur en mission 🚖\n\n"
+        "Je viens de prendre un passager et je me dirige vers *$destination*.\n"
+        "Suivez ma position en temps réel ici :\n"
+        "📍 https://www.google.com/maps/search/?api=1&query=$latitude,$longitude\n\n"
+        "Je reste joignable en cas de besoin. À bientôt !";
+
+    String encodedMessage = Uri.encodeComponent(message);
+    String whatsappUrl = "https://wa.me/?text=$encodedMessage";
+
+    Uri uri = Uri.parse(whatsappUrl);
+
+    if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
+      // URL ouverte avec succès
+    } else {
+      print("Impossible d'ouvrir WhatsApp.");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            "WhatsApp ne peut pas être ouvert. Vérifiez son installation.",
+          ),
+        ),
+      );
+    }
+  }
+
+  //position actuelle to map
+  void showMapBottomSheet(
+    BuildContext context,
+    CourseInfoPassagerModel course,
+  ) {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (context) => PositionPassagerOnMap(
+            course: course,
+            onSubmitComment: (course) {
+              // print("idcourse: ${course.id}");
+
+              Navigator.pop(context); // Ferme le BottomSheet
+            },
+          ),
+    );
+  }
+  //fin position actuelle to map
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
-      appBar: AppBar(
-        leading: Icon(Icons.car_crash),
-        title: Text("Courses en cours"),
-        backgroundColor: theme.scaffoldBackgroundColor,
+      appBar: CustomAppBar(
+        title: Text("Courses en cours", style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
+            color: Colors.white,
             onPressed: () {
               fetchNotifications();
             },
@@ -101,6 +275,7 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
               ) // Affiche un loader en attendant l'API
               : Column(
                 children: [
+                  SizedBox(height: 10),
                   // 📊 STATISTIQUES GLOBALES
                   Padding(
                     padding: EdgeInsets.all(5),
@@ -157,8 +332,11 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
                         var course = notifications[index];
 
                         if (!course.namePassager!.toLowerCase().contains(
-                          searchQuery,
-                        )) {
+                              searchQuery,
+                            ) &&
+                            !course.dateCourse!.toLowerCase().contains(
+                              searchQuery,
+                            )) {
                           return Container();
                         }
 
@@ -198,10 +376,10 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
                                           ),
                                         ),
                                         Text(
-                                          "${course.distance ?? '0'} Km",
+                                          "${course.calculate == 1 ? 'Distance:' : 'Location:'}${course.distance!.toStringAsFixed(2)} ${course.calculate == 1 ? 'Km ➡️${course.timeEst!}' : 'J/H'}",
                                           style: TextStyle(
                                             color: theme.primaryColor,
-                                            fontSize: 14,
+                                            fontSize: 12,
                                           ),
                                         ),
                                       ],
@@ -219,24 +397,115 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
                                             color: Colors.blue,
                                           ),
                                         ),
-
-                                        Row(
-                                          children: [
-                                            Icon(
-                                              Icons.car_repair_sharp,
-                                              size: 13,
-                                            ),
-
-                                            Text(
-                                              " ${course.nomTypeCourse ?? ''}",
-                                            ),
-                                          ],
-                                        ),
                                       ],
                                     ),
                                   ],
                                 ),
                                 SizedBox(height: 10),
+
+                                // mes ajouts
+                                Row(
+                                  children: [
+                                    Icon(Icons.local_taxi, size: 16),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      "Type de course: ${course.nomTypeCourse ?? ''}",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.location_on,
+                                      size: 16,
+                                      color: ConfigurationApp.successColor,
+                                    ),
+                                    SizedBox(width: 5),
+                                    Expanded(
+                                      child: Text(
+                                        "Départ: ${course.nameDepart ?? ''}",
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.flag,
+                                      size: 16,
+                                      color: ConfigurationApp.dangerColor,
+                                    ),
+                                    SizedBox(width: 5),
+                                    Expanded(
+                                      child: Text(
+                                        "Arrivée: ${course.nameDestination ?? ''}",
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                course.calculate == 1
+                                    ? Row(
+                                      children: [
+                                        Icon(Icons.timer, size: 16),
+                                        SizedBox(width: 5),
+                                        Text(
+                                          "Heure d'arrivage : ${CallApi.formatDateString(course.dateLimiteCourse ?? '')}",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    )
+                                    : SizedBox(),
+
+                                SizedBox(height: 2),
+                                // fin ajouts
+
+                                // Affichage du status avec icône
+                                Row(
+                                  children: [
+                                    Icon(
+                                      _getStatusIcon(course.status!),
+                                      color: _getStatusColor(course.status!),
+                                      size: 13,
+                                    ),
+                                    SizedBox(width: 2),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          _getStatusMessage(course.status!),
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            color: _getStatusColor(
+                                              course.status!,
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 10),
+
+                                        course.status.toString() == '3'
+                                            ? TextButton(
+                                              onPressed: () {
+                                                showMapBottomSheet(
+                                                  context,
+                                                  course,
+                                                );
+                                              },
+                                              child: Text("| Voir sa position"),
+                                            )
+                                            : SizedBox(),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+
+                                SizedBox(height: 1),
 
                                 // 📍 DÉTAILS DU TRAJET
                                 Column(
@@ -244,6 +513,8 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         // destination
                                         Column(
@@ -253,36 +524,29 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             Row(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
                                               children: [
-                                                Icon(
-                                                  Icons.location_on,
-                                                  color: theme.primaryColor,
-                                                ),
-                                                SizedBox(width: 5),
-                                                SizedBox(
-                                                  width: 200,
-                                                  child: Text(
-                                                    "Départ : ${course.nameDepart ?? ''}",
-                                                    maxLines: 3,
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                            SizedBox(height: 5),
-                                            Row(
-                                              children: [
-                                                Icon(
-                                                  Icons.flag,
-                                                  color: Colors.red,
-                                                ),
-                                                SizedBox(width: 5),
-                                               
-                                                SizedBox(
-                                                  width: 200,
-                                                  child: Text(
-                                                    "Arrivée : ${course.nameDestination ?? ''}",
-                                                    maxLines: 2,
-                                                  ),
+                                                Row(
+                                                  children: [
+                                                    Icon(
+                                                      Icons.calendar_today,
+                                                      color: Colors.grey,
+                                                      size: 18,
+                                                    ),
+                                                    SizedBox(width: 5),
+                                                    Text(
+                                                      CallApi.getFormatedDate(
+                                                        course.dateCourse
+                                                            .toString(),
+                                                      ),
+                                                      style: TextStyle(
+                                                        color: Colors.grey,
+                                                        fontSize: 14,
+                                                      ),
+                                                    ),
+                                                  ],
                                                 ),
                                               ],
                                             ),
@@ -290,56 +554,76 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
                                             SizedBox(height: 10),
                                           ],
                                         ),
-                                        Spacer(),
 
-                                        //pour les bouttons
-                                        Column(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.start,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            // 💰 BOUTONS ACTIONS (au-dessus du prix)
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.end,
-                                              children: [
-                                                ElevatedButton(
-                                                  onPressed: () {
-                                                    checkStatutCourse(
-                                                      course.id!,
-                                                      course.status!,
-                                                    );
-                                                  },
-                                                  style:
-                                                      ElevatedButton.styleFrom(
-                                                        backgroundColor:
-                                                            theme.primaryColor,
-                                                        padding:
-                                                            EdgeInsets.symmetric(
-                                                              horizontal: 10,
-                                                              vertical: 5,
-                                                            ),
-                                                        minimumSize: Size(
-                                                          60,
-                                                          30,
-                                                        ),
-                                                      ),
-                                                  child: Text(
-                                                    "Accepter",
-                                                    style: TextStyle(
-                                                      fontSize: 12,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ],
-                                            ),
-                                          ],
-                                        ),
+                                        course.status.toString() == '2'
+                                            ? TextButton.icon(
+                                              onPressed: () {
+                                                showMapBottomSheet(
+                                                  context,
+                                                  course,
+                                                );
+                                              },
+                                              icon: Icon(Icons.map),
+                                              label: Text("Voir sa position"),
+                                            )
+                                            : SizedBox(),
                                       ],
                                     ),
                                   ],
                                 ),
+                                // menu de boutton
+                                SizedBox(height: 1),
+
+                                // Boutons Annuler et Partager
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    if (course.status != '4')
+                                      buildCourseButtons(
+                                        course,
+                                        course.id!,
+                                        course.status!,
+                                        theme,
+                                      ),
+
+                                    // Bouton Partager sur WhatsApp
+                                    IconButton(
+                                      onPressed:
+                                          partageWhatsapp
+                                              ? null
+                                              : () async {
+                                                setState(() {
+                                                  partageWhatsapp = true;
+                                                });
+                                                Position? position =
+                                                    await ApiService.getCurrentLocation();
+                                                if (position != null) {
+                                                  setState(() {
+                                                    partageWhatsapp = false;
+                                                  });
+                                                  shareOnWhatsApp(
+                                                    position.latitude,
+                                                    position.longitude,
+                                                    course.nameDestination!,
+                                                  );
+                                                }
+                                              },
+                                      icon:
+                                          partageWhatsapp
+                                              ? CircularProgressIndicator(
+                                                color: Colors.blue,
+                                              )
+                                              : Icon(
+                                                Icons.share,
+                                                color: Colors.teal,
+                                              ),
+                                      tooltip: "Partager sur WhatsApp",
+                                    ),
+                                  ],
+                                ),
+
+                                // fin menu de boutton
                               ],
                             ),
                           ),
@@ -349,6 +633,144 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
                   ),
                 ],
               ),
+    );
+  }
+
+  Widget buildCourseButtons(
+    CourseInfoPassagerModel course,
+    int courseId,
+    String courseStatus,
+    ThemeData theme,
+  ) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+
+      children: [
+        if (courseStatus == '2')
+          Row(
+            children: [
+              if (course.calculate == 1)
+                ElevatedButton.icon(
+                  onPressed: () {
+                    checkStatutCourse(
+                      courseId,
+                      courseStatus,
+                      course.refPassager!,
+                      course.refChauffeur!,
+                      "checkEtat_DemandeCourse",
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.primaryColor,
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    minimumSize: Size(60, 30),
+                  ),
+                  icon: Icon(Icons.local_taxi_outlined),
+                  label: Text("Accepter", style: TextStyle(fontSize: 12)),
+                ),
+              if (course.calculate == 0)
+                ElevatedButton.icon(
+                  onPressed: () {
+                    checkStatutCourse(
+                      courseId,
+                      courseStatus,
+                      course.refPassager!,
+                      course.refChauffeur!,
+                      "checkEtat_DisponibiliteLocationCourse",
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: theme.primaryColor,
+                    padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    minimumSize: Size(60, 30),
+                  ),
+                  icon: Icon(Icons.local_taxi_outlined),
+                  label: Text("Disponible", style: TextStyle(fontSize: 12)),
+                ),
+
+              SizedBox(width: 5),
+              ElevatedButton.icon(
+                onPressed: () {
+                  deleteDataNoDisponible(courseId, course.refPassager!);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ConfigurationApp.dangerColor,
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  minimumSize: Size(60, 30),
+                ),
+                icon: Icon(Icons.no_backpack_rounded),
+                label: Text("Non disponible", style: TextStyle(fontSize: 12)),
+              ),
+            ],
+          ),
+
+        if (courseStatus == '3')
+          Row(
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  checkStatutCourse(
+                    courseId,
+                    courseStatus,
+                    course.refPassager!,
+                    course.refChauffeur!,
+                    "checkEtat_DemarerCourse",
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.primaryColor,
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  minimumSize: Size(60, 30),
+                ),
+                icon: Icon(Icons.on_device_training),
+                label: Text(
+                  "Demarer la course",
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+        if (courseStatus == '0')
+          Row(
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  checkStatutCourse(
+                    courseId,
+                    courseStatus,
+                    course.refPassager!,
+                    course.refChauffeur!,
+                    "checkEtat_DestinationCompleteCourse",
+                  );
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.primaryColor,
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  minimumSize: Size(60, 30),
+                ),
+                icon: Icon(Icons.check_circle),
+                label: Text("Terminé", style: TextStyle(fontSize: 12)),
+              ),
+
+              SizedBox(width: 5),
+              ElevatedButton.icon(
+                onPressed: () {
+                  deleteData(course.id!, course.refChauffeur!);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: ConfigurationApp.dangerColor,
+                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  minimumSize: Size(60, 30),
+                ),
+                icon: Icon(Icons.close_outlined),
+                label: Text(
+                  "Annuler la course",
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+      ],
     );
   }
 }

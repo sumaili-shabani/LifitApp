@@ -85,6 +85,9 @@ class HistoriqueCourseModel {
   final String? telephone;
   final String? adresse;
   final int? active;
+  final String? imageTypeCourse;
+  final String? timeEst;
+  final int? calculate;
 
   HistoriqueCourseModel({
      this.id,
@@ -173,6 +176,9 @@ class HistoriqueCourseModel {
      this.telephone,
      this.adresse,
      this.active,
+     this.imageTypeCourse,
+     this.timeEst,
+     this.calculate,
   });
 
   factory HistoriqueCourseModel.fromMap(Map<String, dynamic> json) =>
@@ -263,6 +269,12 @@ class HistoriqueCourseModel {
         telephone: json["telephone"],
         adresse: json["adresse"],
         active: json["active"],
+        imageTypeCourse: json["imageTypeCourse"],
+        timeEst: json["timeEst"],
+        calculate: json["calculate"],
+        
+        
+        
       );
 
   Map<String, dynamic> toMap() => {
@@ -352,5 +364,10 @@ class HistoriqueCourseModel {
     "telephone": telephone,
     "adresse": adresse,
     "active": active,
+    "imageTypeCourse": imageTypeCourse,
+    "timeEst": timeEst,
+    "calculate": calculate,
+    
+    
   };
 }

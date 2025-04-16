@@ -351,7 +351,7 @@ class _DashboardPageState extends ConsumerState<DashboardPage> {
               ),
             ),
           ),
-          const MapPage(),
+          // const MapPage(),
           Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,

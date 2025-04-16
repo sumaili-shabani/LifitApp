@@ -62,8 +62,10 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
       Uri.parse(
         '${CallApi.baseUrl.toString()}/user_mobile_info/${userId.toInt()}',
       ),
+      headers: await CallApi.getHeaders(),
     );
 
+    
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body)['data'];
       // print(data);

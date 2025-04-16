@@ -1,10 +1,11 @@
 {
     "@@locale": "en",
     
-    "appName": "Rydex",
+    "appName": "SwiftRide",
     "welcome": "Welcome",
     "login": "Login",
     "signUp": "Sign Up",
+    "signUpPhone": "Create an account",
     "email": "Email",
     "password": "Password",
     "forgotPassword": "Forgot Password?",
@@ -25,7 +26,7 @@
     "loginSuccess": "Login successful!",
     "loginError": "Login failed. Please try again.",
 
-    "introWelcomeTitle": "Welcome to Rydex",
+    "introWelcomeTitle": "Welcome to SwiftRide",
     "introWelcomeDesc": "Your trusted transportation companion",
     
     "introBookingTitle": "Easy Booking",
