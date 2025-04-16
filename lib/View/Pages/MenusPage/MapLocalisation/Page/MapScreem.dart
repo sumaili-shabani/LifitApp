@@ -18,7 +18,9 @@ import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
+import 'package:lifti_app/View/Pages/MenusPage/CoursesEnCoursChauffeur.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/CarteSelectionPosition.dart';
+import 'package:lifti_app/View/Pages/MenusPage/NotificationBottom.dart';
 
 class MapScreemChauffeur extends StatefulWidget {
   const MapScreemChauffeur({super.key});
@@ -1353,6 +1355,8 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
   *
   */
 
+  bool isNotify = false;
+
   /*
   *
   *==========================================
@@ -1767,27 +1771,31 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
                                   ],
                                 ),
                                 SizedBox(height: 12),
-                                ElevatedButton.icon(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.green,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 20,
-                                      vertical: 12,
-                                    ),
-                                  ),
-                                  onPressed: () {
-                                    // Fonction pour que le chauffeur sélectionne un lieu s’il n’est pas à Goma
-                                    _selectLocationManually();
-                                  },
-                                  icon: Icon(
-                                    Icons.my_location,
-                                    color: Colors.white,
-                                  ),
-                                  label: Text("Sélectionner ma position"),
-                                ),
+                                !estDansZoneKinshasa(chauffeurPosition!)
+                                    ? ElevatedButton.icon(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.green,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                        padding: EdgeInsets.symmetric(
+                                          horizontal: 20,
+                                          vertical: 12,
+                                        ),
+                                      ),
+                                      onPressed: () {
+                                        // Fonction pour que le chauffeur sélectionne un lieu s’il n’est pas à Goma
+                                        _selectLocationManually();
+                                      },
+                                      icon: Icon(
+                                        Icons.my_location,
+                                        color: Colors.white,
+                                      ),
+                                      label: Text("Sélectionner ma position"),
+                                    )
+                                    : SizedBox(),
                               ],
                             ),
                           ),
@@ -1802,8 +1810,8 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
           // Tester le message du lieu
           Positioned(
             bottom: 20,
-            left: 20,
-            right: 20,
+            left: 55,
+            right: 55,
             child:
                 chauffeurPosition == null
                     ? CircularProgressIndicator()
@@ -1848,11 +1856,185 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
           ),
           // fin test du message du lieu
 
-          // BottomSheet pour la recherche
+          // Les bouttons d'actions
+          // 🔘 Les boutons avec badges
+          Positioned(
+            bottom: 100,
+            right: 7,
+            child: Column(
+              children: [
+                // 🔔 Bouton notification avec badge
+                Stack(
+                  children: [
+                    FloatingActionButton(
+                      heroTag: "btn1",
+                      mini: true,
+                      backgroundColor: Colors.white,
+                      onPressed: () {
+                        setState(() {
+                          isNotify = false;
+                        });
+                        showNotificationBottomSheet(context);
+                      },
+                      child: Icon(Icons.notifications, color: Colors.black),
+                    ),
+                    if (isNotify)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: TweenAnimationBuilder<double>(
+                          tween: Tween(begin: 1.0, end: 1.2),
+                          duration: Duration(milliseconds: 500),
+                          curve: Curves.easeInOut,
+                          builder: (context, scale, child) {
+                            return Transform.scale(scale: scale, child: child);
+                          },
+                          onEnd: () {
+                            // Boucle l'animation
+                            if (mounted && isNotify) setState(() {});
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.red,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.red.withOpacity(0.6),
+                                  blurRadius: 6,
+                                  spreadRadius: 1,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                SizedBox(height: 5),
 
-          // Fin de la zone BottomSheet
+                // 📜 Bouton historique avec badge aussi (optionnel)
+                Stack(
+                  children: [
+                    FloatingActionButton(
+                      heroTag: "btn2",
+                      mini: true,
+                      backgroundColor: Colors.white,
+                      onPressed: () {
+                        setState(() {
+                          isNotify = false;
+                        });
+
+                        showCourseBottomSheet(context);
+                      },
+                      child: Icon(Icons.history, color: Colors.black),
+                    ),
+                    if (isNotify)
+                      Positioned(
+                        right: 0,
+                        top: 0,
+                        child: Container(
+                          padding: EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.red,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.red.withOpacity(0.6),
+                                blurRadius: 6,
+                                spreadRadius: 1,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                
+
+               
+              ],
+            ),
+          ),
+          //fin boutton
+
+          // Fin de boutton action
         ],
       ),
     );
   }
+
+  /*
+*
+*===============================
+*Affichage de notification
+*===============================
+*/
+
+  // Fonction pour afficher le BottomSheet
+  void showCourseBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        final theme = Theme.of(context);
+        final screenHeight = MediaQuery.of(context).size.height;
+        return Container(
+          height: screenHeight * 0.65, // 50% de l'écran
+          width: double.infinity,
+          padding: EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: theme.cardColor,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+          ),
+          child: Column(
+            children: [
+              Container(
+                width: 50,
+                height: 5,
+                decoration: BoxDecoration(
+                  color: Colors.grey[400],
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+
+              SizedBox(height: 10),
+
+              // Course en cours dans une hauteur dynamique
+              SizedBox(
+                height: screenHeight * 0.57, // ajustable selon ton contenu
+                child: CoursesEnCoursChauffeur(),
+              ),
+
+              SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  // Fonction pour afficher le BottomSheet
+  void showNotificationBottomSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true, // Plein écran
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return NotificationBottom();
+      },
+    );
+  }
+
+  /*
+*
+*===============================
+* Fin Affichage de notification
+*===============================
+*/
 }

@@ -45,7 +45,7 @@ class _CarteSelectionPositionState extends State<CarteSelectionPosition> {
       ),
       body: GoogleMap(
         initialCameraPosition: CameraPosition(
-          target: centerKinshasa, // Kinshasa centre
+          target: centerGoma, // Kinshasa centre
           zoom: 14,
         ),
         onTap: (LatLng latLng) {
