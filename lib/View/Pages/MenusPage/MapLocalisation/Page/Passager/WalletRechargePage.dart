@@ -149,10 +149,45 @@ class _WalletRechargePageState extends State<WalletRechargePage> {
                 ),
               ),
               SizedBox(height: 5),
-              Text(
-                "Choisissez votre opérateur préféré pour recharger instantanément votre portefeuille.",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16.0,
+                  vertical: 12,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(Icons.flash_on, color: Colors.orange, size: 26),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            "Recharge instantanée 💳",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          SizedBox(height: 6),
+                          Text(
+                            "Choisissez votre opérateur préféré pour recharger instantanément votre portefeuille.",
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey[700],
+                              height: 1.4,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
+              Divider(color: Colors.grey[200]),
               SizedBox(height: 16),
               _buildMobileMoneyOption(
                 "Vodacom (M-Pesa)",
@@ -295,19 +330,6 @@ class _WalletRechargePageState extends State<WalletRechargePage> {
           Navigator.pop(context);
           showPhoneNumberInput(refBanque);
         },
-        trailing: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Text(
-              "montant:",
-              style: TextStyle(fontSize: 11, color: Colors.grey),
-            ),
-            Text(
-              "156 usd",
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -488,7 +510,7 @@ class _WalletRechargePageState extends State<WalletRechargePage> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: EdgeInsets.all(8),
       height:
           MediaQuery.of(context).size.height *
           0.65, // Augmenté à 55% pour plus de visibilité
@@ -510,22 +532,39 @@ class _WalletRechargePageState extends State<WalletRechargePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: EdgeInsets.all(16),
+                  padding: EdgeInsets.all(4),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(
-                        "Choisissez un mode de paiement",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8.0,
+                          vertical: 4,
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "💳 Choisissez un mode de paiement",
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            SizedBox(height: 4),
+                            Text(
+                              "Mode sélectionné : $selectedPaymentMethod",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[700],
+                                
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                      Text(
-                        "Mode de paiement sélectionné : $selectedPaymentMethod",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                      SizedBox(height: 16),
+                      SizedBox(height: 8),
                       _buildPaymentOption(
                         "Cash",
                         Icons.money,
