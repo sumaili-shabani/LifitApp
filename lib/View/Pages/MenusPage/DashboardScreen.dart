@@ -10,6 +10,7 @@ import 'package:lifti_app/View/Pages/MenusPage/AvisClientScreem.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
 
 import 'package:lifti_app/View/Pages/MenusPage/InfoDashBoardPage.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/DashTarget.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/InformationMenu.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/PaiementCommission.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Statistique/PaieCommissionChart.dart';
@@ -85,23 +86,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
               ).push(AnimatedPageRoute(page: InformationMenuScreem()));
             },
           ),
-         
+
           // ✅ Menu déroulant avec bouton Déconnexion
           PopupMenuButton<String>(
-            icon: Icon(Icons.more_vert, color: Colors.white,),
+            icon: Icon(Icons.more_vert, color: Colors.white),
             onSelected: (String value) {
               if (value == "logout") {
                 // print("Déconnexion...");
                 logout();
               } else if (value == "message") {
                 // print("Voir les messages...");
-               Navigator.of(
+                Navigator.of(
                   context,
                 ).push(AnimatedPageRoute(page: CorrespondentsPage()));
               } else if (value == "calendar") {
                 // print("Voir le calendrier...");
-              
-              
               } else {
                 print("Boom");
               }
@@ -189,6 +188,4 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ),
     );
   }
-
- 
 }

@@ -1540,7 +1540,6 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
     super.initState();
 
     testDnsLookup();
-
     _connectToPusher();
 
     changeMyPosition();
@@ -2182,11 +2181,11 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
               SizedBox(height: 10),
               // Course en cours dans une hauteur dynamique
               SizedBox(
-                height: screenHeight * 0.57, // ajustable selon ton contenu
+                height: screenHeight * 0.60, // ajustable selon ton contenu
                 child: CoursesEnCoursChauffeur(),
               ),
 
-              SizedBox(height: 10),
+              SizedBox(height: 5),
             ],
           ),
         );
