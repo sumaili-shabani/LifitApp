@@ -54,76 +54,86 @@ class _InfoDashBoardPageState extends State<InfoDashBoardPage> {
   @override
   Widget build(BuildContext context) {
     return isLoading
-        ? Center(
-          child: CircularProgressIndicator(),
-        ) // Affiche un loader en attendant l'API
-        : Row(
-      mainAxisAlignment: MainAxisAlignment.spaceAround,
-      children: [
-        _buildStatCard(
-          "Moyenne",
-          "Distance",
-          "${dashInfo.isNotEmpty ? dashInfo.first.sumDistanceCourseEncours.toString() : 0} Km",
-          Icons.directions_car,
-          Colors.blue,
-        ),
-        _buildStatCard(
-          "Wallet",
-          "Revenus",
-          "${dashInfo.isNotEmpty ? dashInfo.first.sommePaiementRecette.toString() : 0} CDF",
-          Icons.wallet,
-          Colors.green,
-        ),
-        _buildStatCard(
-          "Nombre",
-          "Recharge",
-          "${dashInfo.isNotEmpty ? dashInfo.first.countRecharge.toString() : 0}",
-          Icons.mobile_friendly_outlined,
-          Colors.orange,
-        ),
-      ],
-    );
+        ? Center(child: CircularProgressIndicator())
+        : Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 1.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _buildSmallStatCard(
+                "Moyenne",
+                "Distance",
+                "${dashInfo.isNotEmpty ? dashInfo.first.sumDistanceCourseEncours.toString() : 0} Km",
+                Icons.directions_car,
+                Colors.blueAccent,
+              ),
+              _buildSmallStatCard(
+                "Total Mensuel ",
+                "Wallet Revenus",
+                "${dashInfo.isNotEmpty ? dashInfo.first.sommePaiementRecette.toString() : 0} CDF",
+                Icons.wallet_giftcard,
+                Colors.green,
+              ),
+              _buildSmallStatCard(
+                "montant actuel",
+                "Wallet solde",
+                "${dashInfo.isNotEmpty ? dashInfo.first.sommePaiementCommission! : 0} CDF",
+                Icons.account_balance_wallet,
+                Colors.orange,
+              ),
+            ],
+          ),
+        );
   }
 
-  // 🟢 1. Statistiques générales
-  Widget _buildStatCard(
+  
+
+// ✅ Stat Card
+ Widget _buildSmallStatCard(
     String title1,
-    String title,
+    String title2,
     String value,
     IconData icon,
     Color color,
   ) {
-    return Card(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      elevation: 4,
-      child: ResponsivePadding(
-        percentage: 0.046,
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 30),
-            SizedBox(height: 5),
-            Text(
-              title1,
-              maxLines: 2,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              title,
-              maxLines: 2,
-              style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              value,
-              maxLines: 4,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                
+    final theme = Theme.of(context);
+    return SizedBox(
+      width: 110, // 👈 taille réduite ici
+      child: Card(
+        elevation: 3,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: Padding(
+          padding: const EdgeInsets.all(8),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 20), // 👈 icône plus petite
+              SizedBox(height: 6),
+              Text(
+                title1,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
               ),
-            ),
-          ],
+              Text(
+                title2,
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 10, color: theme.hintColor),
+              ),
+              SizedBox(height: 6),
+              Text(
+                value,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                  color: color,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
+
 }

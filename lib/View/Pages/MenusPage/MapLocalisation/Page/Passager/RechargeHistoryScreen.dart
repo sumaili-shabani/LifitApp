@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:http/http.dart' as http;
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/WalletRechargePage.dart';
 
 class RechargeHistoryScreen extends StatefulWidget {
   const RechargeHistoryScreen({super.key});
@@ -77,135 +78,168 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            controller: searchController,
-            onChanged: filterTargets,
-            decoration: InputDecoration(
-              hintText: "Rechercher un paiement...",
-              fillColor: theme.hoverColor,
-              prefixIcon: Icon(Icons.search),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
+    return Scaffold(
+     floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Action à effectuer ici
+          showPayementBottomSheet(context);
+          
+        },
+        backgroundColor: Colors.green, // 👈 icône blanche
+        tooltip: "Recharge Wallet", // 👈 couleur verte
+        child: Icon(Icons.account_balance_wallet, color: Colors.white),
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: searchController,
+              onChanged: filterTargets,
+              decoration: InputDecoration(
+                hintText: "Rechercher un paiement...",
+                fillColor: theme.hoverColor,
+                prefixIcon: Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
               ),
             ),
           ),
-        ),
-        isLoading
-            ? Center(child: CircularProgressIndicator())
-            : Expanded(
-              child: ListView.builder(
-                itemCount: filteredPayments.length,
-                itemBuilder: (context, index) {
-                  var payment = filteredPayments[index];
-                  return Card(
-                    margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: NetworkImage(
-                          "${CallApi.fileUrl}/images/${payment['avatarChauffeur']}",
+          isLoading
+              ? Center(child: CircularProgressIndicator())
+              : Expanded(
+                child: ListView.builder(
+                  itemCount: filteredPayments.length,
+                  itemBuilder: (context, index) {
+                    var payment = filteredPayments[index];
+                    return Card(
+                      margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundImage: NetworkImage(
+                            "${CallApi.fileUrl}/images/${payment['avatarChauffeur']}",
+                          ),
+                        ),
+                        title: Text(
+                          payment["nameChauffeur"],
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(height: 5),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.payment,
+                                      size: 16,
+                                      color: Colors.green,
+                                    ),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      "${payment["montant_paie"]} ${payment["devise"]}",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_today,
+                                      size: 16,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      CallApi.getFormatedDate(
+                                        payment["date_paie"],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.confirmation_number,
+                                  size: 16,
+                                  color: Colors.blue,
+                                ),
+                                SizedBox(width: 5),
+                                Text("Code: ${payment["code"]}"),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.account_balance,
+                                  size: 16,
+                                  color: Colors.orange,
+                                ),
+                                SizedBox(width: 5),
+                                Text("Banque: ${payment["nom_banque"]}"),
+                              ],
+                            ),
+                            Row(
+                              children: [
+                                Icon(Icons.phone, size: 16, color: Colors.red),
+                                SizedBox(width: 5),
+                                Text(" ${payment["telephoneChauffeur"]}"),
+                              ],
+                            ),
+                          ],
+                        ),
+                        trailing: Icon(
+                          payment["statutPayement"] == 1
+                              ? Icons.check_circle
+                              : Icons.cancel,
+                          color:
+                              payment["statutPayement"] == 1
+                                  ? Colors.green
+                                  : Colors.red,
                         ),
                       ),
-                      title: Text(
-                        payment["nameChauffeur"],
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 5),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.payment,
-                                    size: 16,
-                                    color: Colors.green,
-                                  ),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    "${payment["montant_paie"]} ${payment["devise"]}",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.calendar_today,
-                                    size: 16,
-                                    color: Colors.grey,
-                                  ),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    CallApi.getFormatedDate(
-                                      payment["date_paie"],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.confirmation_number,
-                                size: 16,
-                                color: Colors.blue,
-                              ),
-                              SizedBox(width: 5),
-                              Text("Code: ${payment["code"]}"),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.account_balance,
-                                size: 16,
-                                color: Colors.orange,
-                              ),
-                              SizedBox(width: 5),
-                              Text("Banque: ${payment["nom_banque"]}"),
-                            ],
-                          ),
-                          Row(
-                            children: [
-                              Icon(Icons.phone, size: 16, color: Colors.red),
-                              SizedBox(width: 5),
-                              Text(" ${payment["telephoneChauffeur"]}"),
-                            ],
-                          ),
-                        ],
-                      ),
-                      trailing: Icon(
-                        payment["statutPayement"] == 1
-                            ? Icons.check_circle
-                            : Icons.cancel,
-                        color:
-                            payment["statutPayement"] == 1
-                                ? Colors.green
-                                : Colors.red,
-                      ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-      ],
+        ],
+      ),
+    );
+  }
+
+  //appel de la fonction de paiement
+  void showPayementBottomSheet(
+    BuildContext context
+  ) {
+    showModalBottomSheet(
+      isScrollControlled: true,
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder:
+          (context) => WalletRechargePage(
+            onSubmitComment: () {
+              // print("idcourse: ${course.id}");
+
+              // Navigator.pop(context); // Ferme le BottomSheet
+            },
+          ),
     );
   }
 }

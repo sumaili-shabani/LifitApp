@@ -10,6 +10,7 @@ import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Pas
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/RechargeHistoryScreen.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/RetraitCommissionScreem.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/TargetListScreen.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/WalletRechargePage.dart';
 
 class InformationMenuScreem extends StatefulWidget {
   const InformationMenuScreem({super.key});
@@ -55,12 +56,17 @@ class _InformationMenuScreemState extends State<InformationMenuScreem> {
               },
             ),
             idRole == 3
-                ? IconButton(
-                  icon: Icon(Icons.credit_card, color: Colors.white),
-                  tooltip: "Voir les statistiques journalières",
-                  onPressed: () {
-                    showFinanceBottomSheet(context, idRole);
-                  },
+                ? Row(
+                  children: [
+                    IconButton(
+                      icon: Icon(Icons.attach_money, color: Colors.white),
+                      tooltip: "Voir les statistiques journalières",
+                      onPressed: () {
+                        showFinanceBottomSheet(context, idRole);
+                      },
+                    ),
+                    
+                  ],
                 )
                 : SizedBox(),
           ],
@@ -89,6 +95,7 @@ class _InformationMenuScreemState extends State<InformationMenuScreem> {
                   text: "Paiement Commission",
                   icon: Icon(Icons.credit_card, size: 17),
                 ),
+                
               ],
             ),
             Expanded(
@@ -100,6 +107,7 @@ class _InformationMenuScreemState extends State<InformationMenuScreem> {
                       : PassagerHistoriqueCourse(),
 
                   RetraitCommissionScreem(),
+                 
                 ],
               ),
             ),
