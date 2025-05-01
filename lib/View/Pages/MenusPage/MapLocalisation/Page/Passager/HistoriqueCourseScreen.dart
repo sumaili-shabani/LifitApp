@@ -10,6 +10,13 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/InformationMenu.dart';
 
+//impression du recu
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:qr_flutter/qr_flutter.dart';
+import 'dart:typed_data';
+import 'package:pdf/pdf.dart';
+
 class HistoriqueCourseScreen extends StatefulWidget {
   const HistoriqueCourseScreen({super.key});
 
@@ -185,7 +192,21 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
     }
   }
 
- 
+  pw.Widget infoRow(String label, String value) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.symmetric(vertical: 2),
+      child: pw.Row(
+        mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        children: [
+          pw.Text(
+            "$label :",
+            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+          ),
+          pw.Text(value),
+        ],
+      ),
+    );
+  }
 
   Widget buildCommissionCard(String title, List<dynamic> items, IconData icon) {
     return Card(
@@ -273,8 +294,6 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
 
   //fin
 
-
-
   /*
   *
   *==================================
@@ -300,7 +319,10 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: CustomAppBar(
-        title: Text("Historique des courses", style: TextStyle(color: Colors.white),),
+        title: Text(
+          "Historique des courses",
+          style: TextStyle(color: Colors.white),
+        ),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
@@ -316,7 +338,7 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
             tooltip: "Voir plus d'informations",
             color: Colors.white,
             onPressed: () {
-               Navigator.of(
+              Navigator.of(
                 context,
               ).push(AnimatedPageRoute(page: InformationMenuScreem()));
             },
@@ -370,9 +392,9 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
                               !course.nomTypeCourse!.toLowerCase().contains(
                                 searchQuery,
                               ) &&
-                              !course.nomCategorieVehicule!.toLowerCase().contains(
-                                searchQuery,
-                              ) &&
+                              !course.nomCategorieVehicule!
+                                  .toLowerCase()
+                                  .contains(searchQuery) &&
                               !course.montantPaie!
                                   .toString()
                                   .toLowerCase()
@@ -412,7 +434,7 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
                                             ),
                                           ),
                                           Text(
-                                            "${course.calculate == 1 ?'Distance:':''}${course.distance!.toStringAsFixed(2)} ${course.calculate == 1 ? 'Km' : 'J/H'}➡️${course.timeEst!}",
+                                            "${course.calculate == 1 ? 'Distance:' : ''}${course.distance!.toStringAsFixed(2)} ${course.calculate == 1 ? 'Km' : 'J/H'}➡️${course.timeEst!}",
                                             style: TextStyle(
                                               color: Colors.grey,
                                               fontSize: 11,
@@ -421,7 +443,10 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
 
                                           Row(
                                             children: [
-                                              Icon(Icons.car_repair, color: Colors.grey, size: 15,
+                                              Icon(
+                                                Icons.car_repair,
+                                                color: Colors.grey,
+                                                size: 15,
                                               ),
                                               Text(
                                                 " ${course.nomCategorieVehicule!}",
@@ -481,22 +506,294 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
                                   SizedBox(height: 10),
                                   Row(
                                     children: [
-                                      Icon(
-                                        Icons.calendar_month,
-                                        color: theme.hintColor,
-                                      ),
-                                      SizedBox(width: 5),
                                       Expanded(
-                                        child: Text(
-                                          "Date : ${CallApi.getFormatedDate(course.datePaie.toString())}",
-                                          style: TextStyle(
-                                            color: theme.hintColor,
-                                          ),
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.calendar_month,
+                                              color: theme.hintColor,
+                                            ),
+                                            SizedBox(width: 5),
+                                            Expanded(
+                                              child: Text(
+                                                "Date : ${CallApi.getFormatedDate(course.datePaie.toString())}",
+                                                style: TextStyle(
+                                                  color: theme.hintColor,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+
+                                      Expanded(
+                                        child: Row(
+                                          children: [
+                                            TextButton.icon(
+                                              icon: Icon(
+                                                Icons.print,
+                                                color: theme.hintColor,
+                                              ),
+                                              onPressed: () {
+                                                Printing.layoutPdf(
+                                                  onLayout: (
+                                                    PdfPageFormat format,
+                                                  ) async {
+                                                    final pdf = pw.Document();
+
+                                                    final qrData =
+                                                        'Course: ${course.codeCourse} | Montant: ${course.montantPaie} CDF';
+
+                                                    pdf.addPage(
+                                                      pw.Page(
+                                                        pageFormat: format,
+                                                        margin:
+                                                            const pw.EdgeInsets.all(
+                                                              24,
+                                                            ),
+                                                        build: (
+                                                          pw.Context context,
+                                                        ) {
+                                                          return pw.Center(
+                                                            child: pw.Column(
+                                                              mainAxisSize:
+                                                                  pw
+                                                                      .MainAxisSize
+                                                                      .min,
+                                                              crossAxisAlignment:
+                                                                  pw
+                                                                      .CrossAxisAlignment
+                                                                      .center,
+                                                              children: [
+                                                                // EN-TÊTE
+                                                                pw.Container(
+                                                                  padding:
+                                                                      const pw.EdgeInsets.symmetric(
+                                                                        vertical:
+                                                                            10,
+                                                                        horizontal:
+                                                                            24,
+                                                                      ),
+                                                                  decoration: pw.BoxDecoration(
+                                                                    color:
+                                                                        PdfColors
+                                                                            .deepPurple,
+                                                                    borderRadius:
+                                                                        pw.BorderRadius.circular(
+                                                                          30,
+                                                                        ),
+                                                                  ),
+                                                                  child: pw.Text(
+                                                                    "SwiftRide",
+                                                                    style: pw.TextStyle(
+                                                                      fontSize:
+                                                                          26,
+                                                                      color:
+                                                                          PdfColors
+                                                                              .white,
+                                                                      fontWeight:
+                                                                          pw.FontWeight.bold,
+                                                                    ),
+                                                                  ),
+                                                                ),
+                                                                pw.SizedBox(
+                                                                  height: 10,
+                                                                ),
+                                                                pw.Text(
+                                                                  "Reçu de course",
+                                                                  style: pw.TextStyle(
+                                                                    fontSize:
+                                                                        18,
+                                                                    color:
+                                                                        PdfColors
+                                                                            .grey700,
+                                                                  ),
+                                                                ),
+                                                               
+                                                                pw.SizedBox(
+                                                                  height: 20,
+                                                                ),
+
+                                                                // INFO CARTE
+                                                                pw.Container(
+                                                                  width: 400,
+                                                                  padding:
+                                                                      const pw.EdgeInsets.all(
+                                                                        16,
+                                                                      ),
+                                                                  decoration: pw.BoxDecoration(
+                                                                    color:
+                                                                        PdfColors
+                                                                            .grey100,
+                                                                    borderRadius:
+                                                                        pw.BorderRadius.circular(
+                                                                          12,
+                                                                        ),
+                                                                    boxShadow: [
+                                                                      pw.BoxShadow(
+                                                                        blurRadius:
+                                                                            2,
+                                                                        spreadRadius:
+                                                                            1,
+                                                                        color:
+                                                                            PdfColors.grey400,
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                  child: pw.Column(
+                                                                    crossAxisAlignment:
+                                                                        pw
+                                                                            .CrossAxisAlignment
+                                                                            .start,
+                                                                    children: [
+                                                                      infoRow(
+                                                                        "Code course",
+                                                                        course
+                                                                            .codeCourse!,
+                                                                      ),
+                                                                      infoRow(
+                                                                        "Type de course",
+                                                                        course
+                                                                            .nomTypeCourse!,
+                                                                      ),
+                                                                      infoRow(
+                                                                        "Distance",
+                                                                        "${course.distance} km - ${course.timeEst}",
+                                                                      ),
+                                                                      pw.SizedBox(
+                                                                        height:
+                                                                            4,
+                                                                      ),
+                                                                      pw.Text(
+                                                                        "Départ : ${course.nameDepart}",
+                                                                      ),
+                                                                      pw.Text(
+                                                                        "Destination : ${course.nameDestination}",
+                                                                      ),
+                                                                      pw.SizedBox(
+                                                                        height:
+                                                                            4,
+                                                                      ),
+                                                                      infoRow(
+                                                                        "Paiement",
+                                                                        "${course.designation} / ${course.nomBanque}",
+                                                                      ),
+                                                                      pw.Divider(),
+                                                                      pw.Container(
+                                                                        padding:
+                                                                            const pw.EdgeInsets.all(
+                                                                              8,
+                                                                            ),
+                                                                        decoration: pw.BoxDecoration(
+                                                                          color:
+                                                                              PdfColors.green100,
+                                                                          borderRadius: pw
+                                                                              .BorderRadius.circular(
+                                                                            8,
+                                                                          ),
+                                                                        ),
+                                                                        child: pw.Row(
+                                                                          mainAxisAlignment:
+                                                                              pw.MainAxisAlignment.spaceBetween,
+                                                                          children: [
+                                                                            pw.Text(
+                                                                              "Montant payé :",
+                                                                              style: pw.TextStyle(
+                                                                                fontSize:
+                                                                                    14,
+                                                                                fontWeight:
+                                                                                    pw.FontWeight.bold,
+                                                                              ),
+                                                                            ),
+                                                                            pw.Text(
+                                                                              "${course.montantPaie} CDF",
+                                                                              style: pw.TextStyle(
+                                                                                fontSize:
+                                                                                    16,
+                                                                                fontWeight:
+                                                                                    pw.FontWeight.bold,
+                                                                                color:
+                                                                                    PdfColors.green800,
+                                                                              ),
+                                                                            ),
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                    ],
+                                                                  ),
+                                                                ),
+
+                                                                pw.SizedBox(
+                                                                  height: 30,
+                                                                ),
+
+                                                                // QR CODE
+                                                                pw.Container(
+                                                                  decoration: pw.BoxDecoration(
+                                                                    border: pw
+                                                                        .Border.all(
+                                                                      color:
+                                                                          PdfColors
+                                                                              .deepPurple,
+                                                                    ),
+                                                                    borderRadius:
+                                                                        pw.BorderRadius.circular(
+                                                                          12,
+                                                                        ),
+                                                                  ),
+                                                                  padding:
+                                                                      const pw.EdgeInsets.all(
+                                                                        8,
+                                                                      ),
+                                                                  child: pw.BarcodeWidget(
+                                                                    barcode:
+                                                                        pw.Barcode.qrCode(),
+                                                                    data:
+                                                                        qrData,
+                                                                    width: 130,
+                                                                    height: 130,
+                                                                  ),
+                                                                ),
+
+                                                                pw.SizedBox(
+                                                                  height: 25,
+                                                                ),
+
+                                                                // FOOTER
+                                                                pw.Text(
+                                                                  "Merci d'avoir utilisé SwiftRide",
+                                                                  style: pw.TextStyle(
+                                                                    fontSize:
+                                                                        12,
+                                                                    color:
+                                                                        PdfColors
+                                                                            .grey700,
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          );
+                                                        },
+                                                      ),
+                                                    );
+
+                                                    return pdf.save();
+                                                  },
+                                                );
+                                              },
+                                              label: Text(
+                                                "Imprimer reçu",
+                                                style: TextStyle(
+                                                  color: theme.hintColor,
+                                                ),
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
                                     ],
                                   ),
-                                  
+                                  SizedBox(height: 10),
                                 ],
                               ),
                             ),
