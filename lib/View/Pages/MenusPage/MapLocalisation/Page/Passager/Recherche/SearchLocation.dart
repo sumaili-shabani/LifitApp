@@ -11,6 +11,7 @@ import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/button.dart';
 import 'package:lifti_app/Controller/NotificationService.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/CarteSelectionPosition.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/CategoryVehicleScreen.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/CourseSelectionBottomSheet.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/TaxiCommandeScreen.dart';
@@ -1548,6 +1549,129 @@ class _SearchLocationState extends State<SearchLocation> {
     }
   }
 
+  /*
+  *
+  *============================================================================================
+  * vérification de la position si le chauffeurest dans la ville que l'application fonctionne
+  *============================================================================================
+  *
+  */
+  bool showHotspotCard = false;
+  bool estDansKinshasa(LatLng position) {
+    const kinshasaCenter = LatLng(-4.325, 15.3222);
+    double distance = Geolocator.distanceBetween(
+      position.latitude,
+      position.longitude,
+      kinshasaCenter.latitude,
+      kinshasaCenter.longitude,
+    );
+    return distance <= 20000; // 20 km
+  }
+
+  void verifierPositionChauffeur() async {
+    // Suppose que chauffeurPosition est déjà défini
+    if (!estDansKinshasa(passagerConnectedPosition)) {
+      // Affiche une boîte de dialogue ou un snack
+      showDialog(
+        context: context,
+        builder:
+            (ctx) => AlertDialog(
+              title: Text("Hors de Kinshasa"),
+              content: Text(
+                "Vous êtes en dehors de Kinshasa. Veuillez choisir un lieu manuellement.",
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    _selectLocationManually();
+                  },
+                  child: Text("Choisir sur carte"),
+                ),
+              ],
+            ),
+      );
+    }
+  }
+
+  void _selectLocationManually() async {
+    LatLng? positionSelectionnee = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => CarteSelectionPosition()),
+    );
+
+    if (positionSelectionnee != null) {
+      setState(() {
+        passagerConnectedPosition = positionSelectionnee;
+      });
+
+      print("positionSelectionnee: $positionSelectionnee");
+
+      // 🔁 Envoi vers l'API
+      await envoyerPositionServeur(positionSelectionnee);
+
+      setState(() {
+        markers.add(
+          Marker(
+            markerId: MarkerId('chauffeur'),
+            position: positionSelectionnee,
+            infoWindow: InfoWindow(title: 'Chauffeur'),
+            icon: BitmapDescriptor.defaultMarkerWithHue(
+              BitmapDescriptor
+                  .hueGreen, // Icône par défaut si le chargement échoue
+            ),
+          ),
+        );
+      });
+    }
+  }
+
+  Future<void> envoyerPositionServeur(LatLng pos) async {
+    int? userId =
+        await CallApi.getUserId(); // Récupérer l'ID de l'utilisateur connecté
+    if (userId == null) {
+      throw Exception('Utilisateur non connecté');
+    }
+    Map<String, dynamic> svData = {
+      "latUser": pos.latitude.toString(),
+      "lonUser": pos.longitude.toString(),
+      "id": userId.toString(),
+    };
+    await CallApi.postData("chauffeur_mobilechangePosition", svData);
+
+    setState(() {
+      markers.clear();
+      circles.clear();
+      polylines.clear();
+      passagers.clear();
+      showHotspotCard = false;
+    });
+
+    fetchNotifications();
+  }
+
+  LatLng centerGoma = LatLng(-1.6708, 29.2218);
+  LatLng centerKinshasa = LatLng(-4.325, 15.3222);
+  bool estDansZoneKinshasa(LatLng positionActuelle) {
+    double distance = Geolocator.distanceBetween(
+      positionActuelle.latitude,
+      positionActuelle.longitude,
+      centerGoma.latitude,
+      centerGoma.longitude,
+    );
+
+    return distance <= 20000; // 20 km autour du centre
+  }
+
+  /*
+  *
+  *============================================================
+  * Fin vérification de la position si 
+  * le chauffeurest dans la ville que l'application fonctionne
+  *============================================================
+  *
+  */
+
   @override
   void initState() {
     super.initState();
@@ -1584,7 +1708,6 @@ class _SearchLocationState extends State<SearchLocation> {
     final theme = Theme.of(context);
     return Scaffold(
       appBar: CustomAppBar(
-        
         title: Text(
           'Planifier votre course',
           style: TextStyle(color: Colors.white),
@@ -2020,6 +2143,84 @@ class _SearchLocationState extends State<SearchLocation> {
                     ),
                   ),
                   //fin boutton
+
+                  // la recherche de lieu
+                  
+                  // Tester le message du lieu
+                  Positioned(
+                    bottom: 20,
+                    left: 55,
+                    right: 55,
+                    child:
+                        passagerConnectedPosition == null
+                            ? CircularProgressIndicator()
+                            : !estDansZoneKinshasa(passagerConnectedPosition!)
+                            ? Container(
+                              padding: EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.redAccent.withOpacity(0.8),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Column(
+                                children: [
+                                  ElevatedButton.icon(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.green,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      padding: EdgeInsets.symmetric(
+                                        horizontal: 20,
+                                        vertical: 12,
+                                      ),
+                                    ),
+                                    onPressed: () {
+                                      // Fonction pour que le chauffeur sélectionne un lieu s’il n’est pas à Goma
+                                      _selectLocationManually();
+                                    },
+                                    icon: Icon(
+                                      Icons.my_location,
+                                      color: Colors.white,
+                                    ),
+                                    label: Text("Sélectionner ma position"),
+                                  ),
+                                  SizedBox(height: 10),
+                                  Text(
+                                    "🚫 L’application Lifti ne supporte pas votre localisation actuelle.",
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                            )
+                            : searchEtat || showHotspotCard
+                            ? SizedBox()
+                            : ElevatedButton.icon(
+                              onPressed: () {
+                                // Naviguer vers sélection destination
+                                setState(() {
+                                  searchEtat = true;
+                                });
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.green,
+                                padding: EdgeInsets.symmetric(
+                                  vertical: 14,
+                                  horizontal: 20,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(30),
+                                ),
+                              ),
+                              icon: Icon(Icons.location_on),
+                              label: Text("Où allez-vous ?"),
+                            ),
+                  ),
+
+                  // fin zone de recherche de lieu
                 ],
               ),
     );

@@ -67,6 +67,9 @@ dependencies:
   pusher_channels_flutter: ^2.2.2
   pin_code_fields: ^8.0.0
   intl_phone_field: ^3.1.0
+  pdf: ^3.10.7
+  printing: ^5.12.0
+  qr_flutter: ^4.1.0
   # laravel_echo_null: ^0.1.1
   # laravel_flutter_pusher: ^0.0.4
   

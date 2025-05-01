@@ -1,7 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lifti_app/Api/ConfigurationApp.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
@@ -13,6 +16,8 @@ import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Com
 import 'package:lifti_app/core/theme/app_theme.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'package:http/http.dart' as http;
+
 class CoursesEnCoursChauffeur extends StatefulWidget {
   const CoursesEnCoursChauffeur({super.key});
 
@@ -23,6 +28,7 @@ class CoursesEnCoursChauffeur extends StatefulWidget {
 
 class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
   TextEditingController searchController = TextEditingController();
+  late LatLng chauffeurPosition; // Position actuelle du chauffeur
 
   List<CourseInfoPassagerModel> notifications = [];
   List<ChauffeurDashBoardModel> dashInfo = [];
@@ -30,6 +36,18 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
   String searchQuery = "";
   bool isLoading = true;
   bool partageWhatsapp = false;
+
+  Future<void> getCurrentPosition() async {
+    Position position = await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.high,
+    );
+    setState(() {
+      chauffeurPosition = LatLng(
+        position.latitude,
+        position.longitude,
+      ); // Met à jour la position du chauffeur
+    });
+  }
 
   Future<void> fetchNotifications() async {
     int? userId =
@@ -250,7 +268,6 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
   }
   //fin position actuelle to map
 
-   
   //position actuelle to map
   void showDestinationMapBottomSheet(
     BuildContext context,
@@ -378,7 +395,7 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
                             ],
                           ),
                           SizedBox(height: 5),
-                          Divider(color: Colors.grey,),
+                          Divider(color: Colors.grey),
                           SizedBox(height: 5),
 
                           // mes ajouts
@@ -455,14 +472,16 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   SizedBox(
-                                    width: MediaQuery.of(context).size.width * 0.45,
+                                    width:
+                                        MediaQuery.of(context).size.width *
+                                        0.45,
                                     child: Text(
-                                    _getStatusMessage(course.status!),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: _getStatusColor(course.status!),
+                                      _getStatusMessage(course.status!),
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: _getStatusColor(course.status!),
+                                      ),
                                     ),
-                                  ),
                                   ),
                                   SizedBox(width: 10),
 
@@ -616,6 +635,93 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
         );
   }
 
+  updateEtatCourse(
+    CourseInfoPassagerModel course,
+    int courseId,
+    String courseStatus,
+    int refPassager,
+    int refChauffeur,
+  ) async {
+    try {
+      // Afficher le chargement
+      EasyLoading.show(
+        status: 'Opération en cours...',
+        maskType: EasyLoadingMaskType.black,
+      );
+      String tempsMax = course.timeEst.toString();
+      double distance = course.distance!;
+      int montant = course.montantCourse!;
+      String durationPlus = CallApi.limitText(tempsMax, 2);
+      String dateLimiteCourse = CallApi.getCurrentDateTimeWithOffset(
+        double.parse(durationPlus),
+      );
+
+      double latDepart = course.latDepart!;
+      double lonDepart = course.lonDepart!;
+
+      double distanceNouvelle = 0.0;
+
+      await getCurrentPosition();
+      if (chauffeurPosition != null || chauffeurPosition != "") {
+        double distanceNouvelle = Geolocator.distanceBetween(
+          latDepart,
+          lonDepart,
+          chauffeurPosition.latitude,
+          chauffeurPosition.longitude,
+        );
+
+        double distanceKm = distanceNouvelle / 1000;
+        double estimatedTime = (distanceKm / 40) * 60;
+        double money =
+            (double.parse(course.prixCourse.toString()) *
+                double.parse(distanceKm.toStringAsFixed(2)));
+        double montantCourse = double.parse(money.toStringAsFixed(0));
+
+        Map<String, dynamic> svData = {
+          "id": courseId,
+          "courseStatus": courseStatus,
+          "etat": courseStatus,
+          "refPassager": course.refPassager!,
+          "refChauffeur": course.refChauffeur!,
+          "distance": distanceKm.toStringAsFixed(2),
+          "dateLimiteCourse": dateLimiteCourse,
+          "montant_course": montantCourse,
+        };
+
+        print("svData: $svData");
+
+        // Envoi des données à l'API
+        final response = await CallApi.insertData(
+          endpoint: "updateEtate_course_mobile",
+          data: svData,
+        );
+
+        String message = response['message'].toString();
+
+        if (message.isNotEmpty) {
+          print("✅ Réponse API : $response");
+          EasyLoading.showSuccess(message);
+          showSnackBar(context, message, 'success');
+        } else {
+          print("⚠️ Message vide reçu !");
+          EasyLoading.showSuccess("Opération reussie avec succès!!!");
+          // EasyLoading.showError("Erreur lors de l'envoi !");
+        }
+
+        // print("svData: $svData");
+
+        // print(
+        //   "dateLimiteCourse:$montantCourse CDF pour  ${distanceKm.toStringAsFixed(2)} km/ ${estimatedTime.toStringAsFixed(2)} min /=> $tempsMax min = $montant CDF date:$dateLimiteCourse",
+        // );
+      }
+    } catch (e) {
+      print("❌ Erreur API : $e");
+      // EasyLoading.showError("Une erreur s'est produite !");
+    } finally {
+      EasyLoading.dismiss();
+    }
+  }
+
   Widget buildCourseButtons(
     CourseInfoPassagerModel course,
     int courseId,
@@ -688,13 +794,13 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
           Row(
             children: [
               ElevatedButton.icon(
-                onPressed: () {
-                  checkStatutCourse(
+                onPressed: () async {
+                  updateEtatCourse(
+                    course,
                     courseId,
                     courseStatus,
                     course.refPassager!,
                     course.refChauffeur!,
-                    "checkEtat_DemarerCourse",
                   );
                 },
                 style: ElevatedButton.styleFrom(
@@ -735,7 +841,15 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
               SizedBox(width: 5),
               ElevatedButton.icon(
                 onPressed: () {
-                  deleteData(course.id!, course.refChauffeur!);
+                  // deleteData(course.id!, course.refChauffeur!);
+                  updateEtatCourse(
+                    course,
+                    courseId,
+                    courseStatus,
+                    course.refPassager!,
+                    course.refChauffeur!,
+                  );
+
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: ConfigurationApp.dangerColor,
@@ -801,6 +915,4 @@ class StatCard extends StatelessWidget {
       ),
     );
   }
-
- 
 }
