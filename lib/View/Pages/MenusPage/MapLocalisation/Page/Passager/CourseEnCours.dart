@@ -3,9 +3,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Controller/ApiService.dart';
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/CarteCourseSelectionPosition.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/Commentaire.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/DestinationCourseOnMap.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/PaymentScreen.dart';
@@ -215,11 +217,10 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                   color: _getStatusColor(course.status!),
                                 ),
                               ),
-                            
 
                               Column(
                                 children: [
-                                    SizedBox(width: 10),
+                                  SizedBox(width: 10),
                                   course.status.toString() == '3'
                                       ? TextButton(
                                         onPressed: () {
@@ -243,12 +244,48 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                         ),
                                       )
                                       : SizedBox(),
-                                ]
+                                ],
                               ),
                             ],
                           ),
                         ],
                       ),
+
+                      course.status.toString() == '2'
+                          ? Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(Icons.amp_stories_sharp, size: 16,),
+                                  SizedBox(width: 2,),
+                                  Text("Y-at-il des arrets?"),
+                                ],
+                              ),
+                              Row(
+                                children: [
+                                  TextButton(
+                                    onPressed: () {
+                                       Navigator.of(context).push(
+                                        AnimatedPageRoute(
+                                          page: CarteCourseSelectionPosition(
+                                            course: course,
+                                          ),
+                                        ),
+                                      );
+                                      
+
+                                    },
+                                    child: Text(
+                                      "| Ajouter les arrets",
+                                      style: TextStyle(color: Colors.blue),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          )
+                          : SizedBox(),
 
                       SizedBox(height: 1),
 
@@ -372,6 +409,9 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
     );
   }
   //fin destination de la course
+
+  
+ 
 
   void showRatingBottomSheet(
     BuildContext context,

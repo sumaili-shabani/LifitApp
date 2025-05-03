@@ -81,6 +81,7 @@ class CourseInfoPassagerModel {
   final String? timePlus;
   final double? taxeSuplementaire;
   final int? rating;
+  final int? arret;
 
   CourseInfoPassagerModel({
     this.id,
@@ -165,6 +166,7 @@ class CourseInfoPassagerModel {
     this.taxeSuplementaire,
     this.timePlus,
     this.rating,
+    this.arret,
   });
 
   factory CourseInfoPassagerModel.fromMap(
@@ -282,6 +284,7 @@ class CourseInfoPassagerModel {
     dateLimiteCourse: json["dateLimiteCourse"],
 
     active: json["active"],
+    arret: json["arret"],
   );
 
   Map<String, dynamic> toMap() => {

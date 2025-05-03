@@ -10,13 +10,13 @@ android {
     ndkVersion = "29.0.13113456"
 
     compileOptions {
-        isCoreLibraryDesugaringEnabled = true  // Syntaxe Kotlin DSL correcte
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"  // Changé pour correspondre à VERSION_1_8
+        jvmTarget = "1.8"
     }
 
     defaultConfig {
@@ -27,9 +27,18 @@ android {
         versionName = flutter.versionName
     }
 
+    // 🔐 Ajout de la config de signature "debug"
+    signingConfigs {
+        getByName("debug") {
+            // Optionnel : tu peux personnaliser ici si tu veux
+        }
+    }
+
     buildTypes {
-        release {
+        getByName("release") {
             signingConfig = signingConfigs.getByName("debug")
+            isMinifyEnabled = false
+            isShrinkResources = false
         }
     }
 }

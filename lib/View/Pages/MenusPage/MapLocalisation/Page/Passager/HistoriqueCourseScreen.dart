@@ -658,7 +658,7 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
                                                                       ),
                                                                       infoRow(
                                                                         "Distance",
-                                                                        "${course.distance} km - ${course.timeEst}",
+                                                                        "${course.distance!.toStringAsFixed(2)} km - ${course.timeEst}",
                                                                       ),
                                                                       pw.SizedBox(
                                                                         height:

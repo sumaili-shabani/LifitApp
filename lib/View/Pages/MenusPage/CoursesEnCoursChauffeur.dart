@@ -105,6 +105,8 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
     }
   }
 
+
+
   /// 🔹 **Méthode DELETE**
   Future<void> deleteData(int id, int refChauffeur) async {
     try {
@@ -686,6 +688,7 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
           "distance": distanceKm.toStringAsFixed(2),
           "dateLimiteCourse": dateLimiteCourse,
           "montant_course": montantCourse,
+          "refVehicule": course.refVehicule!
         };
 
         print("svData: $svData");
@@ -801,6 +804,7 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
                     courseStatus,
                     course.refPassager!,
                     course.refChauffeur!,
+                    
                   );
                 },
                 style: ElevatedButton.styleFrom(

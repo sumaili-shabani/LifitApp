@@ -28,7 +28,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
               onLayout: (PdfPageFormat format) async {
                 final pdf = pw.Document();
 
-                final qrData = 'Course: $courseCode | Montant: $amount';
+                final qrData = 'Course: $courseCode | Montant: $amount CDF';
 
                 pdf.addPage(
                   pw.Page(
@@ -47,7 +47,7 @@ class _ReceiptPageState extends State<ReceiptPage> {
                           pw.Text("Reçu de course"),
                           pw.Divider(),
                           pw.Text("Code de la course : $courseCode"),
-                          pw.Text("Montant payé : $amount"),
+                          pw.Text("Montant payé : $amount CDF"),
                           pw.SizedBox(height: 20),
                           pw.Center(
                             child: pw.Container(
