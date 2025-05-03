@@ -212,7 +212,11 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
                       widget.categorieVehiculeInfo,
                       widget.refCategorie,
                       widget.isLocation,
-                      chauffeur["name"]
+                      chauffeur["name"],
+                      chauffeur['restePlace'],
+
+
+
                     ),
               );
             }).toSet();
@@ -249,7 +253,8 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
     Map<String, dynamic> categorieVehiculeInfo,
     int refCategorie,
     bool isLocation,
-    String nameVehicule
+    String nameVehicule,
+    int restePlace,
   ) {
     showModalBottomSheet(
       context: context,
@@ -269,6 +274,7 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
             },
             isLocation: isLocation,
             nameVehicule: nameVehicule,
+            restePlace: restePlace
           ),
     );
   }
@@ -372,7 +378,8 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
                 widget.categorieVehiculeInfo,
                 widget.refCategorie,
                 widget.isLocation,
-                ""
+                "",
+                0
               );
             },
             icon: Icon(Icons.local_taxi, color: Colors.white),

@@ -10,6 +10,7 @@ import 'core/di/service_locator.dart';
 import 'app.dart';
 import 'presentation/widgets/theme_switch.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart'; // Ajout de EasyLoading
+import 'package:permission_handler/permission_handler.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,12 +26,19 @@ void main() async {
   // Initialisation des notifications
   await NotificationService.initialize();
   // fin push notification
+  // autorisation de notification
+  await requestNotificationPermission();
+  // fin autorisation de notification
 
   runApp(const ProviderScope(child: App()));
   configLoading(); // Configurer EasyLoading
 }
 
-
+Future<void> requestNotificationPermission() async {
+  if (await Permission.notification.isDenied) {
+    await Permission.notification.request();
+  }
+}
 
 void configLoading() {
   EasyLoading.instance

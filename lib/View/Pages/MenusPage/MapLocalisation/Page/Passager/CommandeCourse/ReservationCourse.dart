@@ -20,6 +20,7 @@ class ReservationTaxi extends StatefulWidget {
   final Function(Map<String, dynamic>) onCategorySelected; // Callback function
   final bool isLocation;
   final String nameVehicule;
+  final int restePlace;
   const ReservationTaxi({
     super.key,
     required this.typeCourses,
@@ -29,6 +30,7 @@ class ReservationTaxi extends StatefulWidget {
     required this.onCategorySelected,
     required this.isLocation,
     required this.nameVehicule,
+    required this.restePlace,
   });
 
   @override
@@ -753,6 +755,14 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                     "Places",
                                     "${category["nbrPlace"]} passagers",
                                   ),
+
+                                   _buildInfoRow(
+                                    Icons.sensor_occupied_rounded,
+                                    "Places occupées",
+                                    "${category["restePlace"]} ",
+                                  ),
+
+                                  
 
                                   // Type de carburant
                                   _buildInfoRow(

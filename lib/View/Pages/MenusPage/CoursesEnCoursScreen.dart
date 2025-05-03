@@ -58,6 +58,8 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
     }
   }
 
+  
+
   Timer? _timer;
   @override
   void initState() {
