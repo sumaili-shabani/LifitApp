@@ -11,6 +11,7 @@ import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Controller/ApiService.dart';
 import 'package:lifti_app/Model/ChauffeurDashBoardModel.dart';
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
+import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/ArretListWidget.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/DestinationCourseOnMap.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/PositionPassagerOnMap.dart';
 import 'package:lifti_app/core/theme/app_theme.dart';
@@ -152,6 +153,29 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
     _timer = Timer.periodic(Duration(seconds: 30), (timer) {
       fetchNotifications();
     });
+  }
+
+
+  void showArretBottomSheet(BuildContext context, CourseInfoPassagerModel course) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
+      ),
+      builder:
+          (context) => DraggableScrollableSheet(
+            expand: false,
+            initialChildSize: 0.6,
+            maxChildSize: 0.95,
+            minChildSize: 0.3,
+            builder:
+                (_, __) => ArretListWidget(
+                  course: course,
+                  etatSuppression: false,
+                ),
+          ),
+    );
   }
 
   @override
@@ -460,6 +484,7 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
                           SizedBox(height: 2),
                           // fin ajouts
 
+
                           // Affichage du status avec icône
                           Row(
                             children: [
@@ -492,7 +517,7 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
                                         onPressed: () {
                                           showMapBottomSheet(context, course);
                                         },
-                                        child: Text("| Voir sa position"),
+                                        child: Text("| Voir sa position", style: TextStyle(color: Colors.blue),),
                                       )
                                       : course.status.toString() == '0' ||
                                           course.status.toString() == '1' ||
@@ -515,6 +540,40 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
                               ),
                             ],
                           ),
+
+                          // arret des course
+                          course.status.toString() == '2' && course.arret==1
+                              ? Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(Icons.amp_stories_sharp, size: 16),
+                                      SizedBox(width: 2),
+                                      Text("Course avec arrets"),
+                                    ],
+                                  ),
+                                  Row(
+                                    children: [
+                                      TextButton.icon(
+                                        icon: Icon(Icons.location_on),
+                                        onPressed: () {
+                                          // print("Voir arret!!!");
+                                          showArretBottomSheet(context, course);
+                                        },
+                                        label: Text(
+                                          "Voir les arrets",
+                                          style: TextStyle(),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              )
+                              : SizedBox(),
+
+                          // fin arret course
 
                           SizedBox(height: 1),
 
@@ -564,21 +623,17 @@ class _CoursesEnCoursChauffeurState extends State<CoursesEnCoursChauffeur> {
                                     ],
                                   ),
 
-                                  course.status.toString() == '2'
-                                      ? TextButton.icon(
-                                        onPressed: () {
-                                          showMapBottomSheet(context, course);
-                                        },
-                                        icon: Icon(Icons.map),
-                                        label: Text("Voir sa position"),
-                                      )
-                                      : SizedBox(),
+                                  
+
+
                                 ],
                               ),
                             ],
                           ),
                           // menu de boutton
                           SizedBox(height: 1),
+
+                          
 
                           // Boutons Annuler et Partager
                           Row(
