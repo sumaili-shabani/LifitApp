@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
+import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Model/ChauffeurDashBoardModel.dart';
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
@@ -58,6 +59,30 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
     }
   }
 
+   Future<void> statutPlaceAdd(int refVehicule, String operation) async {
+    try {
+      int? userId =
+          await CallApi.getUserId(); // Récupérer l'ID de l'utilisateur connecté
+      if (userId == null) {
+        throw Exception('Utilisateur non connecté');
+      }
+
+      Map<String, dynamic> svData = {
+        "refVehicule": refVehicule,
+        "operation": operation,
+        "idUser": userId,
+      };
+      final response = await CallApi.insertData(
+        endpoint: "updateCountPlaceOnvehicule",
+        data: svData,
+      );
+      
+      showSnackBar(context, response['data'], 'success');
+    } catch (e) {
+      print('Error fetching demandes: $e');
+    }
+  }
+
   
 
   Timer? _timer;
@@ -80,6 +105,14 @@ class _CoursesEnCoursScreenState extends State<CoursesEnCoursScreen> {
       appBar: CustomAppBar(
         title: Text("Courses en cours", style: TextStyle(color: Colors.white)),
         actions: [
+           IconButton(
+            icon: Icon(Icons.taxi_alert),
+            tooltip: "initialiser les places de la voiture",
+            color: Colors.white,
+            onPressed: () {
+              statutPlaceAdd(111111111111111, "Initial");
+            },
+          ),
           IconButton(
             icon: Icon(Icons.refresh),
             color: Colors.white,

@@ -27,6 +27,31 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
   bool partageWhatsapp = false;
   Timer? _timer;
 
+  Future<void> statutPlaceAdd(int refVehicule, String operation) async {
+    try {
+      int? userId =
+          await CallApi.getUserId(); // Récupérer l'ID de l'utilisateur connecté
+      if (userId == null) {
+        throw Exception('Utilisateur non connecté');
+      }
+
+      Map<String, dynamic> svData = {
+        "refVehicule": refVehicule,
+        "operation": operation,
+        "idUser": userId,
+      };
+      final response = await CallApi.insertData(
+        endpoint: "updateCountPlaceOnvehicule",
+        data: svData,
+      );
+      final Map<String, dynamic> responseData = response;
+      String message = responseData['data'] ?? "";
+      showSnackBar(context, message, 'success');
+    } catch (e) {
+      print('Error fetching demandes: $e');
+    }
+  }
+
   @override
   void initState() {
     super.initState();
@@ -171,6 +196,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                 ),
                                 onPressed: () {
                                   showPayementBottomSheet(context, course);
+                                  statutPlaceAdd(course.refVehicule!, "Sub");
                                 },
                                 style: ButtonStyle(
                                   backgroundColor: MaterialStateProperty.all(
