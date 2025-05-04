@@ -47,17 +47,17 @@ class _WalletRechargePageState extends State<WalletRechargePage> {
                       // Navigator.pop(context);
 
                       if (method == "Cash") {
-                        storePaymentBackendCash();
+                        // storePaymentBackendCash();
                       }
                       if (method == "Mobile Money") {
-                        showMobileMoneyOptions();
+                        // showMobileMoneyOptions();
                       }
                       if (method == "Banque (Stripe)") {
-                        makePayment();
+                        // makePayment();
                       }
                       if (method == "Banque (Paypal)") {
-                        print("paiement via Paypal");
-                        startPaypalPayment(context);
+                        // print("paiement via Paypal");
+                        // startPaypalPayment(context);
                       }
                     },
           ),
