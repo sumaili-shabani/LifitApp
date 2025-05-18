@@ -7,6 +7,7 @@ import 'package:lifti_app/Components/TextFildComponent.dart';
 import 'package:lifti_app/Components/button.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Model/UserModel.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class EditUserProfileScreen extends StatefulWidget {
   const EditUserProfileScreen({super.key});
@@ -190,6 +191,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return isLoading
         ? Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
@@ -203,32 +205,32 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                   children: [
                     SizedBox(height: 20),
                     TextFildComponent(
-                      labeltext: "Nom",
-                      hint: "Entrer votre nom",
+                      labeltext: "${l10n.edit_ui_nom}",
+                      hint: "${l10n.edit_ui_nom1}",
                       icon: Icons.person,
                       controller: name,
                       validatorInput: true,
                     ),
                     SizedBox(height: 10),
                     TextFildComponent(
-                      labeltext: "Email et N° Téléphone",
-                      hint: "Entrer Email  ou N° Téléphone",
+                      labeltext: "${l10n.edit_ui_email}",
+                      hint: "${l10n.edit_ui_email1}",
                       icon: Icons.email,
                       controller: email,
                       validatorInput: true,
                     ),
                     SizedBox(height: 10),
                     TextFildComponent(
-                      labeltext: "N° de Téléphone Principal",
-                      hint: "Entrer votre N° de Téléphone",
+                      labeltext: "${l10n.edit_ui_telephone}",
+                      hint: "${l10n.edit_ui_telephone1}",
                       icon: Icons.phone,
                       controller: telephone,
                       validatorInput: true,
                     ),
                     SizedBox(height: 10),
                     TextFildComponent(
-                      labeltext: "Adresse domicile",
-                      hint: "Entrer votre Adresse",
+                      labeltext: "${l10n.edit_ui_adresse}",
+                      hint: "${l10n.edit_ui_adresse1}",
                       icon: Icons.location_city,
                       controller: adresse,
                       validatorInput: true,
@@ -236,32 +238,32 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
 
                     SizedBox(height: 10),
                     TextFildComponent(
-                      labeltext: "N° de Tél Vodacom",
-                      hint: "Entrer votre N° de Tél Vodacom",
+                      labeltext: "${l10n.edit_ui_tel_vodalcom}",
+                      hint: "${l10n.edit_ui_tel_vodalcom1}",
                       icon: Icons.phone,
                       controller: tel1,
                       validatorInput: false,
                     ),
                     SizedBox(height: 10),
                     TextFildComponent(
-                      labeltext: "N° de Tél Airtel",
-                      hint: "Entrer votre N° de Tél Airtel",
+                      labeltext: "${l10n.edit_ui_tel_airtel}",
+                      hint: "${l10n.edit_ui_tel_airtel1}",
                       icon: Icons.phone,
                       controller: tel2,
                       validatorInput: false,
                     ),
                     SizedBox(height: 10),
                     TextFildComponent(
-                      labeltext: "N° de Tél Orange",
-                      hint: "Entrer votre N° de Tél Orange",
+                      labeltext: "${l10n.edit_ui_tel_orange}",
+                      hint: "${l10n.edit_ui_tel_orange1}",
                       icon: Icons.phone,
                       controller: tel3,
                       validatorInput: false,
                     ),
                     SizedBox(height: 10),
                     TextFildComponent(
-                      labeltext: "N° de Tél Africel",
-                      hint: "Entrer votre N° de Tél Africel",
+                      labeltext: "${l10n.edit_ui_tel_africel}",
+                      hint: "${l10n.edit_ui_tel_africel1}",
                       icon: Icons.phone,
                       controller: tel4,
                       validatorInput: false,
@@ -272,7 +274,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                       validatorInput: true,
                       icon: Icons.female,
                       items: sexeList,
-                      label: "Sélectionnez le sexe",
+                      label: "${l10n.edit_ui_sexe}",
                       displayKey: "text",
                       valueKey: "value",
                       value: selectedSexe,
@@ -291,7 +293,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                       validatorInput: true,
                       icon: Icons.mobile_friendly,
                       items: modeList,
-                      label: "Préférence mode de paiement",
+                      label: "${l10n.edit_ui_preference}",
                       displayKey: "text",
                       valueKey: "value",
                       value: selectedMode,
@@ -313,7 +315,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                       validatorInput: true,
                       icon: Icons.install_mobile_rounded,
                       items: banqueList,
-                      label: "Préférence de paiement",
+                      label: "${l10n.edit_ui_pref_paiement}",
                       displayKey: "text",
                       valueKey: "value",
                       value: selectedBanque,
@@ -329,7 +331,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                     SizedBox(height: 20),
                     Button(
                       icon: Icons.edit,
-                      label: "Editer",
+                      label: "${l10n.edit_ui_editer}",
                       press: () {
                         if (selectedBanque != "") {
                           // print("idBanque: ${selectedSexe.toString()}");
@@ -337,7 +339,7 @@ class _EditUserProfileScreenState extends State<EditUserProfileScreen> {
                         } else {
                           showSnackBar(
                             context,
-                            "Vellez selection tous les champs",
+                            "${l10n.edit_ui_message_texte}",
                             'danger',
                           );
                         }

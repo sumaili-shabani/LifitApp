@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/ConfigurationApp.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TargetListScreen extends StatefulWidget {
   const TargetListScreen({super.key});
@@ -75,10 +76,24 @@ class _TargetListScreenState extends State<TargetListScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       children: [
-       
+        Card(
+          child: ListTile(
+            title: Text(
+              idRole == 3
+                  ? "${l10n.info_menu_ui_chauffeur}"
+                  : idRole == 2
+                  ? "${l10n.info_menu_ui_ambassadeur}"
+                  : idRole == 4
+                  ? "${l10n.info_menu_ui_passager}"
+                  : "${l10n.info_menu_ui_user}",
+            ),
+          ),
+        ),
+        SizedBox(height: 3),
         Padding(
           padding: const EdgeInsets.all(8.0),
           child: TextField(
@@ -97,103 +112,121 @@ class _TargetListScreenState extends State<TargetListScreen> {
         isLoading
             ? Center(child: CircularProgressIndicator())
             : Expanded(
-              child: ListView.builder(
-                itemCount: filteredTargets.length,
-                itemBuilder: (context, index) {
-                  var target = filteredTargets[index];
-                  return Card(
-                    margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
-                    child: ListTile(
-                      leading: Icon(Icons.flag, color: ConfigurationApp.successColor, size: 40),
-                      title: Text(
-                        target["nomTarget"],
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      subtitle: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          SizedBox(height: 5),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.calendar_today,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
-                              SizedBox(width: 5),
-                              Text(
-                                "${target["periodeDebitTarget"]} - ${target["periodeFinTarget"]}",
-                                style: TextStyle(color: Colors.grey),
-                              ),
-                            ],
+              child: Column(
+                children: [
+                  
+                  Expanded(
+                    child: ListView.builder(
+                      itemCount: filteredTargets.length,
+                      itemBuilder: (context, index) {
+                        var target = filteredTargets[index];
+                        return Card(
+                          margin: EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 5,
                           ),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.directions_car,
-                                size: 16,
-                                color: Colors.grey,
-                              ),
-                              SizedBox(width: 5),
-                              Text(
-                                "Nbr des courses: ${target["nombreCourse"]} ${target["uniteTarget"]}",
-                              ),
-                            ],
+                          elevation: 4,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
                           ),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.account_balance_wallet,
-                                    size: 16,
-                                    color: Colors.green,
-                                  ),
-                                  SizedBox(width: 5),
-                                  Text(
-                                    "${target["prixTarget"]} ${target["devise"]}",
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
+                          child: ListTile(
+                            leading: Icon(
+                              Icons.flag,
+                              color: ConfigurationApp.successColor,
+                              size: 40,
+                            ),
+                            // title: Text(
+                            //   target["nomTarget"],
+                            //   style: TextStyle(
+                            //     fontSize: 16,
+                            //     fontWeight: FontWeight.bold,
+                            //   ),
+                            // ),
+                            subtitle: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(height: 5),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.calendar_today,
+                                      size: 16,
+                                      color: Colors.grey,
                                     ),
-                                  ),
-                                ],
-                              ),
-
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.person,
-                                    size: 16,
-                                    color: Colors.orange,
-                                  ),
-                                  SizedBox(width: 5),
-                                  Text("Pour: ${target["role_name"]}"),
-                                ],
-                              ),
-                            ],
+                                    SizedBox(width: 5),
+                                    Text(
+                                      "${target["periodeDebitTarget"]} - ${target["periodeFinTarget"]}",
+                                      style: TextStyle(color: Colors.grey),
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.directions_car,
+                                      size: 16,
+                                      color: Colors.grey,
+                                    ),
+                                    SizedBox(width: 5),
+                                    Text(
+                                      "${l10n.info_menu_ui_nombre}: ${target["nombreCourse"]} ${target["uniteTarget"]}",
+                                    ),
+                                  ],
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Icon(
+                                          Icons.account_balance_wallet,
+                                          size: 16,
+                                          color: Colors.green,
+                                        ),
+                                        SizedBox(width: 5),
+                                        Text(
+                                          "${target["prixTarget"]} ${target["devise"]}",
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+              
+                                    // Row(
+                                    //   children: [
+                                    //     Icon(
+                                    //       Icons.person,
+                                    //       size: 16,
+                                    //       color: Colors.orange,
+                                    //     ),
+                                    //     SizedBox(width: 5),
+                                    //     Text(
+                                    //       "Pour: ${target["role_name"]}",
+                                    //     ),
+                                    //   ],
+                                    // ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                            trailing: Icon(
+                              target["statutTarget"] == 1
+                                  ? Icons.check_circle
+                                  : Icons.cancel,
+                              color:
+                                  target["statutTarget"] == 1
+                                      ? Colors.green
+                                      : Colors.red,
+                            ),
                           ),
-                        ],
-                      ),
-                      trailing: Icon(
-                        target["statutTarget"] == 1
-                            ? Icons.check_circle
-                            : Icons.cancel,
-                        color:
-                            target["statutTarget"] == 1
-                                ? Colors.green
-                                : Colors.red,
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                        
+                ],
               ),
             ),
       ],

@@ -16,6 +16,7 @@ import 'package:lifti_app/presentation/pages/forgot_password_page.dart';
 import 'package:lifti_app/presentation/pages/signup_page.dart';
 import 'package:lifti_app/presentation/widgets/animated_button.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -168,6 +169,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     Size size = MediaQuery.of(context).size;
     bool _rememberMe = false;
     return Scaffold(
@@ -204,7 +206,7 @@ class _LoginPageState extends State<LoginPage> {
                           Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Image.asset("assets/images/logo.png", width: 210),
+                              Image.asset("assets/images/logoApp.png", width: 210),
 
                               Padding(
                                 padding: EdgeInsets.all(5),
@@ -212,7 +214,7 @@ class _LoginPageState extends State<LoginPage> {
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
-                                      "🚦Plus qu’un login… un trajet rapide et sécurisé! Prêt pour le départ ? Connectez-vous ! 🚖",
+                                      "🚦${l10n.login_ui_titre} 🚖",
                                       textAlign: TextAlign.center,
                                       style: TextStyle(
                                         fontSize: 18,
@@ -227,8 +229,8 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 10),
 
                           TextFildComponent(
-                            labeltext: "Email et N° Téléphone",
-                            hint: "Entrer Email  ou N° Téléphone",
+                            labeltext: "${l10n.login_ui_email}",
+                            hint: "${l10n.login_ui_email1}",
                             icon: Icons.email,
                             controller: usrName,
                             validatorInput: true,
@@ -256,8 +258,8 @@ class _LoginPageState extends State<LoginPage> {
                                 controller: password,
 
                                 decoration: InputDecoration(
-                                  labelText: "Mot de passe",
-                                  hintText: "Entre votre mot de passe",
+                                  labelText: "${l10n.login_ui_password}",
+                                  hintText: "${l10n.login_ui_password1}",
 
                                   prefixIcon: const Icon(Icons.lock_outline),
                                   suffixIcon: IconButton(
@@ -278,10 +280,10 @@ class _LoginPageState extends State<LoginPage> {
                                 textInputAction: TextInputAction.next,
                                 validator: (value) {
                                   if (value == null || value.isEmpty) {
-                                    return "Veillez completer ce champs";
+                                    return "${l10n.login_ui_text_error}";
                                   }
                                   if (value.length < 4) {
-                                    return "Veillez saisir au moins 4 Caractères";
+                                    return "${l10n.login_ui_text_error1}";
                                   }
                                   return null;
                                 },
@@ -300,7 +302,7 @@ class _LoginPageState extends State<LoginPage> {
                                     value: _rememberMe,
                                     onChanged: (value) {
                                       setState(() {
-                                        _rememberMe = value ?? false;
+                                        _rememberMe = value ?? true;
                                       });
                                     },
                                     shape: RoundedRectangleBorder(
@@ -308,7 +310,7 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                   ),
                                   Text(
-                                    "Souviens-toi de moi",
+                                    "${l10n.login_ui_remember}",
                                     style: theme.textTheme.bodyMedium?.copyWith(
                                       color: theme.colorScheme.onSurface
                                           .withOpacity(0.7),
@@ -331,7 +333,7 @@ class _LoginPageState extends State<LoginPage> {
                                   horizontal: 8,
                                 ),
                                 child: Text(
-                                  "Mot de passe oublié?",
+                                  "${l10n.login_ui_forgot_password}",
                                   style: TextStyle(
                                     color: theme.colorScheme.primary,
                                     fontWeight: FontWeight.bold,
@@ -344,7 +346,7 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(height: 10),
                           ButtonComponent(
                             icon: Icons.login,
-                            label: "SE CONNECTER",
+                            label: "${l10n.login_ui_login}",
                             press: () {
                               signIn();
                             },
@@ -352,8 +354,8 @@ class _LoginPageState extends State<LoginPage> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              const Text(
-                                "Vous n'avez pas de compte ?",
+                              Text(
+                                "${l10n.login_ui_dont_have_an_count}",
                                 style: TextStyle(color: Colors.grey),
                               ),
                               TextButton(
@@ -369,7 +371,7 @@ class _LoginPageState extends State<LoginPage> {
 
                                   
                                 },
-                                child: const Text("S'inscrire"),
+                                child: Text("${l10n.login_ui_signup}"),
                               ),
                             ],
                           ),

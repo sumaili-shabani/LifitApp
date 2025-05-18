@@ -20,6 +20,7 @@ import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 import 'package:lifti_app/Model/UserPositionModel.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PositionChaufeurOnMap extends StatefulWidget {
   final CourseInfoPassagerModel course;
@@ -246,6 +247,7 @@ class _PositionChaufeurOnMapState extends State<PositionChaufeurOnMap> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
+        final l10n = AppLocalizations.of(context)!;
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -263,7 +265,7 @@ class _PositionChaufeurOnMapState extends State<PositionChaufeurOnMap> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Informations du chauffeur",
+                      l10n.chauffeur_info_detail_titre,
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -288,7 +290,7 @@ class _PositionChaufeurOnMapState extends State<PositionChaufeurOnMap> {
                       children: [
                         Icon(Icons.person, color: Colors.blue),
                         SizedBox(width: 5),
-                        Text("Nom: ${passager.name??''}"),
+                        Text("${l10n.chauffeur_info_detail_nom}: ${passager.name??''}"),
                       ],
                     ),
                     Divider(),
@@ -296,7 +298,7 @@ class _PositionChaufeurOnMapState extends State<PositionChaufeurOnMap> {
                       children: [
                         Icon(Icons.phone, color: Colors.orange),
                         SizedBox(width: 5),
-                        Text("Téléphone: ${passager.telephone??''}"),
+                        Text("${l10n.chauffeur_info_detail_phone}: ${passager.telephone??''}"),
                       ],
                     ),
                     Divider(),
@@ -304,7 +306,7 @@ class _PositionChaufeurOnMapState extends State<PositionChaufeurOnMap> {
                       children: [
                         Icon(Icons.directions_car, color: Colors.red),
                         SizedBox(width: 5),
-                        Text("Distance: ${distance.toStringAsFixed(2)} km"),
+                        Text("${l10n.info_distance}: ${distance.toStringAsFixed(2)} km"),
                       ],
                     ),
                     Divider(),
@@ -313,7 +315,7 @@ class _PositionChaufeurOnMapState extends State<PositionChaufeurOnMap> {
                         Icon(Icons.timer, color: Colors.purple),
                         SizedBox(width: 5),
                         Text(
-                          "Temps estimé: ${duration.toStringAsFixed(2)} min",
+                          "${l10n.info_temps}: ${duration.toStringAsFixed(2)} min",
                         ),
                       ],
                     ),
@@ -396,8 +398,10 @@ class _PositionChaufeurOnMapState extends State<PositionChaufeurOnMap> {
     getPositionUser();
 
     passagerConnectedPosition = LatLng(
-      -1.6708,
-      29.2218,
+      // -1.6708,
+      // 29.2218,
+      -4.325,
+      15.3222
     ); // Position par défaut du chauffeur (ex: Goma)
     _getCurrentPosition(); // Récupère la position actuelle du chauffeur
 
@@ -424,6 +428,7 @@ class _PositionChaufeurOnMapState extends State<PositionChaufeurOnMap> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(16),
       height:
@@ -443,7 +448,7 @@ class _PositionChaufeurOnMapState extends State<PositionChaufeurOnMap> {
           SizedBox(height: 5),
           Center(
             child: Text(
-              "Positionnement actuelle",
+              l10n.positionnement_map_titre,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),

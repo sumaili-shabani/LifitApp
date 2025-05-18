@@ -1,16 +1,20 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/DateTimePickerField.dart';
+import 'package:lifti_app/Components/button.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Controller/ApiService.dart';
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+
 
 class ReservationTaxi extends StatefulWidget {
   final List<dynamic> typeCourses;
@@ -138,13 +142,15 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
     TextEditingController periode1 = TextEditingController();
     TextEditingController periode2 = TextEditingController();
 
+    final l10n = AppLocalizations.of(context)!;
+
     return showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Center(
             child: Text(
-              "Pour combien de temps voulez-vous louer cette voitre ?",
+              "${l10n.reservation_confirm_titre}",
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
             ),
           ),
@@ -159,8 +165,8 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                     keyboardType: TextInputType.number,
 
                     decoration: InputDecoration(
-                      label: Text("Pour 5 /$unite"),
-                      hintText: "Pour 5 /$unite",
+                      label: Text("${l10n.reservation_confirm_pour} 5 /$unite"),
+                      hintText: "${l10n.reservation_confirm_pour} 5 /$unite",
                       border: OutlineInputBorder(),
                       prefixIcon: Icon(Icons.calendar_month),
                     ),
@@ -168,7 +174,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                   SizedBox(height: 10),
                   //composant de période
                   DateTimePickerField(
-                    label: "Période debit",
+                    label: "${l10n.reservation_confirm_p_debit}",
 
                     onChanged: (value) {
                       periode1.text = value;
@@ -177,7 +183,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                   SizedBox(height: 10),
                   //composant de période
                   DateTimePickerField(
-                    label: "Période Fin",
+                    label: "${l10n.reservation_confirm_p_fin}",
                     onChanged: (value) {
                       periode2.text = value;
                     },
@@ -191,7 +197,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
             TextButton(
               onPressed:
                   () => Navigator.pop(context), // Fermer la boîte de dialogue
-              child: Text("Annuler", style: TextStyle(color: Colors.red)),
+              child: Text("${l10n.action_annuler}", style: TextStyle(color: Colors.red)),
             ),
             ElevatedButton(
               onPressed: () {
@@ -274,12 +280,12 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text("Veuillez entrer un nombre valide."),
+                      content: Text("${l10n.reservation_confirm_message}."),
                     ),
                   );
                 }
               },
-              child: Text("Valider"),
+              child: Text("${l10n.reservation_confirm_valider}"),
             ),
           ],
         );
@@ -422,6 +428,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       height: MediaQuery.of(context).size.height * 0.75, // 75% de l'écran
       padding: EdgeInsets.all(12),
@@ -447,7 +454,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Taxis disponibles prochent de vous",
+                "${l10n.reservation_info_message}",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               IconButton(
@@ -472,7 +479,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
               child: TextField(
                 controller: searchController,
                 decoration: InputDecoration(
-                  hintText: "Rechercher un taxi...",
+                  hintText: "${l10n.reservation_info_recherche}",
                   fillColor: theme.hoverColor,
                   prefixIcon: Icon(Icons.search),
                   border: OutlineInputBorder(
@@ -575,9 +582,9 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
 
                         // print("Sélectionné : $category");
 
-                        print(
-                          "Temps: ${tempsMax.toString()} montant:${montantNormal.toString()}",
-                        );
+                        // print(
+                        //   "Temps: ${tempsMax.toString()} montant:${montantNormal.toString()}",
+                        // );
                       },
                       child: Card(
                         elevation: 5,
@@ -611,25 +618,19 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                               child: Column(
                                 children: [
                                   widget.isLocation
-                                      ? TextButton(
-                                        onPressed: () async {
+                                      ? Button(
+                                        icon: Icons.local_taxi,
+                                        press: () async {
                                           _showInputDialog(
                                             context,
                                             unite,
                                             category,
                                           );
                                         },
-                                        child: Text(
-                                          "Commander la location ${category["name"] ?? ''}",
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
+                                        label: "${l10n.reservation_info_commander}"
                                       )
-                                      : TextButton(
-                                        onPressed: () async {
+                                      : 
+                                      Button(label: "${l10n.reservation_info_commander}", icon: Icons.local_taxi, press: () async {
                                           await envoyerCommande(
                                             context,
                                             idConnected: idConnected,
@@ -650,16 +651,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                             periode1: "",
                                             periode2: "",
                                           );
-                                        },
-                                        child: Text(
-                                          "Commander ${category["name"] ?? ''}",
-                                          style: TextStyle(
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
+                                        }),
 
                                   //prix de la course
                                   Row(
@@ -672,7 +664,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                       SizedBox(width: 2),
                                       Expanded(
                                         child: Text(
-                                          'Prix:',
+                                          '${l10n.reservation_info_prix}:',
                                           style: TextStyle(
                                             fontSize: 14,
                                             fontWeight: FontWeight.w500,
@@ -703,7 +695,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                       SizedBox(width: 2),
                                       Expanded(
                                         child: Text(
-                                          "${widget.isLocation ? 'Location:' : 'Distance:'} ",
+                                          "${widget.isLocation ? '${l10n.reservation_info_location}:' : '${l10n.reservation_info_distance}:'} ",
                                           style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.w500,
@@ -728,7 +720,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                           )
                                           : Expanded(
                                             child: Text(
-                                              '${distance.toStringAsFixed(0)} Km / pour ${tempsMax.toStringAsFixed(0)} Minutes',
+                                              '${distance.toStringAsFixed(0)} Km / ${l10n.reservation_confirm_pour} ${tempsMax.toStringAsFixed(0)} ${l10n.paiement_ui_minutes}',
                                               style: TextStyle(
                                                 fontSize: 10,
                                                 fontWeight: FontWeight.w500,
@@ -745,20 +737,20 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                   // Marque du véhicule
                                   _buildInfoRow(
                                     Icons.check_box,
-                                    "Marque",
+                                    "${l10n.paiement_ui_marque}",
                                     category["nomMarque"],
                                   ),
 
                                   // Nombre de places
                                   _buildInfoRow(
                                     Icons.person_3_outlined,
-                                    "Places",
+                                    "${l10n.paiement_ui_place}",
                                     "${category["nbrPlace"]} passagers",
                                   ),
 
                                    _buildInfoRow(
                                     Icons.sensor_occupied_rounded,
-                                    "Places occupées",
+                                    "${l10n.paiement_ui_place_occupee}",
                                     "${category["restePlace"]} ",
                                   ),
 
@@ -767,7 +759,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                   // Type de carburant
                                   _buildInfoRow(
                                     Icons.category,
-                                    "Carburant",
+                                    "${l10n.paiement_ui_carburant}",
                                     category["typeCarburant"],
                                   ),
 
@@ -775,7 +767,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                   if (category["capo"] == 1)
                                     _buildInfoRow(
                                       Icons.archive,
-                                      "Coffre",
+                                      "${l10n.paiement_ui_coffre}",
                                       category["detailCapo"],
                                     ),
 
@@ -794,7 +786,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                                       SizedBox(width: 2),
                                       Expanded(
                                         child: Text(
-                                          'Voir le chauffeur:',
+                                          '${l10n.paiement_ui_voir_chauffeur}:',
                                           style: TextStyle(
                                             fontSize: 10,
                                             fontWeight: FontWeight.w500,
@@ -865,6 +857,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
         return Container(
           padding: EdgeInsets.all(16),
           height:
@@ -898,7 +891,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               Text(
-                driverInfo["telephoneChauffeur"] ?? "Numéro non disponible",
+                driverInfo["telephoneChauffeur"] ?? "${l10n.modal_chauffeur_numTel}",
                 style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
               SizedBox(height: 10),
@@ -908,7 +901,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _infoCard(
-                    "🚗 Véhicule",
+                    "🚗 ${l10n.modal_chauffeur_vehicule}",
                     driverInfo["nomCategorieVehicule"] ?? "Inconnu",
                   ),
                   _infoCard(
@@ -923,7 +916,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
                   _infoCard(
-                    "📆 Expérience",
+                    "📆 ${l10n.modal_chauffeur_experience}",
                     "${driverInfo["experience"] ?? '+4'} ans",
                   ),
                   // Bouton d'appel
@@ -939,7 +932,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                       ),
                     ),
                     icon: Icon(Icons.call, size: 15),
-                    label: Text("Appeler", style: TextStyle(fontSize: 12)),
+                    label: Text("${l10n.modal_chauffeur_appel}", style: TextStyle(fontSize: 12)),
                     onPressed: () {
                       _callDriver(driverInfo["telephoneChauffeur"]);
                     },
@@ -956,7 +949,7 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
                   (index) => Icon(
                     Icons.star,
                     color:
-                        index < (driverInfo["note"] ?? 3)
+                        index < (driverInfo["note"] ?? 4)
                             ? Colors.orange
                             : Colors.grey,
                   ),
@@ -966,13 +959,13 @@ class _ReservationTaxiState extends State<ReservationTaxi> {
 
               // Avis clients
               Text(
-                "Avis des clients :",
+                "${l10n.modal_chauffeur_avis}:",
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 5),
               Text(
                 driverInfo["avis"] ??
-                    "Chauffeur expérimenté avec une expérience averée dans la rue",
+                    "${l10n.modal_chauffeur_texte_exp} ",
                 textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 14, color: Colors.grey),
               ),

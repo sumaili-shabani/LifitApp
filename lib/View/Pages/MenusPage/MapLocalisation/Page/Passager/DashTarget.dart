@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:lifti_app/Api/ConfigurationApp.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class DashtargetChauffeur extends StatefulWidget {
   const DashtargetChauffeur({super.key});
@@ -72,6 +73,7 @@ class CardSoldeChauffeur extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     List<dynamic> paymentModes = payment["payementMode"];
     return Card(
       elevation: 4,
@@ -86,11 +88,11 @@ class CardSoldeChauffeur extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: <Widget>[
                 Text(
-                  "Total courses : ${payment["countcourse_to_day"]} ",
+                  "${l10n.info_menu_ui_total_course} : ${payment["countcourse_to_day"]} ",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 Text(
-                  "Total : ${NumberFormat("#,###").format(payment["sumcourse_to_day"])} CDF",
+                  "${l10n.info_menu_ui_tot} : ${NumberFormat("#,###").format(payment["sumcourse_to_day"])} CDF",
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -106,7 +108,7 @@ class CardSoldeChauffeur extends StatelessWidget {
             Column(
               children:
                   paymentModes
-                      .map((mode) => _buildPaymentItem(mode))
+                      .map((mode) => _buildPaymentItem(context, mode))
                       .toList(),
             ),
           ],
@@ -116,7 +118,8 @@ class CardSoldeChauffeur extends StatelessWidget {
   }
 
   // Widget pour un mode de paiement
-  Widget _buildPaymentItem(Map<String, dynamic> mode) {
+  Widget _buildPaymentItem(BuildContext context, Map<String, dynamic> mode) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
@@ -136,7 +139,7 @@ class CardSoldeChauffeur extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  "Montant: ${NumberFormat("#,###").format(mode["montant_paie"])} ${mode["devise"]}",
+                  "${l10n.info_menu_ui_montant}: ${NumberFormat("#,###").format(mode["montant_paie"])} ${mode["devise"]}",
                   style: TextStyle(fontSize: 14,),
                 ),
               ],

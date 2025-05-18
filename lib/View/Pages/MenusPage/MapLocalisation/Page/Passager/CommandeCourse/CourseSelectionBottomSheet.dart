@@ -2,6 +2,7 @@ import 'package:buttons_tabbar/buttons_tabbar.dart';
 import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/ConfigurationApp.dart';
 import 'package:lifti_app/Api/my_api.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CourseSelectionBottomSheet extends StatelessWidget {
   final List<dynamic> typeCourses;
@@ -21,6 +22,7 @@ class CourseSelectionBottomSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       height: MediaQuery.of(context).size.height * 0.65, // 75% de l'écran
       padding: EdgeInsets.all(16),
@@ -42,7 +44,7 @@ class CourseSelectionBottomSheet extends StatelessWidget {
           SizedBox(height: 10),
 
           Text(
-            "🚖 Choisissez votre course en un instant !",
+            "🚖 ${l10n.map_client_choix_course}",
             style: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
@@ -51,7 +53,7 @@ class CourseSelectionBottomSheet extends StatelessWidget {
           ),
           SizedBox(height: 8),
           Text(
-            "Profitez d'un service rapide, sécurisé et adapté à vos besoins. Réservez maintenant et arrivez à destination en toute sérénité !",
+            "${l10n.map_client_choix_course_texte}",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 14, color: Colors.grey[700]),
           ),
@@ -73,11 +75,11 @@ class CourseSelectionBottomSheet extends StatelessWidget {
                     ),
                     tabs: [
                       Tab(
-                        text: "Course taxi",
+                        text: "${l10n.map_client_course_taxi}",
                         icon: Icon(Icons.local_taxi, size: 17),
                       ),
                       Tab(
-                        text: "Location véhicule",
+                        text: "${l10n.map_client_type_course_location}",
                         icon: Icon(Icons.directions_car, size: 17),
                       ),
                     ],
@@ -185,7 +187,7 @@ Widget _buildCourseItem(
                             "${course['prix'] ?? 0} ${course['devise'] ?? 'N/A'} (${course['unite'] ?? 'Unité inconnue'})",
                           )
                           : Text(
-                             "${((double.tryParse(course['prix'].toString()) ?? 0) * (double.tryParse(trajectoire['distance'].toString()) ?? 0)).toStringAsFixed(0)} "
+                            "${((double.tryParse(course['prix'].toString()) ?? 0) * (double.tryParse(trajectoire['distance'].toString()) ?? 0)).toStringAsFixed(0)} "
                             "${course['devise'] ?? 'N/A'} "
                             "(${((double.tryParse(course['durationPlus'].toString()) ?? 0) + (double.tryParse(trajectoire['duration'].toString()) ?? 0)).toStringAsFixed(1)} min)",
                           ),

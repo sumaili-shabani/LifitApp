@@ -17,7 +17,7 @@
     <!-- fin notification -->
     <application
         android:theme="@style/NormalTheme"
-        android:label="Swift-Ride"
+        android:label="SwiftRide"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:usesCleartextTraffic="true"

@@ -13,7 +13,7 @@ import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Com
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/PayementCourse.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/ReservationCourse.dart';
 import 'package:lifti_app/View/Pages/MenusPage/NotificationBottom.dart';
-import 'package:lifti_app/View/Pages/MenusPage/NotificationScreem.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class TaxiCommandeScreen extends StatefulWidget {
   final List<dynamic> typeCourses;
@@ -40,7 +40,11 @@ class TaxiCommandeScreen extends StatefulWidget {
 class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
   GoogleMapController? mapController;
   Set<Marker> markers = {};
-  LatLng passengerPosition = LatLng(-1.6708, 29.2218);
+  LatLng passengerPosition = LatLng(
+    // -1.6708, 29.2218
+    -4.325,
+    15.3222
+  );
 
   bool isLoading = true;
   bool isSearchingBottom = false;
@@ -310,10 +314,11 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: CustomAppBar(
         showBackButton: true,
-        title: Text("Taxis", style: TextStyle(color: Colors.white)),
+        title: Text("${l10n.map_client_texte_taxis}", style: TextStyle(color: Colors.white)),
         actions: [
           Stack(
             children: [
@@ -322,7 +327,7 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
                   showNotificationInfo();
                 },
                 icon: Icon(Icons.notification_add, color: Colors.white),
-                tooltip: "Voir les notifications",
+                tooltip: "${l10n.map_client_voir_notification}",
               ),
               if (2 >
                   0) // Afficher le badge seulement s'il y a des notifications
@@ -355,7 +360,7 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
               chargement();
             },
             icon: Icon(Icons.refresh, color: Colors.white),
-            tooltip: "Recharger les taxis disposibles",
+            tooltip: "${l10n.map_client_recharge_notification}",
           ),
           IconButton(
             onPressed: () {
@@ -366,7 +371,7 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
                 widget.categorieVehiculeInfo,
               );
             },
-            tooltip: "Payer une course",
+            tooltip: "${l10n.map_client_payer_course}",
             icon: Icon(Icons.attach_money, color: Colors.white),
           ),
           IconButton(
@@ -383,7 +388,7 @@ class _TaxiCommandeScreenState extends State<TaxiCommandeScreen> {
               );
             },
             icon: Icon(Icons.local_taxi, color: Colors.white),
-            tooltip: "Voir les taxis disposibles",
+            tooltip: "${l10n.map_client_voir_le_taxi}",
           ),
         ],
       ),

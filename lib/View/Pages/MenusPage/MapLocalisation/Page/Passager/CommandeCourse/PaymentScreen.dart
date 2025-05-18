@@ -6,6 +6,7 @@ import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/StripePaymentScreen.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as stripe; // ✅ Alias ajouté
 import 'package:flutter_paypal/flutter_paypal.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PaymentScreen extends StatefulWidget {
   final CourseInfoPassagerModel course;
@@ -138,6 +139,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
+         final l10n = AppLocalizations.of(context)!;
         return Container(
           height:
               MediaQuery.of(context).size.height *
@@ -156,11 +158,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
               SizedBox(height: 5),
               Text(
-                "Sélectionnez un opérateur Mobile Money",
+                "${l10n.paiement_ui_select_operateur}",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 16),
               _buildMobileMoneyOption(
+                context,
                 "M-Pesa",
                 "Vodacom",
                 Icons.account_balance_wallet,
@@ -170,6 +173,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 2,
               ),
               _buildMobileMoneyOption(
+                context,
                 "Airtel Money",
                 "Airtel",
                 Icons.account_balance_wallet,
@@ -179,6 +183,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 3,
               ),
               _buildMobileMoneyOption(
+                context,
                 "Orange Money",
                 "Orange",
                 Icons.account_balance_wallet_rounded,
@@ -278,6 +283,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   // fin stripe
 
   Widget _buildMobileMoneyOption(
+    BuildContext context,
     String provider,
     String description,
     IconData icon,
@@ -286,6 +292,8 @@ class _PaymentScreenState extends State<PaymentScreen> {
     CourseInfoPassagerModel course,
     int refBanque,
   ) {
+    final l10n = AppLocalizations.of(context)!;
+
     return Card(
       elevation: 4,
       child: ListTile(
@@ -306,7 +314,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Text(
-              "montant:",
+              "${l10n.paiement_ui_montant}:",
               style: TextStyle(fontSize: 11, color: Colors.grey),
             ),
             Text(
@@ -327,6 +335,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) {
+        final l10n = AppLocalizations.of(context)!;
         return Container(
           height:
               MediaQuery.of(context).size.height *
@@ -345,7 +354,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
               ),
               SizedBox(height: 5),
               Text(
-                "Entrez votre numéro de téléphone",
+                "${l10n.paiement_ui_select_numberPhone}",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 16),
@@ -354,7 +363,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 keyboardType: TextInputType.phone,
                 decoration: InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: "Numéro Mobile Money",
+                  labelText: "${l10n.paiement_ui_select_number_mobile_money}",
                   prefixIcon: Icon(Icons.phone),
                 ),
               ),
@@ -371,7 +380,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      "Veuillez entrer un numéro valide.",
+                                      "${l10n.paiement_ui_select_enter_number_phone}.",
                                     ),
                                   ),
                                 );
@@ -384,7 +393,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                                 Navigator.pop(context);
                               }
                             },
-                    label: Text("Confirmer"),
+                    label: Text("${l10n.paiement_ui_select_confirmer}"),
                   ),
             ],
           ),
@@ -495,6 +504,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(16),
       height:
@@ -523,42 +533,42 @@ class _PaymentScreenState extends State<PaymentScreen> {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        "Choisissez un mode de paiement",
+                        "${l10n.paiement_ui_mode_paie}",
                         style: TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       Text(
-                        "Mode de paiement sélectionné : $selectedPaymentMethod",
+                        "${l10n.paiement_ui_mode_paie_selected} : $selectedPaymentMethod",
                         style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                       SizedBox(height: 16),
                       _buildPaymentOption(
                         "Cash",
                         Icons.money,
-                        "Payez directement au chauffeur",
+                        "${l10n.paiement_ui_mode_marketing_1} ",
                         widget.course,
                         "Icon_cash.png",
                       ),
-                      _buildPaymentOption(
-                        "Banque (Stripe)",
-                        Icons.credit_card,
-                        "Paiement sécurisé via Stripe",
-                        widget.course,
-                        "stripe.png",
-                      ),
-                      _buildPaymentOption(
-                        "Banque (Paypal)",
-                        Icons.credit_card,
-                        "Paiement sécurisé via Paypal",
-                        widget.course,
-                        "image_paypal.png",
-                      ),
+                      // _buildPaymentOption(
+                      //   "Banque (Stripe)",
+                      //   Icons.credit_card,
+                      //   "${l10n.paiement_ui_mode_marketing_2} ",
+                      //   widget.course,
+                      //   "stripe.png",
+                      // ),
+                      // _buildPaymentOption(
+                      //   "Banque (Paypal)",
+                      //   Icons.credit_card,
+                      //   "${l10n.paiement_ui_mode_marketing_3} ",
+                      //   widget.course,
+                      //   "image_paypal.png",
+                      // ),
                       _buildPaymentOption(
                         "Mobile Money",
                         Icons.phone_android,
-                        "Paiement rapide via M-Pesa, Airtel ou Orange",
+                        "${l10n.paiement_ui_mode_marketing_4} ",
                         widget.course,
                         "mobile.png",
                       ),

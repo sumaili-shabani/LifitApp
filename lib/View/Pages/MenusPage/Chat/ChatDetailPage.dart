@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ChatDetailPage extends StatefulWidget {
   final Map<String, dynamic> correspondent;
@@ -137,6 +138,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: CustomAppBar(
         showBackButton: true,
@@ -172,7 +174,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
               fetchNotifications();
             },
             icon: Icon(Icons.refresh,  color: Colors.white),
-            tooltip: "Synchroniser les messages",
+            tooltip: "${l10n.chat_ui_synchroniser}",
           ),
           // Icone des notifications avec badge
           Stack(
@@ -298,7 +300,7 @@ class _ChatDetailPageState extends State<ChatDetailPage> {
                           child: TextField(
                             controller: messageController,
                             decoration: InputDecoration(
-                              hintText: "Tapez un message...",
+                              hintText: "${l10n.chat_ui_taper_messager}",
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(20),
                               ),

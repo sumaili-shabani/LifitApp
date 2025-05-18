@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/CorrespondentsPage.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CarteSelectionPosition extends StatefulWidget {
   const CarteSelectionPosition({super.key});
@@ -17,14 +18,15 @@ class _CarteSelectionPositionState extends State<CarteSelectionPosition> {
   LatLng centerKinshasa = LatLng(-4.325, 15.3222);
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: CustomAppBar(
         showBackButton: true,
-        title: Text("Votre position", style: TextStyle(color: Colors.white)),
+        title: Text("${l10n.positionnement_map_titre} ", style: TextStyle(color: Colors.white)),
         actions: [
           IconButton(
             icon: Icon(Icons.check),
-            tooltip: "Sélectionner votre position",
+            tooltip: "${l10n.map_client_select_position} ",
             color: Colors.white,
             onPressed: () {
               if (_selectedLatLng != null) {
@@ -34,7 +36,7 @@ class _CarteSelectionPositionState extends State<CarteSelectionPosition> {
           ),
           IconButton(
             icon: Icon(Icons.chat, color: Colors.white),
-            tooltip: "Discussion instantanée",
+            tooltip: "${l10n.map_client_discussion} ",
             onPressed: () {
               Navigator.of(
                 context,
@@ -45,7 +47,7 @@ class _CarteSelectionPositionState extends State<CarteSelectionPosition> {
       ),
       body: GoogleMap(
         initialCameraPosition: CameraPosition(
-          target: centerGoma, // Kinshasa centre
+          target: centerKinshasa, // Kinshasa centre
           zoom: 14,
         ),
         onTap: (LatLng latLng) {

@@ -1342,8 +1342,8 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
     double distance = Geolocator.distanceBetween(
       positionActuelle.latitude,
       positionActuelle.longitude,
-      centerGoma.latitude,
-      centerGoma.longitude,
+      centerKinshasa.latitude,
+      centerKinshasa.longitude,
     );
 
     return distance <= 20000; // 20 km autour du centre
@@ -1546,8 +1546,10 @@ class _MapScreemChauffeurState extends State<MapScreemChauffeur> {
     fetchNotifications();
 
     chauffeurPosition = LatLng(
-      -1.6708,
-      29.2218,
+      // -1.6708,
+      // 29.2218,
+      -4.325,
+      15.3222
     ); // Position par défaut du chauffeur (ex: Goma)
     _getCurrentPosition(); // Récupère la position actuelle du chauffeur
 

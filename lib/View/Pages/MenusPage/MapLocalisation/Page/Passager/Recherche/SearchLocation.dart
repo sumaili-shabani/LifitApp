@@ -26,6 +26,7 @@ import 'dart:typed_data';
 import 'package:lifti_app/View/Pages/MenusPage/NotificationBottom.dart';
 // importation pour pusher
 import 'package:pusher_channels_flutter/pusher_channels_flutter.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class SearchLocation extends StatefulWidget {
   const SearchLocation({super.key});
@@ -1011,6 +1012,7 @@ class _SearchLocationState extends State<SearchLocation> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
+        final l10n = AppLocalizations.of(context)!;
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -1028,7 +1030,7 @@ class _SearchLocationState extends State<SearchLocation> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      "Informations du passager",
+                      "${l10n.map_client_info}",
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -1053,7 +1055,9 @@ class _SearchLocationState extends State<SearchLocation> {
                       children: [
                         Icon(Icons.person, color: Colors.blue),
                         SizedBox(width: 5),
-                        Text("Nom: ${passager["name"]}"),
+                        Text(
+                          "${l10n.chauffeur_info_detail_nom}: ${passager["name"]}",
+                        ),
                       ],
                     ),
                     Divider(color: Colors.grey[400]),
@@ -1061,7 +1065,9 @@ class _SearchLocationState extends State<SearchLocation> {
                       children: [
                         Icon(Icons.phone, color: Colors.orange),
                         SizedBox(width: 5),
-                        Text("Téléphone: ${passager["telephone"]}"),
+                        Text(
+                          "${l10n.chauffeur_info_detail_phone}: ${passager["telephone"]}",
+                        ),
                       ],
                     ),
                     Divider(color: Colors.grey[400]),
@@ -1069,7 +1075,9 @@ class _SearchLocationState extends State<SearchLocation> {
                       children: [
                         Icon(Icons.directions_car, color: Colors.red),
                         SizedBox(width: 5),
-                        Text("Distance: ${distance.toStringAsFixed(2)} km"),
+                        Text(
+                          "${l10n.reservation_info_distance}: ${distance.toStringAsFixed(2)} km",
+                        ),
                       ],
                     ),
                     Divider(color: Colors.grey[400]),
@@ -1078,7 +1086,7 @@ class _SearchLocationState extends State<SearchLocation> {
                         Icon(Icons.timer, color: Colors.purple),
                         SizedBox(width: 5),
                         Text(
-                          "Temps estimé: ${duration.toStringAsFixed(2)} min",
+                          "${l10n.info_temps}: ${duration.toStringAsFixed(2)} min",
                         ),
                       ],
                     ),
@@ -1105,6 +1113,7 @@ class _SearchLocationState extends State<SearchLocation> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
+        final l10n = AppLocalizations.of(context)!;
         return LayoutBuilder(
           builder: (context, constraints) {
             return SizedBox(
@@ -1134,7 +1143,7 @@ class _SearchLocationState extends State<SearchLocation> {
                               SizedBox(width: 3),
 
                               Text(
-                                "Informations du lieu",
+                                "${l10n.info_lieu}",
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -1166,7 +1175,7 @@ class _SearchLocationState extends State<SearchLocation> {
                           _infoRow(
                             icon: Icons.map,
                             iconColor: Colors.blue,
-                            label: "Adresse",
+                            label: "${l10n.info_adresse}",
                             value: place["name"],
                             maxWidth: constraints.maxWidth,
                           ),
@@ -1175,7 +1184,7 @@ class _SearchLocationState extends State<SearchLocation> {
                           _infoRow(
                             icon: Icons.info_outline_rounded,
                             iconColor: ConfigurationApp.warningColor,
-                            label: "Description",
+                            label: "${l10n.info_description}",
                             value: place["description"],
                             maxWidth: constraints.maxWidth,
                           ),
@@ -1194,7 +1203,7 @@ class _SearchLocationState extends State<SearchLocation> {
                           _infoRow(
                             icon: Icons.directions_car,
                             iconColor: ConfigurationApp.dangerColor,
-                            label: "Distance",
+                            label: "${l10n.info_distance}",
                             value: "${distance.toStringAsFixed(2)} km",
                             maxWidth: constraints.maxWidth,
                           ),
@@ -1203,7 +1212,7 @@ class _SearchLocationState extends State<SearchLocation> {
                           _infoRow(
                             icon: Icons.timer,
                             iconColor: Colors.purple,
-                            label: "Temps estimé",
+                            label: "${l10n.info_temps}",
                             value: "${duration.toStringAsFixed(2)} min",
                             maxWidth: constraints.maxWidth,
                           ),
@@ -1216,7 +1225,7 @@ class _SearchLocationState extends State<SearchLocation> {
                             alignment: Alignment.center,
                             child: Button(
                               icon: Icons.local_taxi,
-                              label: "Commander une course",
+                              label: "${l10n.map_client_commande}",
                               press: () {
                                 Map<String, dynamic> myTrajectoire = {
                                   'distance': distance.toStringAsFixed(2),
@@ -1574,22 +1583,24 @@ class _SearchLocationState extends State<SearchLocation> {
       // Affiche une boîte de dialogue ou un snack
       showDialog(
         context: context,
-        builder:
-            (ctx) => AlertDialog(
-              title: Text("Hors de Kinshasa"),
-              content: Text(
-                "Vous êtes en dehors de Kinshasa. Veuillez choisir un lieu manuellement.",
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.pop(ctx);
-                    _selectLocationManually();
-                  },
-                  child: Text("Choisir sur carte"),
-                ),
-              ],
+        builder: (ctx) {
+          final l10n = AppLocalizations.of(context)!;
+          return AlertDialog(
+            title: Text("${l10n.map_client_zone_dehors} "),
+            content: Text(
+              "${l10n.map_client_zone_dehors_texte}.",
             ),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  _selectLocationManually();
+                },
+                child: Text("${l10n.map_client_carte} "),
+              ),
+            ],
+          );
+        },
       );
     }
   }
@@ -1656,8 +1667,8 @@ class _SearchLocationState extends State<SearchLocation> {
     double distance = Geolocator.distanceBetween(
       positionActuelle.latitude,
       positionActuelle.longitude,
-      centerGoma.latitude,
-      centerGoma.longitude,
+      centerKinshasa.latitude,
+      centerKinshasa.longitude,
     );
 
     return distance <= 20000; // 20 km autour du centre
@@ -1684,8 +1695,10 @@ class _SearchLocationState extends State<SearchLocation> {
     fetchNotifications();
 
     passagerConnectedPosition = LatLng(
-      -1.6708,
-      29.2218,
+      // -1.6708,
+      // 29.2218,
+      -4.325,
+      15.3222
     ); // Position par défaut du chauffeur (ex: Goma)
     _getCurrentPosition(); // Récupère la position actuelle du chauffeur
 
@@ -1706,16 +1719,17 @@ class _SearchLocationState extends State<SearchLocation> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: CustomAppBar(
         title: Text(
-          'Planifier votre course',
+          "${l10n.map_client_marketing1}",
           style: TextStyle(color: Colors.white),
         ),
         actions: [
           IconButton(
             icon: Icon(Icons.chat, color: Colors.white),
-            tooltip: "Discussion instantanée",
+            tooltip: "${l10n.map_client_discussion}",
             onPressed: () {
               Navigator.of(
                 context,
@@ -1778,7 +1792,7 @@ class _SearchLocationState extends State<SearchLocation> {
                             children: [
                               IconButton(
                                 onPressed: () {
-                                  print("clic recherche");
+                                  // print("clic recherche");
                                   searchPlace2();
                                 },
                                 icon: Icon(Icons.search, color: Colors.white),
@@ -1797,7 +1811,7 @@ class _SearchLocationState extends State<SearchLocation> {
                                 child: TextField(
                                   controller: searchController,
                                   decoration: InputDecoration(
-                                    hintText: 'Où allez-vous?',
+                                    hintText: '${l10n.search} ',
                                     border: InputBorder.none,
                                   ),
                                 ),
@@ -1879,7 +1893,7 @@ class _SearchLocationState extends State<SearchLocation> {
                                             : listfilteredPlaces.isEmpty
                                             ? Center(
                                               child: Text(
-                                                "Aucun résultat trouvé",
+                                                "${l10n.nosearchData}",
                                                 style: TextStyle(
                                                   color: Colors.grey,
                                                   fontSize: 16,
@@ -1958,7 +1972,7 @@ class _SearchLocationState extends State<SearchLocation> {
                                         MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        "Suggestions de lieux",
+                                        "${l10n.carteArret_suggestion}",
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 18,
@@ -2145,7 +2159,7 @@ class _SearchLocationState extends State<SearchLocation> {
                   //fin boutton
 
                   // la recherche de lieu
-                  
+
                   // Tester le message du lieu
                   Positioned(
                     bottom: 20,
@@ -2182,11 +2196,11 @@ class _SearchLocationState extends State<SearchLocation> {
                                       Icons.my_location,
                                       color: Colors.white,
                                     ),
-                                    label: Text("Sélectionner ma position"),
+                                    label: Text("${l10n.map_client_select_position}"),
                                   ),
                                   SizedBox(height: 10),
                                   Text(
-                                    "🚫 L’application Lifti ne supporte pas votre localisation actuelle.",
+                                    "🚫 ${l10n.map_client_not_app_support}.",
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontWeight: FontWeight.bold,
@@ -2216,7 +2230,7 @@ class _SearchLocationState extends State<SearchLocation> {
                                 ),
                               ),
                               icon: Icon(Icons.location_on),
-                              label: Text("Où allez-vous ?"),
+                              label: Text("${l10n.map_client_q_lieu}"),
                             ),
                   ),
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Model/NotificationModel.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class NotificationsPage extends StatefulWidget {
   const NotificationsPage({super.key});
@@ -61,6 +62,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.all(10),
       child: Padding(
@@ -71,7 +73,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
               onChanged:
                   (value) => setState(() => searchQuery = value.toLowerCase()),
               decoration: InputDecoration(
-                labelText: "Rechercher...",
+                labelText: "${l10n.notification_ui_recherche} ",
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Model/NotificationModel.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class NotificationBottom extends StatefulWidget {
   const NotificationBottom({super.key});
@@ -61,7 +62,8 @@ class _NotificationBottomState extends State<NotificationBottom> {
 
   @override
   Widget build(BuildContext context) {
-     final theme = Theme.of(context);
+    final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Container(
         height: MediaQuery.of(context).size.height * 0.50, // 75% de l'écran
       padding: EdgeInsets.all(16),
@@ -86,7 +88,7 @@ class _NotificationBottomState extends State<NotificationBottom> {
               onChanged:
                   (value) => setState(() => searchQuery = value.toLowerCase()),
               decoration: InputDecoration(
-                labelText: "Rechercher une notification...",
+                labelText: "${l10n.map_client_search_notification}",
                 prefixIcon: Icon(Icons.search),
                 fillColor: theme.hoverColor,
                 border: OutlineInputBorder(

@@ -4,6 +4,7 @@ import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/CustomAppBar.dart';
 import 'package:lifti_app/View/Pages/MenusPage/Chat/ChatDetailPage.dart';
 import 'package:lifti_app/presentation/widgets/settings_bottom_sheet.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CorrespondentsPage extends StatefulWidget {
   const CorrespondentsPage({super.key});
@@ -130,12 +131,12 @@ class _CorrespondentsPageState extends State<CorrespondentsPage> {
 
   @override
   Widget build(BuildContext context) {
-   
+   final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: CustomAppBar(
         showBackButton: true,
         title: Text(
-          "Correspondants",
+          "${l10n.chat_ui_correspondant}",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -188,7 +189,7 @@ class _CorrespondentsPageState extends State<CorrespondentsPage> {
               onChanged: filterCorrespondents,
               decoration: InputDecoration(
                 // label: Text("Rechercher un correspondant"),
-                hintText: "Rechercher un correspondant...",
+                hintText: "${l10n.chat_ui_recherchee}",
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(20),
                 ),

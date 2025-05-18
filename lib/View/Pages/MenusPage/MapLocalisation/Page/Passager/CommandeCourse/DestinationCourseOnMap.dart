@@ -22,6 +22,7 @@ import 'dart:ui' as ui;
 import 'dart:typed_data';
 
 import 'package:lifti_app/Model/UserPositionModel.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class Destinationcourseonmap extends StatefulWidget {
   final CourseInfoPassagerModel course;
@@ -336,6 +337,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
+        final l10n = AppLocalizations.of(context)!;
         return Padding(
           padding: EdgeInsets.only(
             bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -357,7 +359,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                         Icon(Icons.person, size: 18),
                         SizedBox(width: 3),
                         Text(
-                          "Informations du chauffeur",
+                          l10n.chauffeur_info_detail_titre,
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
@@ -384,7 +386,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                       children: [
                         Icon(Icons.person, color: Colors.blue),
                         SizedBox(width: 5),
-                        Text("Nom: ${passager.name ?? ''}"),
+                        Text("${l10n.chauffeur_info_detail_nom}: ${passager.name ?? ''}"),
                       ],
                     ),
                     Divider(),
@@ -392,7 +394,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                       children: [
                         Icon(Icons.phone, color: Colors.orange),
                         SizedBox(width: 5),
-                        Text("Téléphone: ${passager.telephone ?? ''}"),
+                        Text("${l10n.chauffeur_info_detail_phone}: ${passager.telephone ?? ''}"),
                       ],
                     ),
                     Divider(),
@@ -400,7 +402,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                       children: [
                         Icon(Icons.directions_car, color: Colors.red),
                         SizedBox(width: 5),
-                        Text("Distance: ${distance.toStringAsFixed(2)} km"),
+                        Text("${l10n.info_distance}: ${distance.toStringAsFixed(2)} km"),
                       ],
                     ),
                     Divider(),
@@ -409,7 +411,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                         Icon(Icons.timer, color: Colors.purple),
                         SizedBox(width: 5),
                         Text(
-                          "Temps estimé: ${duration.toStringAsFixed(2)} min",
+                          "${l10n.info_temps}: ${duration.toStringAsFixed(2)} min",
                         ),
                       ],
                     ),
@@ -442,6 +444,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (BuildContext context) {
+        final l10n = AppLocalizations.of(context)!;
         return LayoutBuilder(
           builder: (context, constraints) {
             return SizedBox(
@@ -471,7 +474,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                               SizedBox(width: 3),
 
                               Text(
-                                "Informations du lieu",
+                                "${l10n.info_lieu}",
                                 style: TextStyle(
                                   fontSize: 18,
                                   fontWeight: FontWeight.bold,
@@ -503,7 +506,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                           _infoRow(
                             icon: Icons.map,
                             iconColor: Colors.blue,
-                            label: "Adresse",
+                            label: "${l10n.info_adresse}",
                             value: place["name"],
                             maxWidth: constraints.maxWidth,
                           ),
@@ -512,7 +515,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                           _infoRow(
                             icon: Icons.info_outline_rounded,
                             iconColor: ConfigurationApp.warningColor,
-                            label: "Description",
+                            label: "${l10n.info_description}",
                             value: place["description"],
                             maxWidth: constraints.maxWidth,
                           ),
@@ -531,7 +534,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                           _infoRow(
                             icon: Icons.directions_car,
                             iconColor: ConfigurationApp.dangerColor,
-                            label: "Distance",
+                            label: "${l10n.info_distance}",
                             value: "${distance.toStringAsFixed(2)} km",
                             maxWidth: constraints.maxWidth,
                           ),
@@ -540,7 +543,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                           _infoRow(
                             icon: Icons.timer,
                             iconColor: Colors.purple,
-                            label: "Temps estimé",
+                            label: "${l10n.info_temps}",
                             value: "${duration.toStringAsFixed(2)} min",
                             maxWidth: constraints.maxWidth,
                           ),
@@ -793,8 +796,10 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
     getPositionUser();
 
     passagerConnectedPosition = LatLng(
-      -1.6708,
-      29.2218,
+      // -1.6708,
+      // 29.2218,
+      -4.325,
+      15.3222
     ); // Position par défaut du chauffeur (ex: Goma)
     _getCurrentPosition(); // Récupère la position actuelle du chauffeur
 
@@ -827,6 +832,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(16),
       height:
@@ -851,7 +857,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                 SizedBox(width: 3),
                 Expanded(
                   child: Text(
-                    "${widget.course.nameDestination ?? 'Destination'} ",
+                    "${widget.course.nameDestination ?? '${l10n.course_en_course_destination}'} ",
                     style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -911,7 +917,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                                   Icon(Icons.timer, color: Colors.blue),
                                   SizedBox(width: 8),
                                   Text(
-                                    "Durée de la course ${(widget.course.timeEst ?? '0')}",
+                                    "${l10n.chauffeur_info_duree_course} ${(widget.course.timeEst ?? '0')}",
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.bold,
@@ -931,7 +937,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                                   ),
                                   SizedBox(width: 6),
                                   Text(
-                                    "Heure d'arrivage : ${CallApi.formatDateFrancais(widget.course.dateLimiteCourse) ?? '0'}",
+                                    "${l10n.course_en_course_heure_arrivage} : ${CallApi.formatDateFrancais(widget.course.dateLimiteCourse) ?? '0'}",
                                     style: TextStyle(fontSize: 13),
                                   ),
                                 ],
@@ -947,7 +953,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                                   ),
                                   SizedBox(width: 6),
                                   Text(
-                                    "Distance : ${(widget.course.distance ?? 0).toStringAsFixed(2)}Km",
+                                    "${l10n.info_distance} : ${(widget.course.distance ?? 0).toStringAsFixed(2)}Km",
                                     style: TextStyle(fontSize: 13),
                                   ),
                                 ],
@@ -965,7 +971,7 @@ class _DestinationcourseonmapState extends State<Destinationcourseonmap> {
                                   ),
                                   SizedBox(width: 6),
                                   Text(
-                                    "Temps restant : ",
+                                    "${l10n.chauffeur_info_temps_restant}: ",
                                     style: TextStyle(fontSize: 13),
                                   ),
                                   Text(

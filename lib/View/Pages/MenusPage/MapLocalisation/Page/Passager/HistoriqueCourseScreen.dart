@@ -16,6 +16,7 @@ import 'package:printing/printing.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'dart:typed_data';
 import 'package:pdf/pdf.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class HistoriqueCourseScreen extends StatefulWidget {
   const HistoriqueCourseScreen({super.key});
@@ -317,16 +318,17 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: CustomAppBar(
         title: Text(
-          "Historique des courses",
+          "${l10n.historiqueCourseClient_texte}",
           style: TextStyle(color: Colors.white),
         ),
         actions: [
           IconButton(
             icon: Icon(Icons.refresh),
-            tooltip: "Recharger la liste",
+            tooltip: "${l10n.historiqueCourseClient_refresh}",
             color: Colors.white,
             onPressed: () {
               fetchNotifications();
@@ -335,7 +337,7 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
 
           IconButton(
             icon: Icon(Icons.newspaper_outlined),
-            tooltip: "Voir plus d'informations",
+            tooltip: "${l10n.historiqueCourseClient_voirInfo}",
             color: Colors.white,
             onPressed: () {
               Navigator.of(
@@ -356,8 +358,8 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
                   children: [
                     TextField(
                       decoration: InputDecoration(
-                        labelText: "Rechercher une course",
-                        hintText: "Recherche une course...",
+                        labelText: "${l10n.historiqueCourseClient_recherche_course}",
+                        hintText: "${l10n.historiqueCourseClient_recherche_courseplus}",
                         fillColor: theme.cardColor,
                         prefixIcon: Icon(Icons.search),
                         border: OutlineInputBorder(
@@ -434,7 +436,7 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
                                             ),
                                           ),
                                           Text(
-                                            "${course.calculate == 1 ? 'Distance:' : ''}${course.distance!.toStringAsFixed(2)} ${course.calculate == 1 ? 'Km' : 'J/H'}➡️${course.timeEst!}",
+                                            "${course.calculate == 1 ? '${l10n.info_distance}:' : ''}${course.distance!.toStringAsFixed(2)} ${course.calculate == 1 ? 'Km' : 'J/H'}➡️${course.timeEst!}",
                                             style: TextStyle(
                                               color: Colors.grey,
                                               fontSize: 11,
@@ -486,7 +488,7 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
                                       SizedBox(width: 5),
                                       Expanded(
                                         child: Text(
-                                          "Départ : ${course.nameDepart!}",
+                                          "${l10n.historiqueCourseClient_depart} : ${course.nameDepart!}",
                                         ),
                                       ),
                                     ],
@@ -498,7 +500,7 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
                                       SizedBox(width: 5),
                                       Expanded(
                                         child: Text(
-                                          "Arrivée : ${course.nameDestination!}",
+                                          "${l10n.historiqueCourseClient_depart} : ${course.nameDestination!}",
                                         ),
                                       ),
                                     ],
@@ -516,7 +518,7 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
                                             SizedBox(width: 5),
                                             Expanded(
                                               child: Text(
-                                                "Date : ${CallApi.getFormatedDate(course.datePaie.toString())}",
+                                                "${l10n.historiqueCourseClient_date}: ${CallApi.getFormatedDate(course.datePaie.toString())}",
                                                 style: TextStyle(
                                                   color: theme.hintColor,
                                                 ),
@@ -782,7 +784,7 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
                                                 );
                                               },
                                               label: Text(
-                                                "Imprimer reçu",
+                                                "${l10n.historiqueCourseClient_print_recu}",
                                                 style: TextStyle(
                                                   color: theme.hintColor,
                                                 ),
@@ -791,6 +793,7 @@ class _HistoriqueCourseScreenState extends State<HistoriqueCourseScreen> {
                                           ],
                                         ),
                                       ),
+                                    
                                     ],
                                   ),
                                   SizedBox(height: 10),

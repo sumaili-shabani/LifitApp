@@ -23,17 +23,11 @@ class SettingsBottomSheet extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            l10n.settings,
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
+          Text(l10n.settings, style: Theme.of(context).textTheme.headlineSmall),
           const SizedBox(height: 24),
 
           // Language selector
-          Text(
-            l10n.language,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text(l10n.language, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           Wrap(
             spacing: 8,
@@ -53,19 +47,30 @@ class SettingsBottomSheet extends ConsumerWidget {
                 languageCode: 'sw',
                 isSelected: currentLocale.languageCode == 'sw',
               ),
+
+              //mes ajouts
+              // _LanguageChip(
+              //   title: 'Lingala',
+              //   languageCode: 'ln',
+              //   isSelected: currentLocale.languageCode == 'ln',
+              // ),
+
+              _LanguageChip(
+                title: 'Espagnole',
+                languageCode: 'es',
+                isSelected: currentLocale.languageCode == 'es',
+              ),
             ],
           ),
           const SizedBox(height: 24),
 
           // Theme selector
-          Text(
-            l10n.theme,
-            style: Theme.of(context).textTheme.titleMedium,
-          ),
+          Text(l10n.theme, style: Theme.of(context).textTheme.titleMedium),
           const SizedBox(height: 8),
           SwitchListTile(
-            title:
-                Text(themeMode == ThemeMode.dark ? 'Dark Mode' : 'Light Mode'),
+            title: Text(
+              themeMode == ThemeMode.dark ? 'Dark Mode' : 'Light Mode',
+            ),
             value: themeMode == ThemeMode.dark,
             onChanged: (_) {
               ref.read(appThemeProvider.notifier).toggleTheme();

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:http/http.dart' as http;
 import 'package:lifti_app/Model/PaiementCommissionModel.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RetraitCommissionScreem extends StatefulWidget {
   const RetraitCommissionScreem({super.key});
@@ -64,6 +65,7 @@ class _RetraitCommissionScreemState extends State<RetraitCommissionScreem> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       children: [
         Padding(
@@ -73,7 +75,7 @@ class _RetraitCommissionScreemState extends State<RetraitCommissionScreem> {
             onChanged:
                 (value) => setState(() => searchQuery = value.toLowerCase()),
             decoration: InputDecoration(
-              hintText: "Rechercher un paiement...",
+              hintText: "${l10n.info_menu_ui_rechercher_paiement}",
               prefixIcon: Icon(Icons.search),
               fillColor: theme.hoverColor,
               border: OutlineInputBorder(
@@ -144,7 +146,7 @@ class _RetraitCommissionScreemState extends State<RetraitCommissionScreem> {
                                 ),
                                 SizedBox(height: 4),
                                 Text(
-                                  "Montant : ${paiement.montantPaie} CDF",
+                                  "${l10n.info_menu_ui_montant} : ${paiement.montantPaie} CDF",
                                   style: TextStyle(
                                     color: Colors.green,
                                     fontSize: 14,

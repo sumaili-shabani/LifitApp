@@ -10,7 +10,7 @@ import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Pas
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/RechargeHistoryScreen.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/RetraitCommissionScreem.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/TargetListScreen.dart';
-import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/WalletRechargePage.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class InformationMenuScreem extends StatefulWidget {
   const InformationMenuScreem({super.key});
@@ -36,19 +36,20 @@ class _InformationMenuScreemState extends State<InformationMenuScreem> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return DefaultTabController(
       length: 3,
       child: Scaffold(
         appBar: CustomAppBar(
           showBackButton: true,
           title: Text(
-            "Menu d'informations",
+            "${l10n.info_menu_ui_info}",
             style: TextStyle(color: Colors.white),
           ),
           actions: [
             IconButton(
               icon: Icon(Icons.chat, color: Colors.white),
-              tooltip: "Discussion instantanée",
+              tooltip: "${l10n.map_client_discussion}",
               onPressed: () {
                 Navigator.of(
                   context,
@@ -60,7 +61,7 @@ class _InformationMenuScreemState extends State<InformationMenuScreem> {
                   children: [
                     IconButton(
                       icon: Icon(Icons.attach_money, color: Colors.white),
-                      tooltip: "Voir les statistiques journalières",
+                      tooltip: "${l10n.info_menu_ui_show_stat}",
                       onPressed: () {
                         showFinanceBottomSheet(context, idRole);
                       },
@@ -84,15 +85,15 @@ class _InformationMenuScreemState extends State<InformationMenuScreem> {
               ),
               tabs: [
                 Tab(
-                  text: "Target Course",
+                  text: "${l10n.info_menu_ui_target_course}",
                   icon: Icon(Icons.card_giftcard, size: 17),
                 ),
                 Tab(
-                  text: idRole == 3 ? "Historique Recharge" : "Mes paiements",
+                  text: idRole == 3 ? "${l10n.info_menu_ui_historique_recharge}" : "${l10n.info_menu_ui_mes_paiement}",
                   icon: Icon(Icons.receipt_long_sharp, size: 17),
                 ),
                 Tab(
-                  text: "Paiement Commission",
+                  text: "${l10n.info_menu_ui_paiement_commission}",
                   icon: Icon(Icons.credit_card, size: 17),
                 ),
                 
@@ -118,6 +119,7 @@ class _InformationMenuScreemState extends State<InformationMenuScreem> {
   }
 
   void showFinanceBottomSheet(BuildContext context, int idRole) {
+    final l10n = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true, // Permet d'occuper un pourcentage de l'écran
@@ -153,7 +155,7 @@ class _InformationMenuScreemState extends State<InformationMenuScreem> {
                           Icon(Icons.account_balance_wallet, size: 17),
                           SizedBox(width: 5),
                           Text(
-                            "Mon Portefeuille",
+                            "${l10n.info_menu_ui_portefueil}",
                             style: TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
@@ -166,7 +168,7 @@ class _InformationMenuScreemState extends State<InformationMenuScreem> {
                       Row(
                         children: [
                           Text(
-                            "Solde actuel",
+                            "${l10n.info_menu_ui_solde_actuel}",
                             style: TextStyle(color: Colors.grey),
                           ),
                           SizedBox(width: 5),

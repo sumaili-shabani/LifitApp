@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lifti_app/Components/AnimatedPageRoute.dart';
 import 'package:lifti_app/presentation/pages/signup_page.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class OTPVerificationPage extends StatefulWidget {
   final String expectedOTP;
@@ -36,6 +37,7 @@ class OTPVerificationPageState extends State<OTPVerificationPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -43,7 +45,7 @@ class OTPVerificationPageState extends State<OTPVerificationPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "Entrez le code OTP envoyé sur WhatsApp",
+              "${l10n.otp_ui_text_otp_sender} ",
               style: TextStyle(fontSize: 18),
             ),
             SizedBox(height: 10),
@@ -71,7 +73,7 @@ class OTPVerificationPageState extends State<OTPVerificationPage> {
             SizedBox(height: 10),
             ElevatedButton(
               onPressed: verifyOTP,
-              child: Text("Vérifier le code"),
+              child: Text("${l10n.otp_ui_text_verify_opt}"),
             ),
           ],
         ),

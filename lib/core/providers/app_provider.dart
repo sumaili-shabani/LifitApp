@@ -52,4 +52,7 @@ final appSupportedLocales = [
   const Locale('en'), // English
   const Locale('fr'), // French
   const Locale('sw'), // Swahili
+  // mes ajouts
+  // const Locale('ln'), // Lingala
+  const Locale('es'), // Espagnole
 ];

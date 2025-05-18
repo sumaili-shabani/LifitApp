@@ -190,7 +190,7 @@ class _IntroPageState extends ConsumerState<IntroPage>
 
     final pages = [
       _IntroPageItem(
-        imagePath: "assets/images/vip__jaune.png",
+        imagePath: "assets/images/car_2.png",
         title: l10n.introWelcomeTitle,
         description: l10n.introWelcomeDesc,
         fadeAnimation: _fadeAnimation,
@@ -225,21 +225,21 @@ class _IntroPageState extends ConsumerState<IntroPage>
         slideAnimation: _slideAnimation,
       ),
       _IntroPageItem(
-        imagePath: "assets/images/icon_car_120.png",
+        imagePath: "assets/images/car_3.png",
         title: l10n.introReviewTitle,
         description: l10n.introReviewDesc,
         fadeAnimation: _fadeAnimation,
         slideAnimation: _slideAnimation,
       ),
       _IntroPageItem(
-        imagePath: "assets/images/1.png",
+        imagePath: "assets/images/car_1.png",
         title: l10n.introSupportTitle,
         description: l10n.introSupportDesc,
         fadeAnimation: _fadeAnimation,
         slideAnimation: _slideAnimation,
       ),
       _IntroPageItem(
-        imagePath: "assets/images/logo.png",
+        imagePath: "assets/images/logoApp.png",
         title: l10n.introRewardsTitle,
         description: l10n.introRewardsDesc,
         fadeAnimation: _fadeAnimation,

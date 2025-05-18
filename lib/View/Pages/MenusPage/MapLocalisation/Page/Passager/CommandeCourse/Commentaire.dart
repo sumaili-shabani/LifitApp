@@ -4,6 +4,7 @@ import 'package:lifti_app/Api/ConfigurationApp.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class CommentaireCourse extends StatefulWidget {
   final CourseInfoPassagerModel course;
@@ -41,6 +42,7 @@ class _CommentaireCourseState extends State<CommentaireCourse> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: EdgeInsets.all(16),
       height:
@@ -60,7 +62,7 @@ class _CommentaireCourseState extends State<CommentaireCourse> {
           SizedBox(height: 5),
           Center(
             child: Text(
-              "Évaluez votre chauffeur",
+             l10n.commentaire_ui_evaluer,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),
@@ -111,7 +113,7 @@ class _CommentaireCourseState extends State<CommentaireCourse> {
           TextField(
             controller: commentController,
             decoration: InputDecoration(
-              labelText: "Laissez un commentaire...",
+              labelText: l10n.commentaire_ui_comment,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -134,7 +136,7 @@ class _CommentaireCourseState extends State<CommentaireCourse> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                "Veuillez saisir un commentaire avant d'envoyer.",
+                                "${l10n.commentaire_ui_message}",
                               ),
                             ),
                           );
@@ -173,7 +175,7 @@ class _CommentaireCourseState extends State<CommentaireCourse> {
                       )
                       : Icon(Icons.send, color: Colors.white),
               label: Text(
-                isLoading ? "Envoie..." : "Envoyer",
+                isLoading ? "Envoie..." : "${l10n.commentaire_send}",
                 style: TextStyle(fontSize: 16, color: Colors.white),
               ),
               style: ElevatedButton.styleFrom(

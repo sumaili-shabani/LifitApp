@@ -19,6 +19,7 @@ class _WalletRechargePageState extends State<WalletRechargePage> {
   String selectedPaymentMethod = "";
   String selectedMobileMoney = "";
   TextEditingController phoneController = TextEditingController();
+  TextEditingController mountController = TextEditingController();
 
   Widget _buildPaymentOption(
     String method,
@@ -50,7 +51,7 @@ class _WalletRechargePageState extends State<WalletRechargePage> {
                         // storePaymentBackendCash();
                       }
                       if (method == "Mobile Money") {
-                        // showMobileMoneyOptions();
+                        showMobileMoneyOptions();
                       }
                       if (method == "Banque (Stripe)") {
                         // makePayment();
@@ -373,6 +374,17 @@ class _WalletRechargePageState extends State<WalletRechargePage> {
                   prefixIcon: Icon(Icons.phone),
                 ),
               ),
+              SizedBox(height: 5),
+              TextField(
+                controller: mountController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: "Montant en CDF",
+                  prefixIcon: Icon(Icons.account_balance_wallet),
+                ),
+              ),
+              
               SizedBox(height: 16),
               insertedLoading
                   ? Center(child: CircularProgressIndicator())
@@ -641,6 +653,16 @@ class _WalletRechargePageState extends State<WalletRechargePage> {
                   border: OutlineInputBorder(),
                   labelText: "Numéro Mobile Money",
                   prefixIcon: Icon(Icons.phone),
+                ),
+              ),
+              SizedBox(height: 5),
+               TextField(
+                controller: mountController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: "Montant en CDF",
+                  prefixIcon: Icon(Icons.account_balance_wallet),
                 ),
               ),
               SizedBox(height: 16),

@@ -113,27 +113,27 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset("assets/images/logo.png", width: 210),
+                  Image.asset("assets/images/logoApp.png", width: 210),
                   Text(
-                    "Commandez votre taxi en toute sécurité",
+                    "${l10n.otp_ui_titre} ",
                     style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 10),
                   Text(
-                    "Inscrivez-vous dès maintenant pour bénéficier d’un service rapide, fiable et sécurisé, où que vous soyez à Goma.",
+                    "${l10n.otp_ui_titre1}",
                     style: TextStyle(fontSize: 16, color: Colors.grey[700]),
                     textAlign: TextAlign.center,
                   ),
                   SizedBox(height: 20),
                   Text(
-                    "Entrez votre numéro",
+                    "${l10n.otp_ui_nom}",
                     style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
                   ),
                   SizedBox(height: 5),
                   IntlPhoneField(
                     decoration: InputDecoration(
-                      labelText: 'Numéro de téléphone',
+                      labelText: '${l10n.otp_ui_num_telephone}',
                       border: OutlineInputBorder(),
                     ),
                     initialCountryCode: 'CD',
@@ -158,7 +158,7 @@ class _PhoneNumberPageState extends State<PhoneNumberPage> {
                     label:
                         isLoading
                             ? Center(child: CircularProgressIndicator())
-                            : Text("Envoyer le code OTP sur WhatsApp"),
+                            : Text("${l10n.otp_ui_submit}"),
                   ),
                 ],
               ),

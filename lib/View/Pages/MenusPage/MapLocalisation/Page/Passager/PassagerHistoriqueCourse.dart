@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Model/ChauffeurDashBoardModel.dart';
 import 'package:lifti_app/Model/HistoriqueCourseModel.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PassagerHistoriqueCourse extends StatefulWidget {
   const PassagerHistoriqueCourse({super.key});
@@ -61,6 +62,7 @@ class _PassagerHistoriqueCourseState extends State<PassagerHistoriqueCourse> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.all(10),
       child: Column(
@@ -79,8 +81,8 @@ class _PassagerHistoriqueCourseState extends State<PassagerHistoriqueCourse> {
           // SizedBox(height: 15),
           TextField(
             decoration: InputDecoration(
-              labelText: "Rechercher une course",
-              hintText: "Recherche une course...",
+              labelText: "${l10n.history_passger_course_recherche1}",
+              hintText: "${l10n.history_passger_course_recherche1}",
               fillColor: theme.hoverColor,
               prefixIcon: Icon(Icons.search),
               border: OutlineInputBorder(
@@ -150,7 +152,7 @@ class _PassagerHistoriqueCourseState extends State<PassagerHistoriqueCourse> {
                                       ),
                                     ),
                                     Text(
-                                      "${course.calculate == 1 ? 'Distance:' : ''}${course.distance!.toStringAsFixed(2)} ${course.calculate == 1 ? 'Km' : 'J/H'}➡️${course.timeEst!}",
+                                      "${course.calculate == 1 ? '${l10n.history_passger_course_distance}:' : ''}${course.distance!.toStringAsFixed(2)} ${course.calculate == 1 ? 'Km' : 'J/H'}➡️${course.timeEst!}",
                                       style: TextStyle(
                                         color: Colors.grey,
                                         fontSize: 12,
@@ -181,7 +183,7 @@ class _PassagerHistoriqueCourseState extends State<PassagerHistoriqueCourse> {
                                 Icon(Icons.location_on, color: Colors.green),
                                 SizedBox(width: 5),
                                 Expanded(
-                                  child: Text("Départ : ${course.nameDepart!}"),
+                                  child: Text("${l10n.pickup}: ${course.nameDepart!}"),
                                 ),
                               ],
                             ),
@@ -193,7 +195,7 @@ class _PassagerHistoriqueCourseState extends State<PassagerHistoriqueCourse> {
                                 SizedBox(width: 5),
                                 Expanded(
                                   child: Text(
-                                    "Arrivée : ${course.nameDestination!}",
+                                    "${l10n.destination}: ${course.nameDestination!}",
                                   ),
                                 ),
                               ],
@@ -204,7 +206,7 @@ class _PassagerHistoriqueCourseState extends State<PassagerHistoriqueCourse> {
                                 SizedBox(width: 5),
                                 Expanded(
                                   child: Text(
-                                    "Type de course : ${course.nomTypeCourse!}",
+                                    "${l10n.history_passger_course_type_course} : ${course.nomTypeCourse!}",
                                   ),
                                 ),
                               ],
@@ -218,7 +220,7 @@ class _PassagerHistoriqueCourseState extends State<PassagerHistoriqueCourse> {
                                 SizedBox(width: 5),
                                 Expanded(
                                   child: Text(
-                                    "Date : ${CallApi.getFormatedDate(course.datePaie.toString())}",
+                                    "${l10n.history_passger_course_date} : ${CallApi.getFormatedDate(course.datePaie.toString())}",
                                     style: TextStyle(color: theme.hintColor),
                                   ),
                                 ),

@@ -2,15 +2,12 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
-import 'package:http_parser/http_parser.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Model/ChauffeurDashBoardModel.dart';
 import 'package:lifti_app/Model/UserModel.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
-import 'package:path_provider/path_provider.dart';
-import 'package:path_provider/path_provider.dart';
 
 class UserProfileScreen extends StatefulWidget {
   const UserProfileScreen({super.key});
@@ -234,6 +231,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return isLoading
         ? Center(child: CircularProgressIndicator())
         : SingleChildScrollView(
@@ -297,12 +295,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ),
                 Text(
                   idRole == 3
-                      ? "Chauffeur Taxi - avec +2 ans d'expérience"
+                      ? "${l10n.profil_setting_info_ui_chauffeur}"
                       : idRole == 4
-                      ? 'Passager Lifti'
+                      ? "${l10n.profil_setting_info_ui_passager}"
                       : idRole == 5
-                      ? 'Personne morale Lifti'
-                      : 'Ambassadeur Lifti',
+                      ? '${l10n.profil_setting_info_ui_p_morale}'
+                      : '${l10n.profil_setting_info_ui_ambassadeur}',
                   style: TextStyle(color: Colors.grey),
                 ),
                 SizedBox(height: 20),
@@ -311,7 +309,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   margin: EdgeInsets.symmetric(horizontal: 20),
                   child: ListTile(
                     leading: Icon(Icons.car_crash, color: Colors.green),
-                    title: Text("Moy. Distance mensuel en cours"),
+                    title: Text("${l10n.profil_setting_info_ui_moy_distance}"),
                     trailing: Text(
                       "${dashInfo.isNotEmpty ? dashInfo.first.sumDistanceCourseEncours.toString() : 0} Km",
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -329,7 +327,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               Icons.bar_chart,
                               color: Colors.green,
                             ),
-                            title: Text("Total de Recharge mensuel"),
+                            title: Text("${l10n.profil_setting_info_ui_total_recharge}"),
                             trailing: Text(
                               "${dashInfo.isNotEmpty ? dashInfo.first.sommeRecharge.toString() : 0} CDF",
                               style: TextStyle(fontWeight: FontWeight.bold),
@@ -341,7 +339,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                               Icons.bar_chart,
                               color: Colors.green,
                             ),
-                            title: Text("Total de course Mensuel"),
+                            title: Text("${l10n.profil_setting_info_ui_total_mensuel}"),
                             trailing: Text(
                               "${dashInfo.isNotEmpty ? dashInfo.first.countCourse.toString() : 0} ",
                               style: TextStyle(fontWeight: FontWeight.bold),
@@ -355,7 +353,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   margin: EdgeInsets.symmetric(horizontal: 20),
                   child: ListTile(
                     leading: Icon(Icons.wallet, color: Colors.green),
-                    title: Text("Paiement commission mensuel"),
+                    title: Text("${l10n.profil_setting_info_ui_paiement_commission}"),
                     trailing: Text(
                       "${dashInfo.isNotEmpty ? dashInfo.first.sommeRetrait.toString() : 0} CDF",
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -369,7 +367,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: ListTile(
                     leading: Icon(Icons.phone, color: Colors.green),
-                    title: Text("Téléphone"),
+                    title: Text("${l10n.profil_setting_info_ui_telephone}"),
                     trailing: Text(
                       "${user!.telephone}",
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -380,7 +378,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: ListTile(
                     leading: Icon(Icons.email, color: Colors.red),
-                    title: Text("Email"),
+                    title: Text("${l10n.profil_setting_info_ui_email}"),
                     trailing: Text(
                       "${user!.email}",
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -391,7 +389,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: ListTile(
                     leading: Icon(Icons.male, color: Colors.blue),
-                    title: Text("Sexe"),
+                    title: Text("${l10n.profil_setting_info_ui_sexe}"),
                     trailing: Text(
                       "${user!.sexe}",
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -402,7 +400,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: ListTile(
                     leading: Icon(Icons.home, color: Colors.purple),
-                    title: Text("Adresse Domicile"),
+                    title: Text("${l10n.profil_setting_info_ui_adresse}"),
                     trailing: Text(
                       "${user!.adresse}",
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -413,7 +411,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                   margin: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                   child: ListTile(
                     leading: Icon(Icons.payment, color: Colors.orange),
-                    title: Text("Préférences de paiement"),
+                    title: Text("${l10n.profil_setting_info_ui_preference}"),
                     trailing: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

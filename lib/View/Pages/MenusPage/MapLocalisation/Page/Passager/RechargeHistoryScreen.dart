@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lifti_app/Api/my_api.dart';
 import 'package:http/http.dart' as http;
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/WalletRechargePage.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class RechargeHistoryScreen extends StatefulWidget {
   const RechargeHistoryScreen({super.key});
@@ -78,6 +79,7 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
      floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -86,7 +88,7 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen> {
           
         },
         backgroundColor: Colors.green, // 👈 icône blanche
-        tooltip: "Recharge Wallet", // 👈 couleur verte
+        tooltip: "${l10n.info_menu_ui_recharge_wallet}", // 👈 couleur verte
         child: Icon(Icons.account_balance_wallet, color: Colors.white),
       ),
       body: Column(
@@ -97,7 +99,7 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen> {
               controller: searchController,
               onChanged: filterTargets,
               decoration: InputDecoration(
-                hintText: "Rechercher un paiement...",
+                hintText: "${l10n.info_menu_ui_rechercher_paiement}",
                 fillColor: theme.hoverColor,
                 prefixIcon: Icon(Icons.search),
                 border: OutlineInputBorder(
@@ -180,7 +182,7 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen> {
                                   color: Colors.blue,
                                 ),
                                 SizedBox(width: 5),
-                                Text("Code: ${payment["code"]}"),
+                                Text("${l10n.info_menu_ui_code}: ${payment["code"]}"),
                               ],
                             ),
                             Row(
@@ -191,7 +193,7 @@ class _RechargeHistoryScreenState extends State<RechargeHistoryScreen> {
                                   color: Colors.orange,
                                 ),
                                 SizedBox(width: 5),
-                                Text("Banque: ${payment["nom_banque"]}"),
+                                Text("${l10n.info_menu_ui_banque}: ${payment["nom_banque"]}"),
                               ],
                             ),
                             Row(

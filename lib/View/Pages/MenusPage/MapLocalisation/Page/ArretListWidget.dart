@@ -5,6 +5,7 @@ import 'package:lifti_app/Api/my_api.dart';
 import 'package:lifti_app/Components/showSnackBar.dart';
 import 'package:lifti_app/Model/ArretCourseModel.dart';
 import 'package:lifti_app/Model/CourseInfoPassagerModel.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class ArretListWidget extends StatefulWidget {
   final CourseInfoPassagerModel course;
@@ -48,24 +49,27 @@ class _ArretListWidgetState extends State<ArretListWidget> {
     int arret = index;
     final confirmed = await showDialog<bool>(
       context: context,
-      builder:
-          (ctx) => AlertDialog(
-            title: const Text('Supprimer ce lieu ?'),
-            content: const Text('Cette action est irréversible. Continuer ?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Annuler'),
+
+      builder: (BuildContext ctx) {
+        final l10n = AppLocalizations.of(ctx)!;
+        return AlertDialog(
+          title:  Text(l10n.action_supprimer_lieu),
+          content: Text(l10n.action_question),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child:  Text(l10n.action_annuler),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.redAccent,
               ),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.redAccent,
-                ),
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Supprimer'),
-              ),
-            ],
-          ),
+              onPressed: () => Navigator.pop(ctx, true),
+              child: Text(l10n.action_annuler),
+            ),
+          ],
+        );
+      },
     );
 
     if (confirmed == true) {
@@ -88,23 +92,25 @@ class _ArretListWidgetState extends State<ArretListWidget> {
     await showDialog(
       context: context,
       builder: (ctx) {
+        final l10n = AppLocalizations.of(ctx)!;
+
         return AlertDialog(
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
-          title: const Text('Étiqueter le lieu'),
+          title: Text(l10n.action_popup_etiquete),
           content: TextField(
             controller: controller,
             maxLines: 3,
-            decoration: const InputDecoration(
-              hintText: 'Entrez un nouveau nom pour le lieu',
+            decoration: InputDecoration(
+              hintText: l10n.action_popup_niveau_nom,
               border: OutlineInputBorder(),
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Annuler'),
+              child: Text(l10n.action_annuler),
             ),
             ElevatedButton.icon(
               onPressed: () {
@@ -112,7 +118,7 @@ class _ArretListWidgetState extends State<ArretListWidget> {
                 Navigator.pop(ctx);
               },
               icon: const Icon(Icons.edit),
-              label: const Text('Éditer le lieu'),
+              label: Text(l10n.action_popup_editer_lieu),
               style: ElevatedButton.styleFrom(
                 backgroundColor: ConfigurationApp.successColor,
               ),
@@ -171,6 +177,7 @@ class _ArretListWidgetState extends State<ArretListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return isLoading
         ? Center(child: CircularProgressIndicator())
         : Padding(
@@ -180,7 +187,7 @@ class _ArretListWidgetState extends State<ArretListWidget> {
               const Icon(Icons.drag_handle, color: Colors.grey, size: 32),
               const SizedBox(height: 8),
               Text(
-                'Liste des Arrêts (Course)',
+                l10n.carteArret_popupInfo_titre,
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Colors.green,
@@ -246,7 +253,7 @@ class _ArretListWidgetState extends State<ArretListWidget> {
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                'Ajouté le : $formattedTime',
+                                '${l10n.carteArret_popupInfo_ajouter}  : $formattedTime',
                                 style: const TextStyle(
                                   fontSize: 13,
                                   color: Colors.black54,
@@ -261,9 +268,9 @@ class _ArretListWidgetState extends State<ArretListWidget> {
                                   onSelected: (value) {
                                     if (value == 'tag') {
                                       // Action pour étiqueter
-                                      print(
-                                        'Étiqueter lieu : ${arret.nameLieu}',
-                                      );
+                                      // print(
+                                      //   'Étiqueter lieu : ${arret.nameLieu}',
+                                      // );
                                     } else if (value == 'delete') {
                                       _deleteArret(arret.id!);
                                     }
@@ -272,52 +279,57 @@ class _ArretListWidgetState extends State<ArretListWidget> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
-                                  itemBuilder:
-                                      (context) => [
-                                        PopupMenuItem(
-                                          onTap: () {
-                                            showEditLieuDialog(
-                                              context: context,
-                                              arret: arret,
-                                              onEdit: (newName) {
-                                                //  print(newName);
-                                                // Tu peux aussi appeler une API ici si nécessaire
-                                                etiqueterNameArretCourse(
-                                                  arret.id!,
-                                                  newName,
-                                                );
-                                              },
-                                            );
-                                          },
-                                          value: 'tag',
-                                          child: Row(
-                                            children: const [
-                                              Icon(
-                                                Icons.label_outline,
-                                                color: Colors.deepPurple,
-                                              ),
-                                              SizedBox(width: 8),
-                                              Text('Étiqueter le lieu'),
-                                            ],
-                                          ),
+                                  itemBuilder: (context) {
+                                    final l10n = AppLocalizations.of(context)!;
+
+                                    return [
+                                      PopupMenuItem(
+                                        onTap: () {
+                                          showEditLieuDialog(
+                                            context: context,
+                                            arret: arret,
+                                            onEdit: (newName) {
+                                              etiqueterNameArretCourse(
+                                                arret.id!,
+                                                newName,
+                                              );
+                                            },
+                                          );
+                                        },
+                                        value: 'tag',
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.label_outline,
+                                              color: Colors.deepPurple,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              l10n.action_popup_etiquete,
+                                            ), // ✅ Correct
+                                          ],
                                         ),
-                                        PopupMenuItem(
-                                          onTap: () {
-                                            _deleteArret(arret.id!);
-                                          },
-                                          value: 'delete',
-                                          child: Row(
-                                            children: const [
-                                              Icon(
-                                                Icons.delete_outline,
-                                                color: Colors.redAccent,
-                                              ),
-                                              SizedBox(width: 8),
-                                              Text('Supprimer'),
-                                            ],
-                                          ),
+                                      ),
+                                      PopupMenuItem(
+                                        onTap: () {
+                                          _deleteArret(arret.id!);
+                                        },
+                                        value: 'delete',
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.delete_outline,
+                                              color: Colors.redAccent,
+                                            ),
+                                            SizedBox(width: 8),
+                                            Text(
+                                              l10n.action_supprimer,
+                                            ), // ✅ Correct
+                                          ],
                                         ),
-                                      ],
+                                      ),
+                                    ];
+                                  },
                                 )
                                 : SizedBox(),
                       ),

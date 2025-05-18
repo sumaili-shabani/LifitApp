@@ -15,41 +15,64 @@ class LanguageSwitch extends ConsumerWidget {
       onSelected: (String languageCode) {
         ref.read(localeProvider.notifier).setLocale(languageCode);
       },
-      itemBuilder: (BuildContext context) => [
-        PopupMenuItem<String>(
-          value: 'en',
-          child: Row(
-            children: [
-              if (currentLocale.languageCode == 'en')
-                const Icon(Icons.check, size: 18),
-              const SizedBox(width: 8),
-              const Text('English'),
-            ],
-          ),
-        ),
-        PopupMenuItem<String>(
-          value: 'fr',
-          child: Row(
-            children: [
-              if (currentLocale.languageCode == 'fr')
-                const Icon(Icons.check, size: 18),
-              const SizedBox(width: 8),
-              const Text('Français'),
-            ],
-          ),
-        ),
-        PopupMenuItem<String>(
-          value: 'sw',
-          child: Row(
-            children: [
-              if (currentLocale.languageCode == 'sw')
-                const Icon(Icons.check, size: 18),
-              const SizedBox(width: 8),
-              const Text('Kiswahili'),
-            ],
-          ),
-        ),
-      ],
+      itemBuilder:
+          (BuildContext context) => [
+            PopupMenuItem<String>(
+              value: 'en',
+              child: Row(
+                children: [
+                  if (currentLocale.languageCode == 'en')
+                    const Icon(Icons.check, size: 18),
+                  const SizedBox(width: 8),
+                  const Text('Anglais'),
+                ],
+              ),
+            ),
+            PopupMenuItem<String>(
+              value: 'fr',
+              child: Row(
+                children: [
+                  if (currentLocale.languageCode == 'fr')
+                    const Icon(Icons.check, size: 18),
+                  const SizedBox(width: 8),
+                  const Text('Français'),
+                ],
+              ),
+            ),
+            PopupMenuItem<String>(
+              value: 'sw',
+              child: Row(
+                children: [
+                  if (currentLocale.languageCode == 'sw')
+                    const Icon(Icons.check, size: 18),
+                  const SizedBox(width: 8),
+                  const Text('Kiswahili'),
+                ],
+              ),
+            ),
+            // PopupMenuItem<String>(
+            //   value: 'ln',
+            //   child: Row(
+            //     children: [
+            //       if (currentLocale.languageCode == 'ln')
+            //         const Icon(Icons.check, size: 18),
+            //       const SizedBox(width: 8),
+            //       const Text('Lingala'),
+            //     ],
+            //   ),
+            // ),
+            PopupMenuItem<String>(
+              value: 'es',
+              child: Row(
+                children: [
+                  if (currentLocale.languageCode == 'es')
+                    const Icon(Icons.check, size: 18),
+                  const SizedBox(width: 8),
+                  const Text('Espagnole'),
+                ],
+              ),
+            ),
+          ],
     );
   }
 }

@@ -13,6 +13,7 @@ import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Pas
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Statistique/DynamicColumnChart.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Statistique/DynamicPieChart.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Statistique/PaieCommissionChart.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class WalletPage extends StatefulWidget {
   const WalletPage({super.key});
@@ -137,10 +138,11 @@ class _WalletPageState extends State<WalletPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: CustomAppBar(
         title: Text(
-          "Portefeuille Passager",
+          "${l10n.porteFeuilleClient_titre}",
           style: const TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 18,
@@ -155,7 +157,7 @@ class _WalletPageState extends State<WalletPage> {
             onPressed: () {
               showEmergencyBottomSheet(context, userId);
             },
-            tooltip: "Envoyer un sos de secour",
+            tooltip: "${l10n.send_sos}",
           ),
           IconButton(
             icon: Icon(Icons.chat, color: Colors.white),
@@ -164,14 +166,14 @@ class _WalletPageState extends State<WalletPage> {
                 context,
               ).push(AnimatedPageRoute(page: CorrespondentsPage()));
             },
-            tooltip: "Discussion instantanée",
+            tooltip: "${l10n.map_client_discussion}",
           ),
           IconButton(
             icon: Icon(Icons.time_to_leave, color: Colors.white),
             onPressed: () {
               _showHistoriqueCourse(context);
             },
-            tooltip: "Historique des courses",
+            tooltip: "${l10n.historiqueCourseClient_texte}",
           ),
         ],
       ),
@@ -183,6 +185,7 @@ class _WalletPageState extends State<WalletPage> {
             children: [
               ...dashInfo.map(
                 (item) => buildSummaryCard(
+                  context,
                   double.parse(item.sommePaiementBonus.toString()),
                   int.parse(item.countCourseTermine.toString()),
                   double.parse(item.sumDistanceCourseTermine.toString()),
@@ -202,7 +205,7 @@ class _WalletPageState extends State<WalletPage> {
               SizedBox(height: 10),
 
               Text(
-                "Répartition des modes de paiement",
+                "${l10n.porteFeuilleClient_repartition}",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 10),
@@ -229,6 +232,7 @@ class _WalletPageState extends State<WalletPage> {
         itemCount: paymentHistory.length,
         itemBuilder: (context, index) {
           final item = paymentHistory[index];
+          final l10n = AppLocalizations.of(context)!;
           return Card(
             elevation: 4,
             margin: EdgeInsets.symmetric(vertical: 5, horizontal: 8),
@@ -280,7 +284,7 @@ class _WalletPageState extends State<WalletPage> {
                             SizedBox(width: 5),
                             Expanded(
                               child: Text(
-                                "Véhicule: ${item["vehicule"]}",
+                                "${l10n.vehicle}: ${item["vehicule"]}",
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -292,7 +296,7 @@ class _WalletPageState extends State<WalletPage> {
                             SizedBox(width: 5),
                             Expanded(
                               child: Text(
-                                "De: ${item["depart"]}",
+                                "${l10n.porteFeuilleClient_de}: ${item["depart"]}",
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -304,7 +308,7 @@ class _WalletPageState extends State<WalletPage> {
                             SizedBox(width: 5),
                             Expanded(
                               child: Text(
-                                "À: ${item["destination"]}",
+                                "${l10n.porteFeuilleClient_a}: ${item["destination"]}",
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -316,7 +320,7 @@ class _WalletPageState extends State<WalletPage> {
                             SizedBox(width: 5),
                             Expanded(
                               child: Text(
-                                "Paiement: ${item["mode"]}",
+                                "${l10n.porteFeuilleClient_paiement}: ${item["mode"]}",
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
@@ -435,11 +439,13 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   Widget buildSummaryCard(
+    BuildContext context,
     double totalEarnings,
     int totalRides,
     double totalDistance,
     double totalPaid,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     return Card(
       elevation: 4,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -453,7 +459,7 @@ class _WalletPageState extends State<WalletPage> {
                 Icon(Icons.account_balance_wallet, color: Colors.green),
                 SizedBox(width: 8),
                 Text(
-                  "Bonus:",
+                  "${l10n.porteFeuilleClient_bonus}:",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ],
@@ -470,15 +476,15 @@ class _WalletPageState extends State<WalletPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                buildStat(Icons.local_taxi, "Courses", totalRides.toString()),
+                buildStat(Icons.local_taxi, "${l10n.porteFeuilleClient_course}", totalRides.toString()),
                 buildStat(
                   Icons.map,
-                  "Distance",
+                  "${l10n.porteFeuilleClient_distance}",
                   "${totalDistance.toStringAsFixed(1)} km",
                 ),
                 buildStat(
                   Icons.attach_money,
-                  "Total Payé",
+                  "${l10n.porteFeuilleClient_total_payer}",
                   "${totalPaid.toStringAsFixed(0)} CDF",
                 ),
               ],

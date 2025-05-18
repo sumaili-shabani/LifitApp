@@ -59,7 +59,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
       child: Scaffold(
         appBar: CustomAppBar(
           title: Text(
-            "Profil",
+            "${l10n.profil_ui_profil}",
             style: TextStyle(color: Colors.white),
           ),
           actions: [
@@ -68,7 +68,7 @@ class _ProfilScreenState extends State<ProfilScreen> {
               onPressed: () {
                 showEmergencyBottomSheet(context, userId);
               },
-              tooltip: "Envoyer un sos de secour",
+              tooltip: "${l10n.profil_ui_sos}",
             ),
             IconButton(
               onPressed: _showSettings,
@@ -84,19 +84,19 @@ class _ProfilScreenState extends State<ProfilScreen> {
                 Colors.white, // Texte et icônes non sélectionnés en blanc ✅
             dividerColor: Colors.transparent, // Supprime la ligne de séparation
             indicatorColor: Colors.white, // Indicateur de sélection en blanc
-            tabs: const [
+            tabs:  [
               Tab(
                 icon: Icon(Icons.person, color: Colors.white),
-                text: "Profil",
+                text: "${l10n.profil_ui_profil}",
               ),
-              Tab(icon: Icon(Icons.edit, color: Colors.white), text: "Editer"),
+              Tab(icon: Icon(Icons.edit, color: Colors.white), text: "${l10n.profil_ui_editer}"),
               Tab(
                 icon: Icon(Icons.notifications, color: Colors.white),
-                text: "Notifications",
+                text: "${l10n.profil_ui_notification}",
               ),
               Tab(
                 icon: Icon(Icons.tune, color: Colors.white),
-                text: "Paramètres",
+                text: "${l10n.profil_ui_settings}",
               ),
             ],
           )
@@ -117,9 +117,10 @@ class _ProfilScreenState extends State<ProfilScreen> {
     );
   }
 
-  AppBar newMethod() {
+  AppBar newMethod(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return AppBar(
-      title: Text("Profil"),
+      title: Text("${l10n.profil_ui_profil}"),
       actions: [
         IconButton(
           onPressed: _showSettings,
@@ -128,10 +129,10 @@ class _ProfilScreenState extends State<ProfilScreen> {
       ],
       bottom: TabBar(
         tabs: [
-          Tab(icon: Icon(Icons.person), text: "Profil"),
-          Tab(icon: Icon(Icons.edit), text: "Editer"),
-          Tab(icon: Icon(Icons.notifications), text: "Notifications"),
-          Tab(icon: Icon(Icons.tune), text: "Paramètres"),
+          Tab(icon: Icon(Icons.person), text: "${l10n.profil_ui_profil}"),
+          Tab(icon: Icon(Icons.edit), text: "${l10n.profil_ui_editer}"),
+          Tab(icon: Icon(Icons.notifications), text: "${l10n.profil_ui_notification}"),
+          Tab(icon: Icon(Icons.tune), text: "${l10n.profil_ui_settings}"),
         ],
       ),
     );
@@ -323,19 +324,19 @@ class _ProfilScreenState extends State<ProfilScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           RadioListTile(
-                            title: Text("Espèces"),
+                            title: Text("${l10n.profil_ui_espece}"),
                             value: "cash",
                             groupValue: "cash",
                             onChanged: (value) {},
                           ),
                           RadioListTile(
-                            title: Text("Carte bancaire"),
+                            title: Text("${l10n.profil_ui_carteBank}"),
                             value: "card",
                             groupValue: "cash",
                             onChanged: (value) {},
                           ),
                           RadioListTile(
-                            title: Text("Mobile Money"),
+                            title: Text("${l10n.profil_ui_mb_money}"),
                             value: "mobile_money",
                             groupValue: "cash",
                             onChanged: (value) {},
@@ -362,10 +363,10 @@ class _ProfilScreenState extends State<ProfilScreen> {
           ),
         ]),
         const Divider(),
-        _buildPreferenceSection("Confidentialité & Sécurité", [
+        _buildPreferenceSection("${l10n.profil_ui_confidentialite}", [
           ListTile(
             leading: Icon(Icons.lock, color: Colors.red),
-            title: Text("Changer le mot de passe"),
+            title: Text("${l10n.profil_ui_changer_pwd} "),
             trailing: Icon(Icons.chevron_right),
             onTap: () {
               showModalBottomSheet(
@@ -386,13 +387,13 @@ class _ProfilScreenState extends State<ProfilScreen> {
           ),
           ListTile(
             leading: Icon(Icons.privacy_tip, color: Colors.blue),
-            title: Text("Politique de confidentialité"),
+            title: Text("${l10n.profil_ui_politique}"),
             trailing: Icon(Icons.chevron_right),
             onTap: () {},
           ),
           ListTile(
             leading: Icon(Icons.exit_to_app, color: Colors.orange),
-            title: Text("Déconnexion"),
+            title: Text("${l10n.profil_ui_deconnexion}"),
             trailing: Icon(Icons.chevron_right),
             onTap: () {
               logout();

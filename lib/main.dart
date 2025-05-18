@@ -11,6 +11,7 @@ import 'app.dart';
 import 'presentation/widgets/theme_switch.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart'; // Ajout de EasyLoading
 import 'package:permission_handler/permission_handler.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -55,6 +56,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
         title: Text(AppConfig.appName),
@@ -64,8 +66,8 @@ class HomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Text('Bienvenu au SwiftRide', style: TextStyle(fontSize: 24)),
-            const SizedBox(height: 20),
+            Text('${l10n.intro_ui_welcom} ', style: TextStyle(fontSize: 24)),
+            SizedBox(height: 20),
             Card(
               margin: const EdgeInsets.all(16),
               child: Padding(

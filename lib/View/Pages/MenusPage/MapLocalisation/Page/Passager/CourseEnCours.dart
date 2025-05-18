@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -13,6 +14,7 @@ import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/Com
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/PaymentScreen.dart';
 import 'package:lifti_app/View/Pages/MenusPage/MapLocalisation/Page/Passager/CommandeCourse/PositionChaufeurOnMap.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 class PassagerCourseEnCourse extends StatefulWidget {
   const PassagerCourseEnCourse({super.key});
@@ -110,6 +112,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+     final l10n = AppLocalizations.of(context)!;
     return isLoading
         ? Center(
           child: CircularProgressIndicator(),
@@ -118,7 +121,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Courses en cours",
+              l10n.course_en_course_titre,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(height: 10),
@@ -174,7 +177,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                   ),
                                 ),
                                 Text(
-                                  "Prix: ${course.montantCourse} CDF",
+                                  "${l10n.course_en_course_prix}: ${course.montantCourse} CDF",
                                   style: TextStyle(
                                     color: Colors.green,
                                     fontSize: 14,
@@ -206,19 +209,19 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                     Colors.white,
                                   ), // Ajouter une couleur pour le texte/icône
                                 ),
-                                label: Text('Payer'),
+                                label: Text(l10n.course_en_course_payer),
                               ),
                             ),
                         ],
                       ),
                       SizedBox(height: 8),
-                      Text("Destination : ${course.nameDestination!}"),
+                      Text("${l10n.course_en_course_destination} : ${course.nameDestination!}"),
                       Text(
-                        "${course.calculate == 1 ? 'Distance:' : 'Location:'}${course.distance!.toStringAsFixed(2)} ${course.calculate == 1 ? 'Km ➡️${course.timeEst!}' : 'J/H'}",
+                        "${course.calculate == 1 ? '${l10n.info_distance}:' : 'Location:'}${course.distance!.toStringAsFixed(2)} ${course.calculate == 1 ? 'Km ➡️${course.timeEst!}' : 'J/H'}",
                       ),
                       course.calculate == 1
                           ? Text(
-                            "Heure d'arrivage : ${CallApi.formatDateString(course.dateLimiteCourse ?? '')}",
+                            "${l10n.course_en_course_heure_arrivage} : ${CallApi.formatDateString(course.dateLimiteCourse ?? '')}",
                           )
                           : SizedBox(),
 
@@ -237,7 +240,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                _getStatusMessage(course.status!),
+                                _getStatusMessage(context, course.status!),
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: _getStatusColor(course.status!),
@@ -252,7 +255,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                         onPressed: () {
                                           showMapBottomSheet(context, course);
                                         },
-                                        child: Text("| Voir sa position"),
+                                        child: Text("| ${l10n.course_en_course_voirPosition}"),
                                       )
                                       : course.status.toString() == '0' ||
                                           course.status.toString() == '1' ||
@@ -265,7 +268,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                           );
                                         },
                                         child: Text(
-                                          "| Voir le trajet",
+                                          "| ${l10n.course_en_course_voir_trajet}",
                                           style: TextStyle(color: Colors.blue),
                                         ),
                                       )
@@ -285,7 +288,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                 children: [
                                   Icon(Icons.amp_stories_sharp, size: 16,),
                                   SizedBox(width: 2,),
-                                  Text("Y-at-il des arrets?"),
+                                  Text(l10n.course_en_course_question_arret),
                                 ],
                               ),
                               Row(
@@ -303,7 +306,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
 
                                     },
                                     child: Text(
-                                      "| Ajouter les arrets",
+                                      "| ${l10n.course_en_course_ajout_arret}",
                                       style: TextStyle(color: Colors.blue),
                                     ),
                                   ),
@@ -336,7 +339,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                   Colors.white,
                                 ), // Ajouter une couleur pour le texte/icône
                               ),
-                              label: Text('Annuler la course'),
+                              label: Text(l10n.course_en_course_anuller_course),
                             ),
                           // Bouton Commenter
                           IconButton(
@@ -344,7 +347,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                               showRatingBottomSheet(context, course);
                             },
                             icon: Icon(Icons.comment, color: Colors.blueAccent),
-                            tooltip: "Commenter",
+                            tooltip: l10n.course_en_course_commenter,
                           ),
                           // Bouton Partager sur WhatsApp
                           IconButton(
@@ -362,6 +365,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                           partageWhatsapp = false;
                                         });
                                         shareOnWhatsApp(
+                                          context,
                                           position.latitude,
                                           position.longitude,
                                           course.nameDestination!,
@@ -374,7 +378,7 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
                                       color: Colors.blue,
                                     )
                                     : Icon(Icons.share, color: Colors.teal),
-                            tooltip: "Partager sur WhatsApp",
+                            tooltip: l10n.course_en_course_partager,
                           ),
                         ],
                       ),
@@ -504,20 +508,21 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
   }
 
   // Fonction pour obtenir le message du status
-  String _getStatusMessage(String status) {
+  String _getStatusMessage(BuildContext context, String status) {
+    final l10n = AppLocalizations.of(context)!;
     switch (status) {
       case '0':
-        return "Course en cours";
+        return "${l10n.course_etat_encours}";
       case '1':
-        return "Course terminée";
+        return "${l10n.course_etat_terminee}";
       case '2':
-        return "En attente de réponse du chauffeur";
+        return "${l10n.course_etat_attente_chauffeur}";
       case '3':
-        return "Voiture en route vers vous";
+        return "${l10n.course_etat_voiture_en_route}";
       case '4':
-        return "Course arrivée à destination";
+        return "${l10n.course_etat_arrivee}";
       default:
-        return "Status inconnu";
+        return "${l10n.course_etat_inconnu}";
     }
   }
 
@@ -541,16 +546,18 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
 
   // Fonction de partage sur WhatsApp
   void shareOnWhatsApp(
+    BuildContext context,
     double latitude,
     double longitude,
     String destination,
   ) async {
+     final l10n = AppLocalizations.of(context)!;
     String message =
-        "🚖 Course en cours 🚖\n\n"
-        "Je suis en route vers *$destination*.\n"
-        "Suivez ma position en temps réel ici :\n"
+        "🚖 ${l10n.course_etat_encours} 🚖\n\n"
+        "${l10n.course_en_course_destination_share} Je suis en route vers *$destination*.\n"
+        "${l10n.share_suivez_ma_position} :\n"
         "📍 https://www.google.com/maps/search/?api=1&query=$latitude,$longitude\n\n"
-        "À bientôt !";
+        "${l10n.share_leter}";
 
     String encodedMessage = Uri.encodeComponent(message);
     String whatsappUrl = "https://wa.me/?text=$encodedMessage";
@@ -560,11 +567,11 @@ class _PassagerCourseEnCourseState extends State<PassagerCourseEnCourse> {
     if (await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       // URL ouverte avec succès
     } else {
-      print("Impossible d'ouvrir WhatsApp.");
+      // print("Impossible d'ouvrir WhatsApp.");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
-            "WhatsApp ne peut pas être ouvert. Vérifiez son installation.",
+            l10n.share_error_whatsapp,
           ),
         ),
       );
